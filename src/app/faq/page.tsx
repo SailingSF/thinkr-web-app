@@ -1,0 +1,72 @@
+import Link from "next/link";
+
+export default function FAQ() {
+  const faqs = [
+    {
+      question: "What is thinkr?",
+      answer: "thinkr is a smart operations hub that helps Shopify store owners optimize their business through advanced analytics, inventory management, and AI-powered insights."
+    },
+    {
+      question: "How does the analytics dashboard work?",
+      answer: "Our analytics dashboard provides real-time insights into your Shopify store's performance, including sales trends, customer behavior, and inventory metrics. It automatically syncs with your Shopify store to provide up-to-date information."
+    },
+    {
+      question: "Is my data secure?",
+      answer: "Yes, we take security seriously. All data is encrypted both in transit and at rest, and we follow industry best practices for data protection. We never share your data with third parties without your explicit consent."
+    },
+    {
+      question: "How does the inventory management system work?",
+      answer: "Our inventory management system tracks your stock levels in real-time, predicts when you'll need to reorder based on historical data, and can even automate the reordering process based on your preferences."
+    },
+    {
+      question: "What kind of support do you offer?",
+      answer: "We offer 24/7 email support and live chat during business hours. Our team of experts is always ready to help you optimize your store's performance and resolve any issues you might encounter."
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#1a1b1e] text-white">
+      {/* Navigation */}
+      <nav className="flex items-center justify-between p-6 border-b border-gray-800">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="text-2xl font-bold text-purple-400">thinkr</div>
+        </Link>
+        <div className="flex items-center gap-8">
+          <Link href="/" className="hover:text-purple-400 transition-colors py-2">Home</Link>
+          <Link href="/app" className="hover:text-purple-400 transition-colors py-2">App</Link>
+          <Link href="/faq" className="hover:text-purple-400 transition-colors py-2">FAQ</Link>
+          <Link 
+            href="/login" 
+            className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
+          >
+            Login
+          </Link>
+        </div>
+      </nav>
+
+      {/* FAQ Content */}
+      <main className="max-w-3xl mx-auto px-8 py-16">
+        <h1 className="text-4xl font-bold mb-8 text-center">Frequently Asked Questions</h1>
+        
+        <div className="space-y-8">
+          {faqs.map((faq, index) => (
+            <div key={index} className="bg-[#25262b] p-6 rounded-lg">
+              <h3 className="text-xl font-semibold mb-3 text-purple-400">{faq.question}</h3>
+              <p className="text-gray-300">{faq.answer}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <p className="text-gray-400 mb-4">Still have questions?</p>
+          <a 
+            href="mailto:support@thinkr.com" 
+            className="inline-block px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
+          >
+            Contact Support
+          </a>
+        </div>
+      </main>
+    </div>
+  );
+} 
