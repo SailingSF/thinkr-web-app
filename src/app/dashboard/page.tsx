@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import ScheduleModal from './ScheduleModal';
 
 interface ConnectionStatus {
   is_connected: boolean;
@@ -21,12 +22,24 @@ interface User {
   store: string | null;
 }
 
+interface AnalysisSchedule {
+  id: number;
+  analysis_type: string;
+  cron_expression: string;
+  is_active: boolean;
+  description: string;
+  last_run: string | null;
+  next_run: string | null;
+}
+
 export default function Dashboard() {
   const router = useRouter();
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [schedules, setSchedules] = useState<AnalysisSchedule[]>([]);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
@@ -69,6 +82,20 @@ export default function Dashboard() {
         if (userData) {
           setUser(JSON.parse(userData));
         }
+
+        // Get analysis schedules
+        const schedulesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`, {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Token ${token}`,
+          },
+        });
+
+        if (schedulesResponse.ok) {
+          const schedulesData = await schedulesResponse.json();
+          setSchedules(schedulesData.schedules);
+        }
       } catch (err) {
         console.error('Dashboard error:', err);
         setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
@@ -84,6 +111,24 @@ export default function Dashboard() {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     router.push('/login');
+  };
+
+  const handleScheduleAdd = async () => {
+    const token = getAuthToken();
+    if (!token) return;
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`, {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Token ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setSchedules(data.schedules);
+    }
   };
 
   if (loading) {
@@ -164,8 +209,60 @@ export default function Dashboard() {
               <p className="text-gray-400">Unable to fetch connection status</p>
             )}
           </div>
+
+          {/* Analytics Schedule */}
+          <div className="bg-[#25262b] p-6 rounded-xl border border-purple-400/20">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Analytics Schedule</h2>
+              <button
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
+              >
+                Add Schedule
+              </button>
+            </div>
+            
+            {schedules.length > 0 ? (
+              <div className="space-y-4">
+                {schedules.map((schedule) => (
+                  <div key={schedule.id} className="p-4 bg-[#2c2d32] rounded-lg">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-semibold">{schedule.analysis_type}</h3>
+                        <p className="text-gray-400 text-sm">{schedule.description}</p>
+                        <p className="text-gray-400 text-sm mt-2">Schedule: {schedule.cron_expression}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-sm ${schedule.is_active ? 'text-green-400' : 'text-red-400'}`}>
+                          {schedule.is_active ? 'Active' : 'Inactive'}
+                        </div>
+                        {schedule.next_run && (
+                          <p className="text-gray-400 text-sm mt-1">
+                            Next run: {new Date(schedule.next_run).toLocaleString()}
+                          </p>
+                        )}
+                        {schedule.last_run && (
+                          <p className="text-gray-400 text-sm mt-1">
+                            Last run: {new Date(schedule.last_run).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400">No analytics schedules configured</p>
+            )}
+          </div>
         </div>
       </main>
+
+      <ScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onScheduleAdd={handleScheduleAdd}
+      />
     </div>
   );
 } 
