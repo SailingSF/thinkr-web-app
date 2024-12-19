@@ -80,28 +80,10 @@ export default function Dashboard() {
     fetchData();
   }, [router]);
 
-  const handleLogout = async () => {
-    try {
-      const token = getAuthToken();
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/logout/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Authorization': `Token ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to logout');
-      }
-
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_data');
-      router.push('/login');
-    } catch (err) {
-      console.error('Logout error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to logout');
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
+    router.push('/login');
   };
 
   if (loading) {
