@@ -1,23 +1,14 @@
 import Link from "next/link";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#1a1b1e] text-white">
-      {/* Navigation */}
-      <nav className="flex items-center justify-between p-6">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="text-2xl font-bold text-purple-400">thinkr</div>
-        </Link>
-        <Link 
-          href="/login" 
-          className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
-        >
-          Connect Store
-        </Link>
-      </nav>
+    <div className="min-h-screen bg-[#1a1b1e] text-white flex flex-col">
+      <Navigation />
 
       {/* Main Content */}
-      <main className="container mx-auto px-8">
+      <main className="container mx-auto px-8 flex-grow">
         <div className="min-h-[80vh] flex items-center justify-center">
           <div className="relative">
             {/* Central circle with pulsing effect */}
@@ -31,11 +22,11 @@ export default function Home() {
               
               <div className="flex flex-col items-center gap-8 mt-12">
                 <div className="flex items-center gap-6 text-xl text-gray-400">
+                  Shop analytics
                   <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                  Real-time metrics
+                  Business recommendations
                   <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
                   Smart automations
-                  <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
                 </div>
                 
                 <Link 
@@ -49,6 +40,8 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
