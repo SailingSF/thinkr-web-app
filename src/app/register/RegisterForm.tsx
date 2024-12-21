@@ -60,7 +60,8 @@ export function RegisterForm() {
       }
 
       if (data.success) {
-        router.push('/connect-store');
+        localStorage.setItem('auth_token', data.token || '');
+        router.push('/onboarding');
       }
     } catch (error) {
       console.error('Registration error:', error);

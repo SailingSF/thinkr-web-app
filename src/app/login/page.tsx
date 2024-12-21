@@ -16,15 +16,18 @@ interface LoginResponse {
     store: string | null;
   };
   error?: string;
-  debug_info?: {
-    email_provided: string;
-    user_exists: boolean;
-  };
 }
 
-interface ConnectionResponse {
-  is_connected: boolean;
-  error?: string;
+interface OnboardingResponse {
+  data: {
+    name?: string;
+    goals?: string[];
+    business_goals?: string[];
+    store_domain?: string;
+    website?: string;
+    brand_name?: string;
+  };
+  available_fields: string[];
 }
 
 export default function Login() {
@@ -43,15 +46,8 @@ export default function Login() {
     const email = formData.get('email')?.toString() || '';
     const password = formData.get('password')?.toString() || '';
 
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      // Login request
-      const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,62 +59,53 @@ export default function Login() {
         }),
       });
 
-      const loginResult = await loginResponse.json() as LoginResponse;
+      const loginResult = await response.json() as LoginResponse;
 
-      if (!loginResponse.ok) {
-        if (loginResult.error === 'Invalid credentials') {
-          throw new Error('Invalid email or password');
-        }
-        if (loginResult.error === 'Please provide both email and password') {
-          throw new Error('Please fill in all fields');
-        }
+      if (!response.ok) {
         throw new Error(loginResult.error || 'Login failed');
       }
 
-      // Store the token in localStorage for subsequent requests
+      // Store the auth token
       if (loginResult.token) {
         localStorage.setItem('auth_token', loginResult.token);
-        // Also store user data
-        if (loginResult.user) {
-          localStorage.setItem('user_data', JSON.stringify(loginResult.user));
-        }
       }
 
-      // Check if user has a store connected from the login response
-      if (!loginResult.user?.store) {
-        router.push('/connect-store');
-        return;
-      }
+      // Check onboarding status
+      const onboardingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/onboarding-data/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${loginResult.token}`,
+        },
+      });
 
-      // If user has a store, verify it's properly connected
-      try {
-        const connectionResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/connection-status/`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Token ${loginResult.token}`,
-          },
-        });
+      if (onboardingResponse.ok) {
+        const onboardingData = await onboardingResponse.json() as OnboardingResponse;
         
-        if (!connectionResponse.ok) {
-          // If connection check fails, redirect to connect store
-          router.push('/connect-store');
+        // Check if essential onboarding fields are filled
+        const hasName = Boolean(onboardingData.data?.name);
+        const hasGoals = Boolean(onboardingData.data?.business_goals?.length);
+        const hasStore = Boolean(loginResult.user?.store);
+
+        if (!hasName) {
+          router.push('/onboarding');
+          return;
+        }
+        
+        if (!hasGoals) {
+          router.push('/onboarding/goals');
+          return;
+        }
+        
+        if (!hasStore) {
+          router.push('/onboarding/connect-store');
           return;
         }
 
-        const connectionStatus = await connectionResponse.json() as ConnectionResponse;
-
-        // Redirect based on store connection status
-        if (connectionStatus.is_connected) {
-          router.push('/dashboard');
-        } else {
-          router.push('/connect-store');
-        }
-      } catch (connectionError) {
-        // If connection check fails, redirect to connect store
-        console.error('Connection check error:', connectionError);
-        router.push('/connect-store');
+        // If all onboarding is complete, go to dashboard
+        router.push('/dashboard');
+      } else {
+        // If we can't check onboarding status, assume it's not complete
+        router.push('/onboarding');
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -137,14 +124,8 @@ export default function Login() {
         </Link>
         <div className="flex items-center gap-8">
           <Link href="/" className="hover:text-purple-400 transition-colors py-2">Home</Link>
-          <Link href="/app" className="hover:text-purple-400 transition-colors py-2">App</Link>
-          <Link href="/faq" className="hover:text-purple-400 transition-colors py-2">FAQ</Link>
-          <Link 
-            href="/login" 
-            className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
-          >
-            Login
-          </Link>
+          <Link href="/pricing" className="hover:text-purple-400 transition-colors py-2">Pricing</Link>
+          <Link href="/faqs" className="hover:text-purple-400 transition-colors py-2">FAQs</Link>
         </div>
       </nav>
 
@@ -189,26 +170,6 @@ export default function Login() {
                 className="mt-1 w-full px-4 py-3 rounded bg-[#25262b] border border-gray-700 focus:border-purple-400 focus:outline-none"
                 placeholder="••••••••"
               />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-700 bg-[#25262b] text-purple-500 focus:ring-purple-500"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link href="/forgot-password" className="text-purple-400 hover:text-purple-300">
-                  Forgot your password?
-                </Link>
-              </div>
             </div>
 
             <button
