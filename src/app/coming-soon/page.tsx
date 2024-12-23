@@ -13,21 +13,21 @@ const ALLOWED_FEATURES = [
 
 type FeatureName = typeof ALLOWED_FEATURES[number];
 
-// Type guard to check if a string is a valid feature name
-function isValidFeature(feature: string | undefined): feature is FeatureName {
+function isValidFeature(feature: unknown): feature is FeatureName {
   return typeof feature === 'string' && ALLOWED_FEATURES.includes(feature as FeatureName);
 }
 
-interface PageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+type Props = {
+  params: Promise<Record<string, never>>
+  searchParams: Promise<{ feature?: string }>
 }
 
-export default function ComingSoon({
-  searchParams,
-}: PageProps) {
-  const feature = typeof searchParams.feature === 'string' ? searchParams.feature : undefined;
+export default async function Page({ searchParams }: Props) {
+  const resolvedParams = await searchParams;
+  if (!resolvedParams) return null;
   
-  // Redirect to base URL if invalid feature is provided
+  const { feature } = resolvedParams;
+  
   if (feature && !isValidFeature(feature)) {
     redirect('/coming-soon');
   }
