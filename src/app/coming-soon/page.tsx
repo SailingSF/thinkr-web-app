@@ -18,17 +18,21 @@ function isValidFeature(feature: string | undefined): feature is FeatureName {
   return typeof feature === 'string' && ALLOWED_FEATURES.includes(feature as FeatureName);
 }
 
+interface PageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
 export default function ComingSoon({
   searchParams,
-}: {
-  searchParams: { feature?: string };
-}) {
+}: PageProps) {
+  const feature = typeof searchParams.feature === 'string' ? searchParams.feature : undefined;
+  
   // Redirect to base URL if invalid feature is provided
-  if (searchParams.feature && !isValidFeature(searchParams.feature)) {
+  if (feature && !isValidFeature(feature)) {
     redirect('/coming-soon');
   }
 
-  const featureName = searchParams.feature || "New";
+  const featureName = feature || "New";
   
   return (
     <div className="min-h-screen bg-[#1a1b1e] text-white flex flex-col">
