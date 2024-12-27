@@ -77,10 +77,26 @@ export default function Dashboard() {
         const data = await response.json();
         setConnectionStatus(data);
         
-        // Get user data from localStorage (set during login)
+        // Try to get user data from localStorage first
         const userData = localStorage.getItem('user_data');
         if (userData) {
           setUser(JSON.parse(userData));
+        } else {
+          // Fallback: fetch user data from API if not in localStorage
+          const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`, {
+            credentials: 'include',
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': `Token ${token}`,
+            },
+          });
+
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            setUser(userData);
+            // Store for future use
+            localStorage.setItem('user_data', JSON.stringify(userData));
+          }
         }
 
         // Get analysis schedules

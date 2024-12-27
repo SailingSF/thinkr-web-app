@@ -65,9 +65,12 @@ export default function Login() {
         throw new Error(loginResult.error || 'Login failed');
       }
 
-      // Store the auth token
+      // Store the auth token and user data
       if (loginResult.token) {
         localStorage.setItem('auth_token', loginResult.token);
+      }
+      if (loginResult.user) {
+        localStorage.setItem('user_data', JSON.stringify(loginResult.user));
       }
 
       // Check onboarding status
