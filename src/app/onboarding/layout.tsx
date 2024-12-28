@@ -1,12 +1,12 @@
 'use client';
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Navigation from "@/components/Navigation";
 
 const STEPS = [
-  { path: '/onboarding', label: 'Store Info' },
-  { path: '/onboarding/goals', label: 'Goals' },
-  { path: '/onboarding/connect-store', label: 'Connect Store' }
+  { path: "/onboarding", label: "Store Info" },
+  { path: "/onboarding/connect-store", label: "Connect Store" },
+  { path: "/onboarding/preferences", label: "Preferences" },
 ];
 
 export default function OnboardingLayout({
@@ -20,17 +20,7 @@ export default function OnboardingLayout({
 
   return (
     <div className="min-h-screen bg-[#1a1b1e] text-white">
-      {/* Navigation */}
-      <nav className="flex items-center justify-between p-6 border-b border-gray-800">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="text-2xl font-bold text-purple-400">thinkr</div>
-        </Link>
-        <div className="flex items-center gap-8">
-          <Link href="/" className="hover:text-purple-400 transition-colors py-2">Home</Link>
-          <Link href="/pricing" className="hover:text-purple-400 transition-colors py-2">Pricing</Link>
-          <Link href="/faqs" className="hover:text-purple-400 transition-colors py-2">FAQs</Link>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Progress bar */}
       <div className="relative">

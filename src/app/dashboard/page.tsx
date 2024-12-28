@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import Navigation from '@/components/Navigation';
 import { useRouter } from 'next/navigation';
 import ScheduleModal from './ScheduleModal';
 
@@ -158,25 +158,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#1a1b1e] text-white">
       {/* Navigation */}
-      <nav className="flex items-center justify-between p-6 border-b border-gray-800">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="text-2xl font-bold text-purple-400">thinkr</div>
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/settings"
-            className="px-4 py-2 hover:bg-[#25262b] rounded-md transition-colors"
-          >
-            Settings
-          </Link>
-          <button 
-            onClick={handleLogout}
-            className="px-4 py-2 hover:bg-[#25262b] rounded-md transition-colors"
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Dashboard Content */}
       <main className="container mx-auto px-8 py-12">

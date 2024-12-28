@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Navigation from "@/components/Navigation";
 
 interface ConnectionStatus {
   is_connected: boolean;
@@ -171,12 +172,7 @@ export default function ConnectStore() {
 
   return (
     <div className="min-h-screen bg-[#1a1b1e] text-white">
-      {/* Navigation */}
-      <nav className="flex items-center justify-between p-6 border-b border-gray-800">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="text-2xl font-bold text-purple-400">thinkr</div>
-        </Link>
-      </nav>
+      <Navigation />
 
       {/* Connect Store Content */}
       <main className="container mx-auto px-8 py-16">

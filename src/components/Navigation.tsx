@@ -1,10 +1,17 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Navigation() {
   return (
     <nav className="flex items-center justify-between p-6 border-b border-gray-800">
       <Link href="/" className="flex items-center gap-2">
-        <div className="text-2xl font-bold text-purple-400">thinkr</div>
+        <Image
+          src="/2 Thinkr logo white letter.png"
+          alt="Thinkr Logo"
+          width={120}
+          height={40}
+          className="object-contain"
+        />
       </Link>
       <div className="flex items-center gap-8">
         <Link href="/" className="hover:text-purple-400 transition-colors py-2">Home</Link>

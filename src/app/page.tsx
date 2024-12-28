@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
@@ -15,6 +16,15 @@ export default function Home() {
             <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
             
             <div className="relative bg-[#25262b] p-12 rounded-2xl border border-purple-400/20 max-w-xl text-center">
+              <div className="mb-8">
+                <Image
+                  src="/2 Thinkr logo white letter.png"
+                  alt="Thinkr Logo"
+                  width={200}
+                  height={60}
+                  className="mx-auto object-contain"
+                />
+              </div>
               <h1 className="text-5xl font-bold mb-6">
                 Your Shopify store,
                 <span className="block text-purple-400 mt-2">but smarter</span>
