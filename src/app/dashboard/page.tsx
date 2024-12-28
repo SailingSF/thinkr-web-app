@@ -157,8 +157,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#1a1b1e] text-white">
-      {/* Navigation */}
-      <Navigation />
+      <Navigation onLogout={handleLogout} />
 
       {/* Dashboard Content */}
       <main className="container mx-auto px-8 py-12">
