@@ -1,24 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 
-interface AddStoreResponse {
-  success: boolean;
+interface OAuthStartResponse {
+  oauth_url: string;
+  state: string;
+  redirect: boolean;
   error?: string;
-  details?: string;
 }
 
-export default function OnboardingConnectStore() {
+function ConnectStoreContent() {
   const router = useRouter();
-  const [storeDomain, setStoreDomain] = useState('');
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!storeDomain.trim()) return;
+  useEffect(() => {
+    // Check for successful connection
+    const shop_connected = searchParams.get('shop_connected');
+    const shop = searchParams.get('shop');
 
+    if (shop_connected === 'true' && shop) {
+      // Store was successfully connected
+      localStorage.setItem('connected_store', shop);
+      // Redirect to dashboard
+      router.push('/dashboard');
+    }
+  }, [searchParams, router]);
+
+  const startOAuthFlow = async () => {
     setIsLoading(true);
     setError('');
 
@@ -29,42 +41,37 @@ export default function OnboardingConnectStore() {
         return;
       }
 
-      // Clean up store domain and add myshopify.com if needed
-      const cleanDomain = storeDomain.trim().toLowerCase();
-      const fullDomain = cleanDomain.includes('.myshopify.com') 
-        ? cleanDomain 
-        : `${cleanDomain}.myshopify.com`;
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/add-store/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`,
-        },
-        credentials: 'include',
-        body: JSON.stringify({ store_domain: fullDomain }),
-      });
-
-      const data = await response.json() as AddStoreResponse;
-
-      if (!response.ok || !data.success) {
-        // Handle specific error cases with user-friendly messages
-        if (data.error?.includes('not installed')) {
-          throw new Error('This store does not have our app installed. Please install the app first.');
-        } else if (data.error?.includes('not authorized') || data.error?.includes('permissions')) {
-          throw new Error('You do not have sufficient permissions to manage this store. Please ensure you have admin access.');
-        } else if (data.error?.includes('email') || data.error?.includes('verify')) {
-          throw new Error('Please verify your email address before connecting a store.');
-        } else {
-          throw new Error(data.error || data.details || 'Failed to connect store');
+      // Include return_to parameter to specify where to redirect after successful connection
+      const returnTo = `${window.location.origin}/onboarding/connect-store`;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/?return_to=${encodeURIComponent(returnTo)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Token ${token}`,
+          },
+          credentials: 'include',
         }
+      );
+
+      const data = await response.json() as OAuthStartResponse;
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to start OAuth process');
       }
 
-      router.push('/dashboard');
+      // Check for redirect flag and handle accordingly
+      if (data.redirect && data.oauth_url) {
+        // Store the state in localStorage to verify when we return
+        localStorage.setItem('shopify_oauth_state', data.state);
+        // Redirect to Shopify's OAuth URL
+        window.location.href = data.oauth_url;
+      } else {
+        throw new Error('Invalid OAuth response from server');
+      }
     } catch (error) {
-      console.error('Connect store error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to connect store');
-    } finally {
+      console.error('OAuth start error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start OAuth process');
       setIsLoading(false);
     }
   };
@@ -97,7 +104,7 @@ export default function OnboardingConnectStore() {
             <div className="text-center">
               <h3 className="text-xl font-semibold">Connect Store</h3>
               <p className="text-gray-400 mt-2">
-                Enter your Shopify store domain to connect
+                Connect your Shopify store securely using OAuth
               </p>
             </div>
           </div>
@@ -108,27 +115,10 @@ export default function OnboardingConnectStore() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex flex-col gap-2">
-              <input
-                type="text"
-                value={storeDomain}
-                onChange={(e) => setStoreDomain(e.target.value)}
-                placeholder="your-store"
-                className="w-full p-3 bg-[#2c2d32] rounded-lg border border-gray-700 focus:border-purple-400 focus:outline-none"
-                required
-              />
-              <p className="text-sm text-gray-400 text-center">.myshopify.com</p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading || !storeDomain.trim()}
-              className="w-full py-4 bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Connecting...' : 'Connect Store'}
-            </button>
-          </form>
+          <ShopifyConnectButton
+            onClick={startOAuthFlow}
+            isLoading={isLoading}
+          />
 
           <div className="space-y-4 p-4 bg-[#2c2d32] rounded-lg border border-purple-400/10">
             <div className="space-y-2">
@@ -210,5 +200,17 @@ export default function OnboardingConnectStore() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingConnectStore() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-purple-500 rounded-full border-t-transparent"></div>
+      </div>
+    }>
+      <ConnectStoreContent />
+    </Suspense>
   );
 } 
