@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Navigation from '@/components/Navigation';
 import { useRouter } from 'next/navigation';
 import ScheduleModal from './ScheduleModal';
+import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 
 interface ConnectionStatus {
   is_connected: boolean;
@@ -40,6 +41,7 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [schedules, setSchedules] = useState<AnalysisSchedule[]>([]);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
@@ -123,6 +125,52 @@ export default function Dashboard() {
     fetchData();
   }, [router]);
 
+  const startOAuthFlow = async () => {
+    setIsConnecting(true);
+    setError('');
+
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      // Include return_to parameter to specify where to redirect after successful connection
+      const returnTo = `${window.location.origin}/dashboard`;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/?return_to=${encodeURIComponent(returnTo)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Token ${token}`,
+          },
+          credentials: 'include',
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to start OAuth process');
+      }
+
+      // Check for redirect flag and handle accordingly
+      if (data.redirect && data.oauth_url) {
+        // Store the state in localStorage to verify when we return
+        localStorage.setItem('shopify_oauth_state', data.state);
+        // Redirect to Shopify's OAuth URL
+        window.location.href = data.oauth_url;
+      } else {
+        throw new Error('Invalid OAuth response from server');
+      }
+    } catch (error) {
+      console.error('OAuth start error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start OAuth process');
+      setIsConnecting(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
@@ -179,9 +227,9 @@ export default function Dashboard() {
 
           {/* Store Connection Status */}
           <div className="bg-[#25262b] p-6 rounded-xl border border-purple-400/20">
-            <h2 className="text-2xl font-bold mb-4">Store Connection Status</h2>
+            <h2 className="text-2xl font-bold mb-6">Store Connection</h2>
             {connectionStatus ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center gap-2">
                   <span className={`w-3 h-3 rounded-full ${
                     connectionStatus.is_connected ? 'bg-green-500' : 'bg-red-500'
@@ -190,17 +238,47 @@ export default function Dashboard() {
                     {connectionStatus.is_connected ? 'Connected' : 'Not Connected'}
                   </span>
                 </div>
-                {connectionStatus.shop_domain && (
-                  <p className="text-gray-300">Store: {connectionStatus.shop_domain}</p>
+
+                {connectionStatus.is_connected ? (
+                  <>
+                    {connectionStatus.shop_domain && (
+                      <p className="text-gray-300">Store: {connectionStatus.shop_domain}</p>
+                    )}
+                    {connectionStatus.last_sync && (
+                      <p className="text-gray-300">
+                        Last Synced: {new Date(connectionStatus.last_sync).toLocaleString()}
+                      </p>
+                    )}
+                    <p className="text-gray-300">
+                      Subscription: <span className="capitalize">{connectionStatus.subscription_status}</span>
+                    </p>
+                  </>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-[#2c2d32] rounded-lg border border-purple-400/10">
+                      <h3 className="font-medium text-purple-400 mb-2">Before connecting your store:</h3>
+                      <ul className="space-y-2 text-sm text-gray-300">
+                        <li className="flex items-start gap-2">
+                          <span className="text-purple-400">•</span>
+                          Install our Shopify app from the Shopify App Store
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-purple-400">•</span>
+                          Ensure you are the store owner or have admin access
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-purple-400">•</span>
+                          Your email ({user?.email}) should match your Shopify account email
+                        </li>
+                      </ul>
+                    </div>
+
+                    <ShopifyConnectButton
+                      onClick={startOAuthFlow}
+                      isLoading={isConnecting}
+                    />
+                  </div>
                 )}
-                {connectionStatus.last_sync && (
-                  <p className="text-gray-300">
-                    Last Synced: {new Date(connectionStatus.last_sync).toLocaleString()}
-                  </p>
-                )}
-                <p className="text-gray-300">
-                  Subscription: <span className="capitalize">{connectionStatus.subscription_status}</span>
-                </p>
               </div>
             ) : (
               <p className="text-gray-400">Unable to fetch connection status</p>

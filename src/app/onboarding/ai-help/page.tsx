@@ -1,58 +1,59 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const GROWTH_GOALS = [
+const AI_HELP_AREAS = [
   {
-    id: 'increase_revenue',
-    title: 'Increase Revenue',
-    description: 'Grow your business revenue and sales'
+    id: 'marketing_strategy',
+    title: 'Marketing Strategy',
+    description: 'Get AI-powered insights for your marketing campaigns'
   },
   {
-    id: 'reduce_costs',
-    title: 'Reduce Costs',
-    description: 'Optimize operations and cut unnecessary expenses'
+    id: 'inventory_optimization',
+    title: 'Inventory Management',
+    description: 'Optimize stock levels and reduce costs'
   },
   {
-    id: 'expand_market',
-    title: 'Expand Market',
-    description: 'Reach new customers and enter new markets'
+    id: 'customer_service',
+    title: 'Customer Service',
+    description: 'Enhance customer support and engagement'
   },
   {
-    id: 'improve_efficiency',
-    title: 'Improve Efficiency',
-    description: 'Streamline processes and boost productivity'
+    id: 'product_recommendations',
+    title: 'Product Recommendations',
+    description: 'Personalized suggestions for your customers'
   },
   {
-    id: 'enhance_customer_experience',
-    title: 'Enhance Customer Experience',
-    description: 'Improve customer satisfaction and loyalty'
+    id: 'pricing_optimization',
+    title: 'Pricing Strategy',
+    description: 'Optimize pricing for better margins'
   },
   {
-    id: 'innovate_products',
-    title: 'Innovate Products',
-    description: 'Develop new products or improve existing ones'
+    id: 'business_analytics',
+    title: 'Business Analytics',
+    description: 'Data-driven insights for growth'
   }
 ];
 
-export default function OnboardingGoals() {
+export default function OnboardingAIHelp() {
   const router = useRouter();
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const toggleGoal = (goalId: string) => {
-    setSelectedGoals(prev => 
-      prev.includes(goalId)
-        ? prev.filter(id => id !== goalId)
-        : [...prev, goalId]
+  const toggleArea = (areaId: string) => {
+    setSelectedAreas(prev => 
+      prev.includes(areaId)
+        ? prev.filter(id => id !== areaId)
+        : [...prev, areaId]
     );
   };
 
   const handleSubmit = async () => {
-    if (selectedGoals.length === 0) {
-      setError('Please select at least one growth goal');
+    if (selectedAreas.length === 0) {
+      setError('Please select at least one area where AI can help');
       return;
     }
 
@@ -74,20 +75,20 @@ export default function OnboardingGoals() {
         },
         body: JSON.stringify({
           updates: {
-            growth_goals: selectedGoals
+            where_ai_helps: selectedAreas
           }
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save growth goals');
+        throw new Error('Failed to save AI help preferences');
       }
 
-      // Move to the next step
-      router.push('/onboarding/time');
+      // Complete onboarding and move to dashboard
+      router.push('/dashboard');
     } catch (error) {
-      console.error('Goals error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to save growth goals');
+      console.error('AI help preferences error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to save AI help preferences');
     } finally {
       setIsLoading(false);
     }
@@ -96,8 +97,8 @@ export default function OnboardingGoals() {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Select Your Growth Goals</h1>
-        <p className="text-xl text-purple-400">What are you looking to achieve?</p>
+        <h1 className="text-4xl font-bold">Where would you like AI to help?</h1>
+        <p className="text-xl text-purple-400">Select the areas where you need AI assistance</p>
       </div>
 
       {error && (
@@ -107,18 +108,18 @@ export default function OnboardingGoals() {
       )}
 
       <div className="grid grid-cols-2 gap-4">
-        {GROWTH_GOALS.map(goal => (
+        {AI_HELP_AREAS.map(area => (
           <button
-            key={goal.id}
-            onClick={() => toggleGoal(goal.id)}
+            key={area.id}
+            onClick={() => toggleArea(area.id)}
             className={`p-6 rounded-xl border transition-all text-left ${
-              selectedGoals.includes(goal.id)
+              selectedAreas.includes(area.id)
                 ? 'border-purple-400 bg-purple-500/20'
                 : 'border-gray-700 bg-[#2c2d32] hover:border-purple-400/50'
             }`}
           >
-            <h3 className="text-lg font-semibold mb-2">{goal.title}</h3>
-            <p className="text-sm text-gray-400">{goal.description}</p>
+            <h3 className="text-lg font-semibold mb-2">{area.title}</h3>
+            <p className="text-sm text-gray-400">{area.description}</p>
           </button>
         ))}
       </div>
@@ -135,7 +136,7 @@ export default function OnboardingGoals() {
           disabled={isLoading}
           className="px-8 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Saving...' : 'Continue'}
+          {isLoading ? 'Saving...' : 'Complete Setup'}
         </button>
       </div>
     </div>
