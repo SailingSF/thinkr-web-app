@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 
@@ -11,7 +11,7 @@ interface OAuthStartResponse {
   error?: string;
 }
 
-export default function OnboardingConnectStore() {
+function ConnectStoreContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -200,5 +200,17 @@ export default function OnboardingConnectStore() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingConnectStore() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-purple-500 rounded-full border-t-transparent"></div>
+      </div>
+    }>
+      <ConnectStoreContent />
+    </Suspense>
   );
 } 
