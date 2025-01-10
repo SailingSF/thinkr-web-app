@@ -1,58 +1,45 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const GROWTH_GOALS = [
+const TIME_OPTIONS = [
   {
-    id: 'increase_revenue',
-    title: 'Increase Revenue',
-    description: 'Grow your business revenue and sales'
+    id: 'full_time',
+    title: 'Full-time',
+    description: '40+ hours per week',
+    hours: '40+'
   },
   {
-    id: 'reduce_costs',
-    title: 'Reduce Costs',
-    description: 'Optimize operations and cut unnecessary expenses'
+    id: 'part_time',
+    title: 'Part-time',
+    description: '20-40 hours per week',
+    hours: '20-40'
   },
   {
-    id: 'expand_market',
-    title: 'Expand Market',
-    description: 'Reach new customers and enter new markets'
+    id: 'side_hustle',
+    title: 'Side Hustle',
+    description: '10-20 hours per week',
+    hours: '10-20'
   },
   {
-    id: 'improve_efficiency',
-    title: 'Improve Efficiency',
-    description: 'Streamline processes and boost productivity'
-  },
-  {
-    id: 'enhance_customer_experience',
-    title: 'Enhance Customer Experience',
-    description: 'Improve customer satisfaction and loyalty'
-  },
-  {
-    id: 'innovate_products',
-    title: 'Innovate Products',
-    description: 'Develop new products or improve existing ones'
+    id: 'minimal',
+    title: 'Minimal',
+    description: 'Less than 10 hours per week',
+    hours: '<10'
   }
 ];
 
-export default function OnboardingGoals() {
+export default function OnboardingTime() {
   const router = useRouter();
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const toggleGoal = (goalId: string) => {
-    setSelectedGoals(prev => 
-      prev.includes(goalId)
-        ? prev.filter(id => id !== goalId)
-        : [...prev, goalId]
-    );
-  };
-
   const handleSubmit = async () => {
-    if (selectedGoals.length === 0) {
-      setError('Please select at least one growth goal');
+    if (!selectedTime) {
+      setError('Please select how much time you spend on your business');
       return;
     }
 
@@ -74,20 +61,20 @@ export default function OnboardingGoals() {
         },
         body: JSON.stringify({
           updates: {
-            growth_goals: selectedGoals
+            how_much_time_on_business: selectedTime
           }
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save growth goals');
+        throw new Error('Failed to save time investment');
       }
 
       // Move to the next step
-      router.push('/onboarding/time');
+      router.push('/onboarding/ai-help');
     } catch (error) {
-      console.error('Goals error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to save growth goals');
+      console.error('Time investment error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to save time investment');
     } finally {
       setIsLoading(false);
     }
@@ -96,8 +83,8 @@ export default function OnboardingGoals() {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Select Your Growth Goals</h1>
-        <p className="text-xl text-purple-400">What are you looking to achieve?</p>
+        <h1 className="text-4xl font-bold">How much time do you spend on your business?</h1>
+        <p className="text-xl text-purple-400">This helps us understand your commitment level</p>
       </div>
 
       {error && (
@@ -107,18 +94,23 @@ export default function OnboardingGoals() {
       )}
 
       <div className="grid grid-cols-2 gap-4">
-        {GROWTH_GOALS.map(goal => (
+        {TIME_OPTIONS.map(option => (
           <button
-            key={goal.id}
-            onClick={() => toggleGoal(goal.id)}
+            key={option.id}
+            onClick={() => setSelectedTime(option.id)}
             className={`p-6 rounded-xl border transition-all text-left ${
-              selectedGoals.includes(goal.id)
+              selectedTime === option.id
                 ? 'border-purple-400 bg-purple-500/20'
                 : 'border-gray-700 bg-[#2c2d32] hover:border-purple-400/50'
             }`}
           >
-            <h3 className="text-lg font-semibold mb-2">{goal.title}</h3>
-            <p className="text-sm text-gray-400">{goal.description}</p>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-semibold">{option.title}</h3>
+              <span className="text-sm text-purple-400 font-medium">
+                {option.hours} hrs/week
+              </span>
+            </div>
+            <p className="text-sm text-gray-400">{option.description}</p>
           </button>
         ))}
       </div>

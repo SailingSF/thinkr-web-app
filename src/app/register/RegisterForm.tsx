@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface RegisterResponse {
@@ -22,17 +22,57 @@ export function RegisterForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const validatePassword = (value: string) => {
+    const hasMinLength = value.length >= 8;
+    const hasNumber = /\d/.test(value);
+    const hasLetter = /[a-zA-Z]/.test(value);
+    const hasMinDigits = (value.match(/\d/g) || []).length >= 6;
+
+    if (!hasMinLength) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!hasNumber || !hasLetter) {
+      return 'Password must contain both letters and numbers';
+    }
+    if (!hasMinDigits) {
+      return 'Password must contain at least 6 digits';
+    }
+    return '';
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
+    setPasswordError(validatePassword(value));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
+
+    // Validate password
+    const passwordValidationError = validatePassword(password);
+    if (passwordValidationError) {
+      setPasswordError(passwordValidationError);
+      return;
+    }
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setIsLoading(true);
 
     const form = e.currentTarget;
     const formData = new FormData(form);
     
     const email = formData.get('email')?.toString() || '';
-    const password = formData.get('password')?.toString() || '';
     const firstName = formData.get('first_name')?.toString() || '';
     const lastName = formData.get('last_name')?.toString() || '';
     const contactEmail = formData.get('contact_email')?.toString();
@@ -139,15 +179,55 @@ export function RegisterForm() {
             id="password"
             name="password"
             type="password"
+            value={password}
+            onChange={handlePasswordChange}
             required
-            className="mt-1 w-full px-4 py-3 rounded bg-[#25262b] border border-gray-700 focus:border-purple-400 focus:outline-none"
+            className={`mt-1 w-full px-4 py-3 rounded bg-[#25262b] border ${
+              passwordError ? 'border-red-500' : 'border-gray-700'
+            } focus:border-purple-400 focus:outline-none`}
           />
+          <div className="mt-2 space-y-2">
+            <p className="text-xs text-gray-400">Password requirements:</p>
+            <ul className="text-xs space-y-1 text-gray-400">
+              <li className={`flex items-center gap-1 ${password.length >= 8 ? 'text-green-400' : ''}`}>
+                <span>{password.length >= 8 ? '✓' : '•'}</span>
+                At least 8 characters long
+              </li>
+              <li className={`flex items-center gap-1 ${/[a-zA-Z]/.test(password) && /\d/.test(password) ? 'text-green-400' : ''}`}>
+                <span>{/[a-zA-Z]/.test(password) && /\d/.test(password) ? '✓' : '•'}</span>
+                Contains both letters and numbers
+              </li>
+              <li className={`flex items-center gap-1 ${(password.match(/\d/g) || []).length >= 6 ? 'text-green-400' : ''}`}>
+                <span>{(password.match(/\d/g) || []).length >= 6 ? '✓' : '•'}</span>
+                At least 6 digits
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-300">
+            Confirm Password
+          </label>
+          <input
+            id="confirm_password"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className={`mt-1 w-full px-4 py-3 rounded bg-[#25262b] border ${
+              password && confirmPassword && password !== confirmPassword ? 'border-red-500' : 'border-gray-700'
+            } focus:border-purple-400 focus:outline-none`}
+          />
+          {password && confirmPassword && password !== confirmPassword && (
+            <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
+          )}
         </div>
       </div>
 
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isLoading || !!passwordError || password !== confirmPassword}
         className="w-full py-3 bg-purple-500 hover:bg-purple-600 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? 'Creating account...' : 'Create account'}
