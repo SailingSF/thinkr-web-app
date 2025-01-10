@@ -5,6 +5,7 @@ import Navigation from '@/components/Navigation';
 import { useRouter } from 'next/navigation';
 import ScheduleModal from './ScheduleModal';
 import ShopifyConnectButton from '@/components/ShopifyConnectButton';
+import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 
 interface ConnectionStatus {
   is_connected: boolean;
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const [schedules, setSchedules] = useState<AnalysisSchedule[]>([]);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
 
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
@@ -128,16 +130,20 @@ export default function Dashboard() {
   const startOAuthFlow = async () => {
     setIsConnecting(true);
     setError('');
+    setIsErrorModalOpen(false);
+    console.log('Starting OAuth flow...');
 
     try {
       const token = getAuthToken();
       if (!token) {
+        console.log('No auth token found, redirecting to login');
         router.push('/login');
         return;
       }
 
       // Include return_to parameter to specify where to redirect after successful connection
       const returnTo = `${window.location.origin}/dashboard`;
+      console.log('Making OAuth start request...');
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/?return_to=${encodeURIComponent(returnTo)}`,
         {
@@ -150,9 +156,13 @@ export default function Dashboard() {
       );
 
       const data = await response.json();
+      console.log('OAuth response:', data);
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to start OAuth process');
+        console.log('OAuth response not ok:', response.status, data);
+        // Construct error message using both error and details if available
+        const errorMessage = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to start OAuth process');
+        throw new Error(errorMessage);
       }
 
       // Check for redirect flag and handle accordingly
@@ -166,7 +176,11 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('OAuth start error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start OAuth process');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start OAuth process';
+      console.log('Setting error:', errorMessage);
+      console.log('Opening error modal...');
+      setError(errorMessage);
+      setIsErrorModalOpen(true);
       setIsConnecting(false);
     }
   };
@@ -337,6 +351,13 @@ export default function Dashboard() {
         isOpen={isScheduleModalOpen}
         onClose={() => setIsScheduleModalOpen(false)}
         onScheduleAdd={handleScheduleAdd}
+      />
+
+      <ShopifyErrorModal
+        isOpen={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        error={error}
+        userEmail={user?.email}
       />
     </div>
   );
