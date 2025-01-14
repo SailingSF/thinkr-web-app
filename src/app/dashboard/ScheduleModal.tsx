@@ -28,7 +28,7 @@ interface Hour {
 const ANALYSIS_TYPES: AnalysisType[] = [
   { id: 1, analysis_type: 'inventory', name: 'Inventory Analysis', description: 'Track and analyze your inventory levels and movements' },
   { id: 2, analysis_type: 'orders', name: 'Orders Analysis', description: 'Monitor order patterns and performance metrics' },
-  { id: 3, analysis_type: 'financial-metrics', name: 'Basic Analytics', description: 'Analyze key financial indicators and trends from one month of data' },
+  { id: 3, analysis_type: 'financial_metrics', name: 'Financial Analysis', description: 'Analyze key financial indicators and trends' },
 ];
 
 const FREQUENCIES: Frequency[] = [
@@ -83,9 +83,10 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
           'Authorization': `Token ${token}`,
         },
         body: JSON.stringify({
-          analysis_type: selectedType.id,
+          analysis_type: selectedType.analysis_type,
           cron_expression: getCronExpression(),
-          description: description.trim(),
+          description: description.trim() || `${selectedType.name} - ${frequency} at ${HOURS[hour].label}`,
+          is_active: true
         }),
       });
 
