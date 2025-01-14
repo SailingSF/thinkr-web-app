@@ -10,6 +10,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@shopify/app-bridge": "^3.7.10",
+    "@shopify/app-bridge-react": "^4.1.6",
+    "@shopify/app-bridge-utils": "^3.5.1",
+    "@shopify/polaris": "^13.9.2",
     "@vercel/analytics": "^1.4.1",
     "next": "^15.1.4",
     "react": "^19.0.0",
