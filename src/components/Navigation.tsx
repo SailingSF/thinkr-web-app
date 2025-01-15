@@ -3,6 +3,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+
+const NAVIGATION_LINKS = {
+  public: [
+    { href: '/', label: 'Home' },
+    { href: '/app', label: 'App' },
+    { href: '/faq', label: 'FAQ' },
+  ],
+  authenticated: [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/recommendations', label: 'Recommendations' },
+    { href: '/settings', label: 'Settings' },
+  ]
+};
 
 interface NavigationProps {
   onLogout?: () => void;
@@ -10,42 +24,58 @@ interface NavigationProps {
 
 export default function Navigation({ onLogout }: NavigationProps) {
   const pathname = usePathname();
-  const isLoggedIn = pathname.startsWith('/dashboard');
+  const { logout } = useAuth();
+  const isAuthenticated = pathname.startsWith('/dashboard') || 
+                         pathname.startsWith('/recommendations') || 
+                         pathname.startsWith('/settings');
+
+  const handleLogout = () => {
+    logout();
+    onLogout?.();
+  };
+
+  const navigationLinks = isAuthenticated ? NAVIGATION_LINKS.authenticated : NAVIGATION_LINKS.public;
 
   return (
-    <nav className="flex items-center justify-between p-6 border-b border-gray-800">
-      <Link href="/" className="flex items-center gap-2">
+    <nav className="flex items-center justify-between h-24 px-8 border-b border-gray-800">
+      <Link href={isAuthenticated ? '/dashboard' : '/'} className="flex items-center">
         <Image
           src="/2 Thinkr logo white letter.png"
           alt="Thinkr Logo"
           width={120}
           height={40}
+          priority
           className="object-contain"
         />
       </Link>
-      <div className="flex items-center gap-8">
-        {isLoggedIn ? (
-          <>
-            <Link href="/dashboard" className="hover:text-purple-400 transition-colors py-2">Dashboard</Link>
-            <button 
-              onClick={onLogout}
-              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
-            >
-              Logout
-            </button>
-          </>
+
+      <div className="flex items-center h-full">
+        {navigationLinks.map(({ href, label }) => (
+          <Link
+            key={href}
+            href={href}
+            className={`h-full flex items-center px-5 text-base hover:text-purple-400 transition-colors ${
+              pathname === href ? 'text-purple-400' : 'text-gray-400'
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+
+        {isAuthenticated ? (
+          <button 
+            onClick={handleLogout}
+            className="h-10 ml-5 px-8 bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors text-white text-base flex items-center"
+          >
+            Logout
+          </button>
         ) : (
-          <>
-            <Link href="/" className="hover:text-purple-400 transition-colors py-2">Home</Link>
-            <Link href="/app" className="hover:text-purple-400 transition-colors py-2">App</Link>
-            <Link href="/faq" className="hover:text-purple-400 transition-colors py-2">FAQ</Link>
-            <Link 
-              href="/login" 
-              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
-            >
-              Connect Store
-            </Link>
-          </>
+          <Link 
+            href="/login" 
+            className="h-10 ml-5 px-8 bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors text-white text-base flex items-center"
+          >
+            Connect Store
+          </Link>
         )}
       </div>
     </nav>
