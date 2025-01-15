@@ -1,57 +1,55 @@
 import Link from "next/link";
 import Image from "next/image";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import RotatingBackground from "@/components/RotatingBackground";
+import HomeLoginForm from "@/components/HomeLoginForm";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#1a1b1e] text-white flex flex-col">
-      <Navigation />
+    <div className="min-h-screen bg-[#1a1b1e] flex flex-col md:flex-row">
+      {/* Left side - Rotating Image */}
+      <div className="w-1/2 relative hidden md:block">
+        <RotatingBackground />
+        {/* Logo overlay */}
+        <div className="absolute top-8 left-8">
+          <Image
+            src="/2 Thinkr logo white letter.png"
+            alt="Thinkr Logo"
+            width={120}
+            height={40}
+            priority
+            className="object-contain"
+          />
+        </div>
+      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-8 flex-grow">
-        <div className="min-h-[80vh] flex items-center justify-center">
-          <div className="relative">
-            {/* Central circle with pulsing effect */}
-            <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-            
-            <div className="relative bg-[#25262b] p-12 rounded-2xl border border-purple-400/20 max-w-xl text-center">
-              <div className="mb-8">
-                <Image
-                  src="/2 Thinkr logo white letter.png"
-                  alt="Thinkr Logo"
-                  width={200}
-                  height={60}
-                  className="mx-auto object-contain"
-                />
-              </div>
-              <h1 className="text-5xl font-bold mb-6">
-                Your Shopify store,
-                <span className="block text-purple-400 mt-2">but smarter</span>
-              </h1>
-              
-              <div className="flex flex-col items-center gap-8 mt-12">
-                <div className="flex items-center gap-6 text-xl text-gray-400">
-                  Shop analytics
-                  <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                  Business recommendations
-                  <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                  Smart automations
-                </div>
-                
-                <Link 
-                  href="/login"
-                  className="px-8 py-4 bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors text-lg font-medium"
-                >
-                  Connect your Shopify store
-                </Link>
-              </div>
-            </div>
+      {/* Right side */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Navigation */}
+        <div className="flex justify-end items-center h-16 px-8">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+              Home
+            </Link>
+            <Link href="/app" className="text-gray-400 hover:text-white transition-colors">
+              App
+            </Link>
+            <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
+              FAQ
+            </Link>
+            <Link 
+              href="/login"
+              className="px-6 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white transition-colors"
+            >
+              Connect Store
+            </Link>
           </div>
         </div>
-      </main>
 
-      <Footer />
+        {/* Login Form */}
+        <div className="flex-1 flex items-center justify-center px-8">
+          <HomeLoginForm />
+        </div>
+      </div>
     </div>
   );
 }
