@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import RotatingBackground from "@/components/RotatingBackground";
 import HomeLoginForm from "@/components/HomeLoginForm";
+import { Suspense } from "react";
 
 export default function Home() {
   return (
@@ -47,7 +48,9 @@ export default function Home() {
 
         {/* Login Form */}
         <div className="flex-1 flex items-center justify-center px-8">
-          <HomeLoginForm />
+          <Suspense fallback={<div className="text-white">Loading...</div>}>
+            <HomeLoginForm />
+          </Suspense>
         </div>
       </div>
     </div>
