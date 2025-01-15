@@ -1,140 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useHybridNavigation, isShopifyEmbedded } from '@/utils/shopify';
-import HybridLayout from '@/components/HybridLayout';
+import React from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-
-interface LoginResponse {
-  token: string;
-  user: {
-    id: number;
-    email: string;
-    first_name: string;
-    last_name: string;
-    contact_email: string;
-    shopify_user_id: number;
-    store: string | null;
-  };
-  error?: string;
-}
-
-interface OnboardingResponse {
-  data: {
-    name?: string;
-    business_goals?: string[];
-  };
-}
+import HybridLayout from '@/components/HybridLayout';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { navigate } = useHybridNavigation();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect');
   const reason = searchParams.get('reason');
-
-  useEffect(() => {
-    // Show appropriate message based on redirect reason
-    if (reason === 'session_expired') {
-      setError('Your session has expired. Please log in again.');
-    }
-  }, [reason]);
+  const { login, isLoading, error: loginError } = useAuth(redirectPath);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
     const form = e.currentTarget;
     const formData = new FormData(form);
     
     const email = formData.get('email')?.toString() || '';
     const password = formData.get('password')?.toString() || '';
 
-    try {
-      console.log('Attempting login...');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-
-      const loginResult = await response.json() as LoginResponse;
-      console.log('Login result:', loginResult);
-
-      if (!response.ok) {
-        throw new Error(loginResult.error || 'Login failed');
-      }
-
-      // Store the auth token and user data in standalone mode
-      if (!isShopifyEmbedded()) {
-        if (loginResult.token) {
-          console.log('Setting auth token:', loginResult.token.substring(0, 10) + '...');
-          localStorage.setItem('auth_token', loginResult.token);
-          // Set it as a cookie for middleware with explicit attributes
-          document.cookie = `auth_token=${loginResult.token}; path=/; SameSite=Lax`;
-          console.log('Current cookies:', document.cookie);
-        }
-        if (loginResult.user) {
-          localStorage.setItem('user_data', JSON.stringify(loginResult.user));
-        }
-      }
-
-      // If there's a redirect path, use it directly
-      if (redirectPath) {
-        console.log('Redirecting to:', decodeURIComponent(redirectPath));
-        navigate(decodeURIComponent(redirectPath));
-        return;
-      }
-
-      // Otherwise, check onboarding status
-      console.log('Checking onboarding status...');
-      const onboardingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/onboarding-data/`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Token ${loginResult.token}`,
-        },
-      });
-      
-      if (onboardingResponse.ok) {
-        const onboardingData = await onboardingResponse.json() as OnboardingResponse;
-        console.log('Onboarding data:', onboardingData);
-        
-        // Check if essential onboarding fields are filled
-        const hasName = Boolean(onboardingData.data?.name);
-        const hasGoals = Boolean(onboardingData.data?.business_goals?.length);
-        const hasStore = Boolean(loginResult.user?.store);
-
-        // Determine the next page in the onboarding flow
-        let nextPage = '/dashboard';
-        if (!hasName) {
-          nextPage = '/onboarding';
-        } else if (!hasGoals) {
-          nextPage = '/onboarding/goals';
-        } else if (!hasStore) {
-          nextPage = '/onboarding/connect-store';
-        }
-
-        console.log('Navigating to:', nextPage);
-        navigate(nextPage);
-      } else {
-        console.log('Failed to get onboarding data, redirecting to /onboarding');
-        // If we can't check onboarding status, assume it's not complete
-        navigate('/onboarding');
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred during login');
-    } finally {
-      setIsLoading(false);
-    }
+    await login(email, password);
   };
 
   return (
@@ -148,9 +34,12 @@ export default function LoginForm() {
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
+            {(loginError || reason === 'session_expired') && (
               <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
-                {error}
+                {reason === 'session_expired' 
+                  ? 'Your session has expired. Please log in again.'
+                  : loginError
+                }
               </div>
             )}
 
@@ -176,9 +65,9 @@ export default function LoginForm() {
                   Password
                 </label>
                 <div className="text-sm">
-                  <a href="#" className="font-semibold text-purple-400 hover:text-purple-300">
+                  <Link href="/forgot-password" className="font-semibold text-purple-400 hover:text-purple-300">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
               </div>
               <div className="mt-2">
@@ -210,9 +99,9 @@ export default function LoginForm() {
 
           <p className="mt-10 text-center text-sm text-gray-400">
             Not a member?{' '}
-            <a href="/register" className="font-semibold leading-6 text-purple-400 hover:text-purple-300">
+            <Link href="/register" className="font-semibold leading-6 text-purple-400 hover:text-purple-300">
               Register now
-            </a>
+            </Link>
           </p>
         </div>
       </div>
