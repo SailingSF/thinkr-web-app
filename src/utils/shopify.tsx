@@ -7,10 +7,12 @@ const requestCache = new Map<string, { promise: Promise<Response>; controller: A
 export function useAuthFetch() {
   const tokenRef = useRef<string | null>(null);
 
-  // Only read token once on mount
-  if (tokenRef.current === null && !isShopifyEmbedded()) {
-    tokenRef.current = localStorage.getItem('auth_token');
-  }
+  // Only read token once on mount and only on client side
+  useEffect(() => {
+    if (tokenRef.current === null && !isShopifyEmbedded() && typeof window !== 'undefined') {
+      tokenRef.current = localStorage.getItem('auth_token');
+    }
+  }, []);
 
   return useCallback(async (url: string, options: RequestInit = {}) => {
     const token = tokenRef.current;

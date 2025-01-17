@@ -180,7 +180,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    if (!isShopifyEmbedded()) {
+    if (!isShopifyEmbedded() && typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_data');
       // Clear all cookies just in case
