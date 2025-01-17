@@ -10,14 +10,17 @@ const images = [
 ];
 
 export default function RotatingBackground() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const getImageIndex = () => {
+    const now = new Date();
+    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (24 * 60 * 60 * 1000));
+    const threeHourPeriod = Math.floor(now.getHours() / 3);
+    return (dayOfYear + threeHourPeriod) % images.length;
+  };
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(getImageIndex);
 
   useEffect(() => {
-    // Rotate image every 3 hours (10800000 milliseconds)
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 10800000);
-
+    const interval = setInterval(() => setCurrentImageIndex(getImageIndex()), 60000);
     return () => clearInterval(interval);
   }, []);
 
