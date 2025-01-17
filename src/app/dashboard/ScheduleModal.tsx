@@ -1,9 +1,19 @@
 import { useState } from 'react';
 
+interface Schedule {
+  id: number;
+  analysis_type: string;
+  cron_expression: string;
+  is_active: boolean;
+  description: string;
+  last_run: string | null;
+  next_run: string | null;
+}
+
 interface ScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onScheduleAdd: () => void;
+  onScheduleAdd: (schedule: Schedule) => void;
 }
 
 interface AnalysisType {
@@ -95,7 +105,8 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
         throw new Error(errorData.error || 'Failed to create schedule');
       }
 
-      onScheduleAdd();
+      const newSchedule = await response.json();
+      onScheduleAdd(newSchedule);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create schedule');

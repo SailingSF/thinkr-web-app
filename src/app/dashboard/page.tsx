@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 import ScheduleModal from './ScheduleModal';
@@ -38,21 +38,39 @@ interface SchedulesResponse {
   schedules: Schedule[];
 }
 
+interface DashboardState {
+  user: User | null;
+  connectionStatus: ConnectionStatus | null;
+  schedules: Schedule[];
+  loading: boolean;
+  error: string;
+}
+
 export default function Dashboard() {
   const authFetch = useAuthFetch();
   const { navigate } = useHybridNavigation();
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const fetchingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const [state, setState] = useState<DashboardState>({
+    user: null,
+    connectionStatus: null,
+    schedules: [],
+    loading: true,
+    error: ''
+  });
   const [isConnecting, setIsConnecting] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   // Single effect to fetch initial data
   useEffect(() => {
+    mountedRef.current = true;
+
     async function fetchInitialData() {
+      // Prevent concurrent fetches
+      if (fetchingRef.current) return;
+      fetchingRef.current = true;
+
       try {
         // Get user data first
         const userResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`);
@@ -64,74 +82,95 @@ export default function Dashboard() {
           throw new Error('Failed to fetch user data');
         }
         const userData = await userResponse.json();
-        setUser(userData);
 
         // Then get connection status
         const statusResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/connection-status/`);
-        if (statusResponse.ok) {
-          const statusData = await statusResponse.json();
-          setConnectionStatus(statusData);
+        if (!statusResponse.ok) {
+          throw new Error('Failed to fetch connection status');
+        }
+        const statusData = await statusResponse.json();
 
-          // Fetch schedules if connected
-          if (statusData.is_connected) {
-            const schedulesResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`);
-            if (schedulesResponse.ok) {
-              const schedulesData = await schedulesResponse.json() as SchedulesResponse;
-              setSchedules(schedulesData.schedules);
-            }
+        // Fetch schedules if connected
+        let schedules: Schedule[] = [];
+        if (statusData.is_connected) {
+          const schedulesResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`);
+          if (schedulesResponse.ok) {
+            const schedulesData = await schedulesResponse.json() as SchedulesResponse;
+            schedules = schedulesData.schedules;
           }
+        }
+
+        // Update all state at once if component is still mounted
+        if (mountedRef.current) {
+          setState({
+            user: userData,
+            connectionStatus: statusData,
+            schedules,
+            loading: false,
+            error: ''
+          });
         }
       } catch (err) {
         console.error('Dashboard error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+        if (mountedRef.current) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: err instanceof Error ? err.message : 'Failed to load dashboard data'
+          }));
+        }
       } finally {
-        setLoading(false);
+        fetchingRef.current = false;
       }
     }
 
     fetchInitialData();
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      mountedRef.current = false;
+      fetchingRef.current = false;
+    };
   }, [authFetch, navigate]);
 
   const startOAuthFlow = async () => {
-    if (!user?.email) {
-      setError('User email not found');
+    if (!state.user?.email) {
+      setState(prev => ({ ...prev, error: 'User email not found' }));
       setIsErrorModalOpen(true);
       return;
     }
 
     setIsConnecting(true);
-    setError('');
+    setState(prev => ({ ...prev, error: '' }));
     setIsErrorModalOpen(false);
 
     try {
-      // Include return_to parameter to specify where to redirect after successful connection
       const returnTo = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
-      console.log('Starting OAuth flow with return URL:', returnTo);
       
       const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/?` + new URLSearchParams({
-          email: user.email,
+          email: state.user.email,
           return_to: returnTo
         })
       );
 
       const data = await response.json();
-      console.log('OAuth response:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to start OAuth process');
       }
 
       if (data.oauth_url) {
-        // Use the OAuth URL directly without modification
-        console.log('Redirecting to OAuth URL:', data.oauth_url);
         window.location.href = data.oauth_url;
       } else {
         throw new Error('Invalid OAuth response from server');
       }
     } catch (error) {
       console.error('OAuth start error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start OAuth process');
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Failed to start OAuth process'
+      }));
       setIsErrorModalOpen(true);
     } finally {
       setIsConnecting(false);
@@ -142,23 +181,22 @@ export default function Dashboard() {
     if (!isShopifyEmbedded()) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_data');
+      // Clear all cookies just in case
+      document.cookie.split(';').forEach(c => {
+        document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      });
     }
     navigate('/login');
   };
 
-  const handleScheduleAdd = async () => {
-    try {
-      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`);
-      if (response.ok) {
-        const data = await response.json() as SchedulesResponse;
-        setSchedules(data.schedules);
-      }
-    } catch (err) {
-      console.error('Failed to refresh schedules:', err);
-    }
+  const handleScheduleAdd = async (newSchedule: Schedule) => {
+    setState(prev => ({
+      ...prev,
+      schedules: [...prev.schedules, newSchedule]
+    }));
   };
 
-  if (loading) {
+  if (state.loading) {
     return (
       <HybridLayout>
         <div className="flex items-center justify-center">
@@ -167,6 +205,8 @@ export default function Dashboard() {
       </HybridLayout>
     );
   }
+
+  const { user, connectionStatus, schedules, error } = state;
 
   return (
     <HybridLayout onLogout={handleLogout}>

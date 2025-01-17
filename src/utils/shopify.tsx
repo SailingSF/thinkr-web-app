@@ -1,7 +1,59 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 
-// Declare Shopify types for the window object
+// Simple request cache with AbortController to handle race conditions
+const requestCache = new Map<string, { promise: Promise<Response>; controller: AbortController }>();
+
+export function useAuthFetch() {
+  const tokenRef = useRef<string | null>(null);
+
+  // Only read token once on mount
+  if (tokenRef.current === null && !isShopifyEmbedded()) {
+    tokenRef.current = localStorage.getItem('auth_token');
+  }
+
+  return useCallback(async (url: string, options: RequestInit = {}) => {
+    const token = tokenRef.current;
+
+    if (!token && !isShopifyEmbedded()) {
+      window.location.href = '/login?reason=session_expired';
+      throw new Error('No authentication token found');
+    }
+
+    // Create a cache key based on the URL and method
+    const cacheKey = `${options.method || 'GET'}:${url}`;
+    
+    // If there's an existing request in progress, abort it
+    if (requestCache.has(cacheKey)) {
+      requestCache.get(cacheKey)?.controller.abort();
+    }
+
+    // Create a new AbortController for this request
+    const controller = new AbortController();
+    
+    const headers = new Headers(options.headers || {});
+    if (token) {
+      headers.set('Authorization', `Token ${token}`);
+    }
+
+    const fetchPromise = fetch(url, {
+      ...options,
+      signal: controller.signal,
+      credentials: 'include',
+      headers
+    }).finally(() => {
+      // Clean up cache entry after request completes
+      requestCache.delete(cacheKey);
+    });
+
+    // Cache the request
+    requestCache.set(cacheKey, { promise: fetchPromise, controller });
+
+    return fetchPromise;
+  }, []); // No dependencies needed since we use refs
+}
+
+// Shopify embedded app utilities
 declare global {
   interface Window {
     shopify?: {
@@ -26,7 +78,6 @@ interface AppBridgeProviderProps {
 
 export function ShopifyAppBridgeProvider({ children }: AppBridgeProviderProps): ReactNode {
   useEffect(() => {
-    // Only add the script tag if we're in the embedded environment
     if (isShopifyEmbedded() && !document.querySelector('script[data-app-bridge]')) {
       const script = document.createElement('script');
       script.src = 'https://cdn.shopify.com/shopifycloud/app-bridge.js';
@@ -43,49 +94,14 @@ export function ShopifyAppBridgeProvider({ children }: AppBridgeProviderProps): 
   return children;
 }
 
-export function useAuthFetch() {
-  return useCallback(async (url: string, options: RequestInit = {}) => {
-    let token = null;
-    
-    // Try to get token from cookie first
-    const cookies = document.cookie.split(';');
-    const authCookie = cookies.find(c => c.trim().startsWith('auth_token='));
-    if (authCookie) {
-      token = authCookie.split('=')[1];
-      console.log('Using token from cookie');
-    } else if (!isShopifyEmbedded()) {
-      // Fallback to localStorage in standalone mode
-      token = localStorage.getItem('auth_token');
-      console.log('Using token from localStorage');
-    }
-
-    if (!token && !isShopifyEmbedded()) {
-      console.log('No auth token found, redirecting to login');
-      window.location.href = '/login?reason=session_expired';
-      throw new Error('No authentication token found');
-    }
-
-    const headers = new Headers(options.headers || {});
-    if (token) {
-      headers.set('Authorization', `Token ${token}`);
-    }
-
-    return fetch(url, {
-      ...options,
-      credentials: 'include',
-      headers
-    });
-  }, []);
-}
-
 export function useHybridNavigation() {
   return {
-    navigate: (path: string) => {
+    navigate: useCallback((path: string) => {
       if (isShopifyEmbedded() && window.shopify) {
         window.shopify.navigate(path);
       } else {
         window.location.href = path;
       }
-    }
+    }, [])
   };
 } 
