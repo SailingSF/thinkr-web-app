@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 import ScheduleModal from './ScheduleModal';
@@ -38,21 +38,41 @@ interface SchedulesResponse {
   schedules: Schedule[];
 }
 
+interface DashboardState {
+  user: User | null;
+  connectionStatus: ConnectionStatus | null;
+  schedules: Schedule[];
+  loading: boolean;
+  error: string;
+}
+
 export default function Dashboard() {
   const authFetch = useAuthFetch();
   const { navigate } = useHybridNavigation();
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const fetchingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const [state, setState] = useState<DashboardState>({
+    user: null,
+    connectionStatus: null,
+    schedules: [],
+    loading: true,
+    error: ''
+  });
   const [isConnecting, setIsConnecting] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isDeletingSchedule, setIsDeletingSchedule] = useState<number | null>(null);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // Single effect to fetch initial data
   useEffect(() => {
+    mountedRef.current = true;
+
     async function fetchInitialData() {
+      // Prevent concurrent fetches
+      if (fetchingRef.current) return;
+      fetchingRef.current = true;
+
       try {
         // Get user data first
         const userResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`);
@@ -64,74 +84,95 @@ export default function Dashboard() {
           throw new Error('Failed to fetch user data');
         }
         const userData = await userResponse.json();
-        setUser(userData);
 
         // Then get connection status
         const statusResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/connection-status/`);
-        if (statusResponse.ok) {
-          const statusData = await statusResponse.json();
-          setConnectionStatus(statusData);
+        if (!statusResponse.ok) {
+          throw new Error('Failed to fetch connection status');
+        }
+        const statusData = await statusResponse.json();
 
-          // Fetch schedules if connected
-          if (statusData.is_connected) {
-            const schedulesResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`);
-            if (schedulesResponse.ok) {
-              const schedulesData = await schedulesResponse.json() as SchedulesResponse;
-              setSchedules(schedulesData.schedules);
-            }
+        // Fetch schedules if connected
+        let schedules: Schedule[] = [];
+        if (statusData.is_connected) {
+          const schedulesResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`);
+          if (schedulesResponse.ok) {
+            const schedulesData = await schedulesResponse.json() as SchedulesResponse;
+            schedules = schedulesData.schedules;
           }
+        }
+
+        // Update all state at once if component is still mounted
+        if (mountedRef.current) {
+          setState({
+            user: userData,
+            connectionStatus: statusData,
+            schedules,
+            loading: false,
+            error: ''
+          });
         }
       } catch (err) {
         console.error('Dashboard error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+        if (mountedRef.current) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: err instanceof Error ? err.message : 'Failed to load dashboard data'
+          }));
+        }
       } finally {
-        setLoading(false);
+        fetchingRef.current = false;
       }
     }
 
     fetchInitialData();
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      mountedRef.current = false;
+      fetchingRef.current = false;
+    };
   }, [authFetch, navigate]);
 
   const startOAuthFlow = async () => {
-    if (!user?.email) {
-      setError('User email not found');
+    if (!state.user?.email) {
+      setState(prev => ({ ...prev, error: 'User email not found' }));
       setIsErrorModalOpen(true);
       return;
     }
 
     setIsConnecting(true);
-    setError('');
+    setState(prev => ({ ...prev, error: '' }));
     setIsErrorModalOpen(false);
 
     try {
-      // Include return_to parameter to specify where to redirect after successful connection
       const returnTo = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
-      console.log('Starting OAuth flow with return URL:', returnTo);
       
       const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/?` + new URLSearchParams({
-          email: user.email,
+          email: state.user.email,
           return_to: returnTo
         })
       );
 
       const data = await response.json();
-      console.log('OAuth response:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to start OAuth process');
       }
 
       if (data.oauth_url) {
-        // Use the OAuth URL directly without modification
-        console.log('Redirecting to OAuth URL:', data.oauth_url);
         window.location.href = data.oauth_url;
       } else {
         throw new Error('Invalid OAuth response from server');
       }
     } catch (error) {
       console.error('OAuth start error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start OAuth process');
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Failed to start OAuth process'
+      }));
       setIsErrorModalOpen(true);
     } finally {
       setIsConnecting(false);
@@ -139,26 +180,93 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    if (!isShopifyEmbedded()) {
+    if (!isShopifyEmbedded() && typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_data');
+      // Clear all cookies just in case
+      document.cookie.split(';').forEach(c => {
+        document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      });
     }
     navigate('/login');
   };
 
-  const handleScheduleAdd = async () => {
+  const handleScheduleAdd = async (newSchedule: Schedule) => {
+    setState(prev => ({
+      ...prev,
+      schedules: [...prev.schedules, newSchedule]
+    }));
+  };
+
+  const handleDeleteSchedule = async (scheduleId: number) => {
+    setIsDeletingSchedule(scheduleId);
     try {
-      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`);
-      if (response.ok) {
-        const data = await response.json() as SchedulesResponse;
-        setSchedules(data.schedules);
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ schedule_id: scheduleId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete schedule');
       }
-    } catch (err) {
-      console.error('Failed to refresh schedules:', err);
+
+      // Remove the deleted schedule from state
+      setState(prev => ({
+        ...prev,
+        schedules: prev.schedules.filter(s => s.id !== scheduleId)
+      }));
+    } catch (error) {
+      console.error('Delete schedule error:', error);
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Failed to delete schedule'
+      }));
+    } finally {
+      setIsDeletingSchedule(null);
     }
   };
 
-  if (loading) {
+  const handleUnsubscribeAll = async () => {
+    if (!window.confirm('Are you sure you want to delete all analysis schedules? This action cannot be undone.')) {
+      return;
+    }
+
+    setIsDeletingAll(true);
+    try {
+      // Delete all schedules one by one
+      await Promise.all(
+        schedules.map(schedule =>
+          authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ schedule_id: schedule.id }),
+          })
+        )
+      );
+
+      // Clear all schedules from state
+      setState(prev => ({
+        ...prev,
+        schedules: []
+      }));
+    } catch (error) {
+      console.error('Unsubscribe all error:', error);
+      setState(prev => ({
+        ...prev,
+        error: 'Failed to delete all schedules. Please try again.'
+      }));
+    } finally {
+      setIsDeletingAll(false);
+    }
+  };
+
+  if (state.loading) {
     return (
       <HybridLayout>
         <div className="flex items-center justify-center">
@@ -167,6 +275,8 @@ export default function Dashboard() {
       </HybridLayout>
     );
   }
+
+  const { user, connectionStatus, schedules, error } = state;
 
   return (
     <HybridLayout onLogout={handleLogout}>
@@ -261,44 +371,89 @@ export default function Dashboard() {
 
             {schedules.length > 0 ? (
               <div className="space-y-4">
-                {schedules.map((schedule) => (
-                  <div
-                    key={schedule.id}
-                    className="p-4 bg-[#2c2d32] rounded-lg border border-purple-400/10"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-purple-400">
-                            {schedule.analysis_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </h3>
-                          <span className={`px-2 py-0.5 text-xs rounded-full ${
-                            schedule.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
-                          }`}>
-                            {schedule.is_active ? 'Active' : 'Inactive'}
+                {schedules.map((schedule) => {
+                  // Parse cron expression to get day and hour
+                  const [, hour, , , day] = schedule.cron_expression.split(' ');
+                  const dayLabel = {
+                    '0': 'Sunday',
+                    '1': 'Monday',
+                    '2': 'Tuesday',
+                    '3': 'Wednesday',
+                    '4': 'Thursday',
+                    '5': 'Friday',
+                    '6': 'Saturday'
+                  }[day] || 'Unknown';
+                  
+                  const timeLabel = parseInt(hour) === 0 ? '12 AM' : 
+                    parseInt(hour) === 12 ? '12 PM' : 
+                    parseInt(hour) > 12 ? `${parseInt(hour)-12} PM` : 
+                    `${hour} AM`;
+
+                  const analysisLabel = schedule.analysis_type
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+
+                  return (
+                    <div
+                      key={schedule.id}
+                      className="p-4 bg-[#2c2d32] rounded-lg border border-purple-400/10 hover:border-purple-400/30 transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium text-purple-400">
+                              {analysisLabel}
+                            </h3>
+                            <span className={`px-2 py-0.5 text-xs rounded-full ${
+                              schedule.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {schedule.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-400">
+                            {schedule.description || `Weekly analysis on ${dayLabel} at ${timeLabel}`}
+                          </p>
+                          <div className="text-xs text-gray-500 space-y-1">
+                            {schedule.last_run && (
+                              <p>Last run: {new Date(schedule.last_run).toLocaleString()}</p>
+                            )}
+                            {schedule.next_run && (
+                              <p>Next run: {new Date(schedule.next_run).toLocaleString()}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className="text-sm text-gray-400 bg-[#25262b] px-3 py-1 rounded-md">
+                            {dayLabel}, {timeLabel}
                           </span>
+                          <button
+                            onClick={() => handleDeleteSchedule(schedule.id)}
+                            disabled={isDeletingSchedule === schedule.id}
+                            className="text-sm text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {isDeletingSchedule === schedule.id ? 'Deleting...' : 'Delete Schedule'}
+                          </button>
                         </div>
-                        <p className="text-sm text-gray-400 mt-1">
-                          {schedule.description || 'No description'}
-                        </p>
-                        <div className="text-xs text-gray-500 mt-2 space-y-1">
-                          {schedule.last_run && (
-                            <p>Last run: {new Date(schedule.last_run).toLocaleString()}</p>
-                          )}
-                          {schedule.next_run && (
-                            <p>Next run: {new Date(schedule.next_run).toLocaleString()}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        {schedule.cron_expression}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-400">No analysis schedules yet. Add one to get started!</p>
+            )}
+
+            {schedules.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-purple-400/20">
+                <button
+                  onClick={handleUnsubscribeAll}
+                  disabled={isDeletingAll}
+                  className="w-full px-4 py-2 text-red-400 bg-red-400/10 hover:bg-red-400/20 disabled:bg-red-400/5 disabled:text-red-400/50 disabled:cursor-not-allowed rounded-md transition-colors"
+                >
+                  {isDeletingAll ? 'Unsubscribing...' : 'Unsubscribe from All Analyses'}
+                </button>
+              </div>
             )}
           </div>
         )}
