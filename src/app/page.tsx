@@ -41,7 +41,7 @@ export default function Home() {
               href="/login"
               className="px-6 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white transition-colors"
             >
-              Connect Store
+              Connect Shopify
             </Link>
           </div>
         </div>
