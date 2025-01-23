@@ -11,12 +11,12 @@ export default function Home() {
       <div className="w-1/2 relative hidden md:block">
         <RotatingBackground />
         {/* Logo overlay */}
-        <div className="absolute top-8 left-8">
+        <div className="absolute top-7 left-12">
           <Image
-            src="/2 Thinkr logo white letter.png"
+            src="/2 thinkr logo white letter.png"
             alt="Thinkr Logo"
-            width={120}
-            height={40}
+            width={108}
+            height={36}
             priority
             className="object-contain"
           />
@@ -26,28 +26,28 @@ export default function Home() {
       {/* Right side */}
       <div className="flex-1 flex flex-col">
         {/* Top Navigation */}
-        <div className="flex justify-end items-center h-16 px-8">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+        <div className="w-full flex justify-end items-center h-14 px-8 pt-6">
+          <div className="flex items-center gap-7">
+            <Link href="/" className="text-white hover:text-gray-200 transition-colors text-[15px]">
               Home
             </Link>
-            <Link href="/app" className="text-gray-400 hover:text-white transition-colors">
+            <Link href="/app" className="text-white hover:text-gray-200 transition-colors text-[15px]">
               App
             </Link>
-            <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
+            <Link href="/faq" className="text-white hover:text-gray-200 transition-colors text-[15px]">
               FAQ
             </Link>
             <Link 
               href="/login"
-              className="px-6 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white transition-colors"
+              className="px-4 py-3 bg-[#8c74ff] hover:bg-[#7c64ef] rounded-[10px] text-white transition-colors font-bold text-[15px]"
             >
-              Connect to Shopify
+              Connect Store
             </Link>
           </div>
         </div>
 
-        {/* Login Form */}
-        <div className="flex-1 flex items-center justify-center px-8">
+        {/* Login Form Container */}
+        <div className="flex-1 flex justify-center items-center">
           <Suspense fallback={<div className="text-white">Loading...</div>}>
             <HomeLoginForm />
           </Suspense>

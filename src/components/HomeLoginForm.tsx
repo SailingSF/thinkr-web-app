@@ -23,13 +23,17 @@ export default function HomeLoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md">
-      <h1 className="text-3xl font-semibold text-white mb-2">Welcome back</h1>
-      <p className="text-purple-400 mb-8">Sign in to your account.</p>
+    <div className="w-[385px] max-w-full flex flex-col items-start justify-start gap-[45px] leading-[normal] tracking-[normal]">
+      <section className="flex flex-col items-start justify-start py-0 pl-0 pr-5 box-border gap-2 max-w-full text-left">
+        <h1 className="relative text-[47.5px] text-white">Welcome back.</h1>
+        <p className="self-stretch relative text-[21.5px] text-[#8c74ff]">
+          Sign in to your account.
+        </p>
+      </section>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="self-stretch flex flex-col items-start justify-start gap-[6px] max-w-full">
         {(loginError || reason === 'session_expired') && (
-          <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
+          <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md mb-4">
             {reason === 'session_expired' 
               ? 'Your session has expired. Please log in again.'
               : loginError
@@ -37,60 +41,75 @@ export default function HomeLoginForm() {
           </div>
         )}
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
-            Email address
-          </label>
-          <input
+        <label className="self-stretch relative text-[13px] text-white">Email address</label>
+        <div className="self-stretch rounded-[4px] bg-[#282c2d] flex flex-row items-start justify-start pt-[13px] px-[21px] pb-[15px] box-border max-w-full">
+          <input 
             type="email"
             id="email"
             name="email"
             autoComplete="email"
             required
-            className="w-full px-4 py-3 bg-[#25262b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="name@company.com"
+            placeholder="example@thinkr.com"
+            className="bg-transparent w-full outline-none text-white placeholder:text-[#475569] text-[13.5px]"
           />
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-400">
-              Password
-            </label>
-            <Link href="/forgot-password" className="text-sm text-purple-400 hover:text-purple-300">
-              Forgot password?
-            </Link>
-          </div>
-          <input
+        <label className="self-stretch relative text-[13px] text-white">Password</label>
+        <div className="self-stretch rounded-[4px] bg-[#282c2d] flex flex-row items-start justify-start pt-[13px] px-[21px] pb-[15px] box-border max-w-full">
+          <input 
             type="password"
             id="password"
             name="password"
             autoComplete="current-password"
             required
-            className="w-full px-4 py-3 bg-[#25262b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="••••••••"
+            placeholder="Enter your password"
+            className="bg-transparent w-full outline-none text-white placeholder:text-[#475569] text-[13.5px]"
           />
+        </div>
+
+        <div className="self-stretch flex flex-row items-start justify-end text-right">
+          <Link href="/forgot-password" className="w-[125px] relative inline-block text-[#86888a] text-[13px]">
+            Forgot password?
+          </Link>
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-md transition-colors ${
-            isLoading ? 'opacity-70 cursor-not-allowed' : ''
+          className={`cursor-pointer border-none py-[11px] px-[169px] bg-[#8c74ff] rounded-[4px] flex flex-row items-center justify-center gap-2 box-border max-w-full hover:bg-[#7c64ef] w-full ${
+            isLoading ? 'opacity-90 cursor-not-allowed' : ''
           }`}
         >
-          {isLoading ? 'Signing in...' : 'Sign in'}
+          {isLoading ? (
+            <>
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span className="relative text-[13.5px] text-white text-left inline-block whitespace-nowrap">
+                Signing in...
+              </span>
+            </>
+          ) : (
+            <span className="relative text-[13.5px] text-white text-left inline-block">
+              Sign in
+            </span>
+          )}
         </button>
-      </form>
 
-      <div className="mt-6 text-center">
-        <p className="text-gray-400">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-purple-400 hover:text-purple-300">
-            Sign Up
-          </Link>
+        <p className="w-[333px] relative text-[#86888a] text-[13px] inline-block max-w-full">
+          Don't have an account?
         </p>
-      </div>
+
+        <Link
+          href="/register"
+          className="cursor-pointer border-none py-[11px] px-[166px] bg-[#ba90ff] rounded-[4px] flex flex-row items-start justify-center box-border max-w-full hover:bg-[#aa80ef] w-full no-underline"
+        >
+          <span className="relative text-[13.5px] text-white text-left inline-block min-w-[51px] z-[1]">
+            Sign up
+          </span>
+        </Link>
+      </form>
     </div>
   );
 } 
