@@ -19,3 +19,12 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.password-dots {
+  -webkit-text-security: disc;
+  -webkit-text-security-color: #475569;
+}
+
+.password-dots::placeholder {
+  color: #475569;
+}

@@ -94,49 +94,51 @@ export default function OnboardingGoals() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Select Your Growth Goals</h1>
-        <p className="text-xl text-purple-400">What are you looking to achieve?</p>
-      </div>
-
-      {error && (
-        <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
-          {error}
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="space-y-8 w-full max-w-2xl">
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold">Select Your Growth Goals</h1>
+          <p className="text-xl text-purple-400">What are you looking to achieve?</p>
         </div>
-      )}
 
-      <div className="grid grid-cols-2 gap-4">
-        {GROWTH_GOALS.map(goal => (
+        {error && (
+          <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          {GROWTH_GOALS.map(goal => (
+            <button
+              key={goal.id}
+              onClick={() => toggleGoal(goal.id)}
+              className={`p-6 rounded-xl border transition-all text-left ${
+                selectedGoals.includes(goal.id)
+                  ? 'border-purple-400 bg-purple-500/20'
+                  : 'border-gray-700 bg-[#2c2d32] hover:border-purple-400/50'
+              }`}
+            >
+              <h3 className="text-lg font-semibold mb-2">{goal.title}</h3>
+              <p className="text-sm text-gray-400">{goal.description}</p>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex justify-between">
           <button
-            key={goal.id}
-            onClick={() => toggleGoal(goal.id)}
-            className={`p-6 rounded-xl border transition-all text-left ${
-              selectedGoals.includes(goal.id)
-                ? 'border-purple-400 bg-purple-500/20'
-                : 'border-gray-700 bg-[#2c2d32] hover:border-purple-400/50'
-            }`}
+            onClick={() => router.back()}
+            className="px-6 py-3 bg-transparent hover:bg-[#2c2d32] rounded-lg font-medium transition-colors"
           >
-            <h3 className="text-lg font-semibold mb-2">{goal.title}</h3>
-            <p className="text-sm text-gray-400">{goal.description}</p>
+            Back
           </button>
-        ))}
-      </div>
-
-      <div className="flex justify-between">
-        <button
-          onClick={() => router.back()}
-          className="px-6 py-3 bg-transparent hover:bg-[#2c2d32] rounded-lg font-medium transition-colors"
-        >
-          Back
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className="px-8 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'Saving...' : 'Continue'}
-        </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="px-8 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Saving...' : 'Continue'}
+          </button>
+        </div>
       </div>
     </div>
   );
