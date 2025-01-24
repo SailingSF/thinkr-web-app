@@ -73,9 +73,19 @@ export function RegisterForm() {
     const formData = new FormData(form);
     
     const email = formData.get('email')?.toString() || '';
-    const firstName = formData.get('first_name')?.toString() || '';
-    const lastName = formData.get('last_name')?.toString() || '';
-    const contactEmail = formData.get('contact_email')?.toString();
+    const fullName = formData.get('full_name')?.toString() || '';
+    
+    // Split full name into first and last name
+    const nameParts = fullName.trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || ''; // Join remaining parts as last name
+
+    // Validate that we have both first and last name
+    if (!firstName || !lastName) {
+      setError('Please enter both first and last name');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/create-user/`, {
@@ -89,7 +99,7 @@ export function RegisterForm() {
           password,
           first_name: firstName,
           last_name: lastName,
-          contact_email: contactEmail || email,
+          contact_email: email, // Using primary email as contact email
         }),
       });
 
@@ -112,7 +122,7 @@ export function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-3">
       {error && (
         <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
           {error}
@@ -120,118 +130,91 @@ export function RegisterForm() {
       )}
 
       <div className="space-y-4">
-        <div>
-          <label htmlFor="first_name" className="block text-sm font-medium text-gray-300">
-            First Name
-          </label>
-          <input
-            id="first_name"
-            name="first_name"
-            type="text"
-            required
-            className="mt-1 w-full px-4 py-3 rounded bg-[#25262b] border border-gray-700 focus:border-purple-400 focus:outline-none"
-          />
-        </div>
+        <div className="flex gap-5 flex-wrap">
+          <div className="flex-1 min-w-[292px]">
+            <label htmlFor="full_name" className="block text-sm mb-1">
+              What's your full name?
+            </label>
+            <input
+              id="full_name"
+              name="full_name"
+              type="text"
+              placeholder="John Smith"
+              required
+              className="w-full px-6 py-4 h-[53px] rounded-[4px] bg-[#25262b] border-none focus:outline-none focus:ring-1 focus:ring-purple-400"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="last_name" className="block text-sm font-medium text-gray-300">
-            Last Name
-          </label>
-          <input
-            id="last_name"
-            name="last_name"
-            type="text"
-            required
-            className="mt-1 w-full px-4 py-3 rounded bg-[#25262b] border border-gray-700 focus:border-purple-400 focus:outline-none"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-            Email address
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            className="mt-1 w-full px-4 py-3 rounded bg-[#25262b] border border-gray-700 focus:border-purple-400 focus:outline-none"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="contact_email" className="block text-sm font-medium text-gray-300">
-            Contact Email (optional)
-          </label>
-          <input
-            id="contact_email"
-            name="contact_email"
-            type="email"
-            className="mt-1 w-full px-4 py-3 rounded bg-[#25262b] border border-gray-700 focus:border-purple-400 focus:outline-none"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            required
-            className={`mt-1 w-full px-4 py-3 rounded bg-[#25262b] border ${
-              passwordError ? 'border-red-500' : 'border-gray-700'
-            } focus:border-purple-400 focus:outline-none`}
-          />
-          <div className="mt-2 space-y-2">
-            <p className="text-xs text-gray-400">Password requirements:</p>
-            <ul className="text-xs space-y-1 text-gray-400">
-              <li className={`flex items-center gap-1 ${password.length >= 8 ? 'text-green-400' : ''}`}>
-                <span>{password.length >= 8 ? '✓' : '•'}</span>
-                At least 8 characters long
-              </li>
-              <li className={`flex items-center gap-1 ${/[a-zA-Z]/.test(password) && /\d/.test(password) ? 'text-green-400' : ''}`}>
-                <span>{/[a-zA-Z]/.test(password) && /\d/.test(password) ? '✓' : '•'}</span>
-                Contains both letters and numbers
-              </li>
-              <li className={`flex items-center gap-1 ${(password.match(/\d/g) || []).length >= 6 ? 'text-green-400' : ''}`}>
-                <span>{(password.match(/\d/g) || []).length >= 6 ? '✓' : '•'}</span>
-                At least 6 digits
-              </li>
-            </ul>
+          <div className="flex-1 min-w-[292px]">
+            <label htmlFor="email" className="block text-sm mb-1">
+              What's your email address?
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="example@thinkrapp.com"
+              required
+              className="w-full px-6 py-4 h-[53px] rounded-[4px] bg-[#25262b] border-none focus:outline-none focus:ring-1 focus:ring-purple-400"
+            />
           </div>
         </div>
 
-        <div>
-          <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-300">
-            Confirm Password
-          </label>
-          <input
-            id="confirm_password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className={`mt-1 w-full px-4 py-3 rounded bg-[#25262b] border ${
-              password && confirmPassword && password !== confirmPassword ? 'border-red-500' : 'border-gray-700'
-            } focus:border-purple-400 focus:outline-none`}
-          />
-          {password && confirmPassword && password !== confirmPassword && (
-            <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
-          )}
+        <div className="flex gap-5 flex-wrap">
+          <div className="flex-1 min-w-[292px]">
+            <label htmlFor="password" className="block text-sm mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={handlePasswordChange}
+              required
+              className="w-full px-6 py-4 h-[53px] rounded-[4px] bg-[#25262b] border-none focus:outline-none focus:ring-1 focus:ring-purple-400"
+            />
+            <div className="mt-2">
+              <p className="text-sm text-gray-400">Password requirements:</p>
+              <ul className="text-sm space-y-1 text-gray-400 list-disc pl-4">
+                <li className={password.length >= 8 ? 'text-green-400' : ''}>
+                  At least 8 characters long
+                </li>
+                <li className={/[a-zA-Z]/.test(password) && /\d/.test(password) ? 'text-green-400' : ''}>
+                  Contains both letters and numbers
+                </li>
+                <li className={(password.match(/\d/g) || []).length >= 6 ? 'text-green-400' : ''}>
+                  At least 6 digits
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-[292px] space-y-4">
+            <div>
+              <label htmlFor="confirm_password" className="block text-sm mb-1">
+                Confirm Password
+              </label>
+              <input
+                id="confirm_password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full px-6 py-4 h-[53px] rounded-[4px] bg-[#25262b] border-none focus:outline-none focus:ring-1 focus:ring-purple-400"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || !!passwordError || password !== confirmPassword}
+              className="w-full h-12 bg-[#9775fa] hover:bg-[#8465e5] rounded-[4px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Creating account...' : 'Continue'}
+            </button>
+          </div>
         </div>
       </div>
-
-      <button
-        type="submit"
-        disabled={isLoading || !!passwordError || password !== confirmPassword}
-        className="w-full py-3 bg-purple-500 hover:bg-purple-600 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isLoading ? 'Creating account...' : 'Create account'}
-      </button>
     </form>
   );
 } 

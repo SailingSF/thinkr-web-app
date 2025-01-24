@@ -9,10 +9,10 @@ export default function Register() {
 
       {/* Registration Form */}
       <main className="flex flex-col items-center justify-center px-8 pt-20 pb-32">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold">Create your account</h2>
-            <p className="mt-2 text-gray-400">Start analyzing your Shopify store</p>
+        <div className="w-full max-w-[917px] space-y-8">
+          <div>
+            <h2 className="text-[55.2px] font-normal">Create your account.</h2>
+            <p className="text-[25px] text-[#9775fa]">Lets get started.</p>
           </div>
 
           <RegisterForm />
