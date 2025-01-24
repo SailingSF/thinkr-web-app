@@ -13,7 +13,7 @@ export default function Home() {
         {/* Logo overlay */}
         <div className="absolute top-7 left-12">
           <Image
-            src="/2 thinkr logo white letter.png"
+            src="/2 Thinkr logo white letter.png"
             alt="Thinkr Logo"
             width={108}
             height={36}
