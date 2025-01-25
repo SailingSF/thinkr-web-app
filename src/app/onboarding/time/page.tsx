@@ -3,31 +3,28 @@
 import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const TIME_OPTIONS = [
   {
     id: 'full_time',
-    title: 'Full-time',
-    description: '40+ hours per week',
-    hours: '40+'
+    title: 'Full Time',
+    description: '40+ hrs/week',
   },
   {
     id: 'part_time',
-    title: 'Part-time',
-    description: '20-40 hours per week',
-    hours: '20-40'
+    title: 'Part-Time',
+    description: '20-40 hrs/week',
   },
   {
     id: 'side_hustle',
     title: 'Side Hustle',
-    description: '10-20 hours per week',
-    hours: '10-20'
+    description: '10-20 hrs/week',
   },
   {
     id: 'minimal',
     title: 'Minimal',
-    description: 'Less than 10 hours per week',
-    hours: '<10'
+    description: '<10 hrs/week',
   }
 ];
 
@@ -81,55 +78,91 @@ export default function OnboardingTime() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">How much time do you spend on your business?</h1>
-        <p className="text-xl text-purple-400">This helps us understand your commitment level</p>
-      </div>
-
-      {error && (
-        <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
-          {error}
+    <div className="min-h-screen bg-[#1A1B1E] text-white">
+      {/* Header */}
+      <header className="h-[101px] border-b border-[#2C2D32]">
+        <div className="h-full max-w-[1800px] mx-auto px-4 md:px-12 flex justify-between items-center">
+          <div className="text-[22px] font-tofino tracking-[-0.05em]">thinkr</div>
+          <nav className="hidden md:flex gap-14">
+            <Link href="/" className="hover:text-gray-300">Home</Link>
+            <Link href="/app" className="hover:text-gray-300">App</Link>
+            <Link href="/faq" className="hover:text-gray-300">FAQ</Link>
+          </nav>
         </div>
-      )}
+      </header>
 
-      <div className="grid grid-cols-2 gap-4">
-        {TIME_OPTIONS.map(option => (
+      {/* Main Content */}
+      <main className="max-w-[917px] mx-auto mt-[60px] md:mt-[114px] px-4 md:px-5">
+        {/* Progress Dots */}
+        <div className="flex gap-2 mb-6 md:mb-9 justify-center md:justify-start">
+          <div className="w-2 h-2 rounded-full bg-[#2C2D32]" />
+          <div className="w-2 h-2 rounded-full bg-[#7C5CFC]" />
+          <div className="w-2 h-2 rounded-full bg-[#2C2D32]" />
+        </div>
+
+        {/* Title Section */}
+        <div className="mb-8 md:mb-16">
+          <h1 className="text-[32px] md:text-[48px] leading-tight mb-2 text-center md:text-left">
+            How much time do you spend<br className="hidden md:block" /> operating the business?
+          </h1>
+        </div>
+
+        {error && (
+          <div className="p-3 mb-4 text-sm text-red-500 bg-red-500/10 rounded-md">
+            {error}
+          </div>
+        )}
+
+        {/* Time Options Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-x-[19px] md:gap-y-[17px] mb-6 md:mb-9">
+          {TIME_OPTIONS.map(option => (
+            <button
+              key={option.id}
+              onClick={() => setSelectedTime(option.id)}
+              className={`
+                min-h-[53px] px-4 md:px-6 py-3 md:py-0
+                rounded-[4px]
+                flex justify-between items-center
+                text-base
+                transition-colors
+                ${selectedTime === option.id
+                  ? 'bg-[#7C5CFC]/20 border border-[#7C5CFC]'
+                  : 'bg-[#2C2D32] hover:bg-[#2C2D32]/80'
+                }
+              `}
+            >
+              <span>{option.title}</span>
+              <span className="text-[#6b7280] text-sm ml-2">{option.description}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Back and Continue Buttons */}
+        <div className="flex flex-col-reverse md:flex-row justify-between items-center gap-4 md:gap-0">
           <button
-            key={option.id}
-            onClick={() => setSelectedTime(option.id)}
-            className={`p-6 rounded-xl border transition-all text-left ${
-              selectedTime === option.id
-                ? 'border-purple-400 bg-purple-500/20'
-                : 'border-gray-700 bg-[#2c2d32] hover:border-purple-400/50'
-            }`}
+            onClick={() => router.back()}
+            className="text-[#6b7280] hover:text-gray-400 transition-colors w-full md:w-auto text-center md:text-left"
           >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">{option.title}</h3>
-              <span className="text-sm text-purple-400 font-medium">
-                {option.hours} hrs/week
-              </span>
-            </div>
-            <p className="text-sm text-gray-400">{option.description}</p>
+            Back
           </button>
-        ))}
-      </div>
-
-      <div className="flex justify-between">
-        <button
-          onClick={() => router.back()}
-          className="px-6 py-3 bg-transparent hover:bg-[#2c2d32] rounded-lg font-medium transition-colors"
-        >
-          Back
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className="px-8 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'Saving...' : 'Continue'}
-        </button>
-      </div>
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="
+              w-full md:w-[449px] h-12
+              bg-[#7C5CFC]
+              rounded-[4px]
+              font-normal
+              transition-colors
+              hover:bg-[#7C5CFC]/90
+              disabled:opacity-50
+              disabled:cursor-not-allowed
+            "
+          >
+            {isLoading ? 'Saving...' : 'Continue'}
+          </button>
+        </div>
+      </main>
     </div>
   );
 } 
