@@ -147,7 +147,7 @@ export default function Dashboard() {
     setIsErrorModalOpen(false);
 
     try {
-      const returnTo = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
+      const returnTo = `${process.env.NEXT_PUBLIC_APP_URL}/app`;
       
       const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/?` + new URLSearchParams({

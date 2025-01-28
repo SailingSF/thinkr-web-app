@@ -26,7 +26,7 @@ export default function RecommendationContent({ recommendationId, signature }: R
         await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
         setState('success');
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/app');
         }, 3000);
         return;
       }
@@ -73,7 +73,7 @@ export default function RecommendationContent({ recommendationId, signature }: R
 
       setState('success');
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/app');
       }, 3000);
 
     } catch (err) {
@@ -122,7 +122,7 @@ export default function RecommendationContent({ recommendationId, signature }: R
                 >
                   Try Again
                 </button>
-                <Link href="/dashboard" className="text-gray-400 hover:text-gray-300 block">
+                <Link href="/app" className="text-gray-400 hover:text-gray-300 block">
                   Return to Dashboard
                 </Link>
               </div>
