@@ -10,31 +10,21 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#1a1b1e] flex flex-col md:flex-row">
-      {/* Left side - Rotating Image */}
-      <div className="w-full md:w-1/2 h-48 md:h-auto relative md:block">
-        <RotatingBackground />
-        {/* Logo overlay */}
-        <div className="absolute top-4 md:top-7 left-4 md:left-12">
+    <div className="min-h-screen bg-[#1a1b1e] flex flex-col">
+      {/* Top Navigation Bar */}
+      <header className="w-full flex flex-col md:hidden">
+        <div className="flex justify-between items-center px-4 py-4">
           <Image
             src="/2 Thinkr logo white letter.png"
             alt="Thinkr Logo"
             width={108}
             height={36}
             priority
-            className="object-contain w-24 md:w-auto"
+            className="object-contain w-24"
           />
-        </div>
-      </div>
-
-      {/* Right side */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Navigation */}
-        <div className="w-full flex flex-col md:flex-row md:justify-end items-start md:items-center h-auto md:h-14 px-4 md:px-8 pt-4 md:pt-6 relative">
-          {/* Mobile menu button */}
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden absolute top-4 right-4 text-white p-2"
+            className="text-white p-2"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isMenuOpen ? (
@@ -44,32 +34,88 @@ export default function Home() {
               )}
             </svg>
           </button>
+        </div>
+        <nav className={`${isMenuOpen ? 'flex' : 'hidden'} flex-col items-center gap-4 mt-4 pb-4`}>
+          <Link href="/" className="text-white hover:text-gray-200 transition-colors text-[15px] py-2">
+            Home
+          </Link>
+          <Link href="/app" className="text-white hover:text-gray-200 transition-colors text-[15px] py-2">
+            App
+          </Link>
+          <Link href="/faq" className="text-white hover:text-gray-200 transition-colors text-[15px] py-2">
+            FAQ
+          </Link>
+          <Link 
+            href="/login"
+            className="w-full text-center px-4 py-3 bg-[#8c74ff] hover:bg-[#7c64ef] rounded-[10px] text-white transition-colors font-bold text-[15px]"
+          >
+            Connect Store
+          </Link>
+        </nav>
+      </header>
 
-          {/* Navigation links */}
-          <div className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex flex-col md:flex-row w-full md:w-auto items-center gap-4 md:gap-7 mt-12 md:mt-0`}>
-            <Link href="/" className="text-white hover:text-gray-200 transition-colors text-[15px] py-2 md:py-0">
-              Home
-            </Link>
-            <Link href="/app" className="text-white hover:text-gray-200 transition-colors text-[15px] py-2 md:py-0">
-              App
-            </Link>
-            <Link href="/faq" className="text-white hover:text-gray-200 transition-colors text-[15px] py-2 md:py-0">
-              FAQ
-            </Link>
-            <Link 
-              href="/login"
-              className="w-full md:w-auto text-center px-4 py-3 bg-[#8c74ff] hover:bg-[#7c64ef] rounded-[10px] text-white transition-colors font-bold text-[15px]"
-            >
-              Connect Store
-            </Link>
+      {/* Desktop Layout */}
+      <div className="hidden md:flex flex-1 flex-row">
+        {/* Left side - Rotating Image */}
+        <div className="w-1/2 relative">
+          <RotatingBackground />
+          {/* Logo overlay */}
+          <div className="absolute top-7 left-12">
+            <Image
+              src="/2 Thinkr logo white letter.png"
+              alt="Thinkr Logo"
+              width={108}
+              height={36}
+              priority
+              className="object-contain"
+            />
           </div>
         </div>
 
+        {/* Right side */}
+        <div className="flex-1 flex flex-col">
+          {/* Top Navigation */}
+          <div className="w-full flex justify-end items-center h-14 px-8 pt-6">
+            <div className="flex items-center gap-7">
+              <Link href="/" className="text-white hover:text-gray-200 transition-colors text-[15px]">
+                Home
+              </Link>
+              <Link href="/app" className="text-white hover:text-gray-200 transition-colors text-[15px]">
+                App
+              </Link>
+              <Link href="/faq" className="text-white hover:text-gray-200 transition-colors text-[15px]">
+                FAQ
+              </Link>
+              <Link 
+                href="/login"
+                className="px-4 py-3 bg-[#8c74ff] hover:bg-[#7c64ef] rounded-[10px] text-white transition-colors font-bold text-[15px]"
+              >
+                Connect Store
+              </Link>
+            </div>
+          </div>
+
+          {/* Login Form Container */}
+          <div className="flex-1 flex justify-center items-center">
+            <Suspense fallback={<div className="text-white">Loading...</div>}>
+              <HomeLoginForm />
+            </Suspense>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Layout Content */}
+      <div className="flex flex-col md:hidden flex-1">
         {/* Login Form Container */}
-        <div className="flex-1 flex justify-center items-center px-4 md:px-0 py-8 md:py-0">
+        <div className="flex-1 flex justify-center items-center px-4 py-8">
           <Suspense fallback={<div className="text-white">Loading...</div>}>
             <HomeLoginForm />
           </Suspense>
+        </div>
+
+        {/* Bottom Image */}
+        <div className="relative h-[calc(100vh-80vh)]">
+          <RotatingBackground />
         </div>
       </div>
     </div>
