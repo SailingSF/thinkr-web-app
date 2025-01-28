@@ -78,7 +78,7 @@ export default function OnboardingAIHelp() {
       }
 
       // Complete onboarding and move to dashboard
-      router.push('/dashboard');
+      router.push('/app');
     } catch (error) {
       console.error('AI help preferences error:', error);
       setError(error instanceof Error ? error.message : 'Failed to save AI help preferences');

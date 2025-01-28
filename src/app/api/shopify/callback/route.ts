@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
     // Redirect back to the app with the host parameter
     const redirectUrl = host
       ? `https://${host}/apps/${process.env.NEXT_PUBLIC_SHOPIFY_CLIENT_ID}`
-      : '/dashboard';
+      : '/app';
 
     return NextResponse.redirect(redirectUrl);
   } catch (error) {

@@ -70,7 +70,7 @@ export default function ConnectStore() {
       });
 
       if (data.is_connected) {
-        router.push('/dashboard');
+        router.push('/app');
       }
     } catch (error) {
       console.error('Connection status error:', error);
@@ -152,7 +152,7 @@ export default function ConnectStore() {
       }
 
       if (data.success) {
-        router.push('/dashboard');
+        router.push('/app');
       }
     } catch (error) {
       console.error('Add store error:', error);

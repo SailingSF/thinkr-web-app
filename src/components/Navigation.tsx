@@ -25,7 +25,7 @@ interface NavigationProps {
 export default function Navigation({ onLogout }: NavigationProps) {
   const pathname = usePathname();
   const { logout } = useAuth();
-  const isAuthenticated = pathname.startsWith('/dashboard') || 
+  const isAuthenticated = pathname.startsWith('/app') || 
                          pathname.startsWith('/recommendations') || 
                          pathname.startsWith('/settings');
 
@@ -38,7 +38,7 @@ export default function Navigation({ onLogout }: NavigationProps) {
 
   return (
     <nav className="flex items-center justify-between h-24 px-8 border-b border-gray-800">
-      <Link href={isAuthenticated ? '/dashboard' : '/'} className="flex items-center">
+      <Link href={isAuthenticated ? '/app' : '/'} className="flex items-center">
         <Image
           src="/2 Thinkr logo white letter.png"
           alt="Thinkr Logo"
