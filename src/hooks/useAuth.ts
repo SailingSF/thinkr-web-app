@@ -67,16 +67,13 @@ export function useAuth(redirectPath?: string | null): UseAuthReturn {
         // Check if essential onboarding fields are filled
         const hasName = Boolean(onboardingData.data?.name);
         const hasGoals = Boolean(onboardingData.data?.business_goals?.length);
-        const hasStore = Boolean(loginResult.user?.store);
 
         // Determine the next page in the onboarding flow
-        let nextPage = '/dashboard';
+        let nextPage = '/app';
         if (!hasName) {
           nextPage = '/onboarding';
         } else if (!hasGoals) {
           nextPage = '/onboarding/goals';
-        } else if (!hasStore) {
-          nextPage = '/onboarding/connect-store';
         }
 
         navigate(nextPage);
