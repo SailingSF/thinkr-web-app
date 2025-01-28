@@ -117,26 +117,26 @@ export default function App() {
   }
 
   return (
-    <div className="p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome, {user?.first_name || 'User'}!</h1>
-          <p className="text-gray-400">Get started at growing your store:</p>
+    <div className="min-h-screen bg-[#1C1C1E] p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold mb-2 text-white">Welcome, {user?.first_name || 'User'}!</h1>
+          <p className="text-[#8B5CF6]">Get started at growing your store:</p>
         </div>
 
         <div className="grid grid-cols-2 gap-8">
           {/* Connect Store Card */}
-          <div className="bg-[#25262b] p-6 rounded-xl border border-purple-400/20">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Step 1:</h2>
-              <h3 className="text-xl font-semibold">Connect your Store</h3>
+          <div className="bg-[#2C2C2E] p-8 rounded-2xl">
+            <div className="mb-8">
+              <p className="text-[#8B5CF6] text-lg mb-2">Step 1:</p>
+              <h3 className="text-3xl font-semibold text-white">Connect your Store</h3>
             </div>
 
             {connectionStatus?.is_connected ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                  <span>Connected to {connectionStatus.shop_domain}</span>
+                  <span className="text-white">Connected to {connectionStatus.shop_domain}</span>
                 </div>
                 {connectionStatus.last_sync && (
                   <p className="text-sm text-gray-400">
@@ -145,20 +145,20 @@ export default function App() {
                 )}
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="p-4 bg-[#2c2d32] rounded-lg border border-purple-400/10">
-                  <h4 className="font-medium text-purple-400 mb-2">Before connecting:</h4>
-                  <ul className="space-y-2 text-sm text-gray-300">
-                    <li className="flex items-start gap-2">
-                      <span className="text-purple-400">•</span>
+              <div className="space-y-6">
+                <div className="p-6 bg-[#1C1C1E] rounded-xl">
+                  <h4 className="font-medium text-[#8B5CF6] mb-4">Before connecting:</h4>
+                  <ul className="space-y-3 text-gray-300">
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#8B5CF6]">•</span>
                       Install our Shopify app
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-purple-400">•</span>
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#8B5CF6]">•</span>
                       Ensure you have admin access
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-purple-400">•</span>
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#8B5CF6]">•</span>
                       Use email: {user?.email}
                     </li>
                   </ul>
@@ -173,24 +173,24 @@ export default function App() {
           </div>
 
           {/* Set up Emails Card */}
-          <div className="bg-[#25262b] p-6 rounded-xl border border-purple-400/20">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Step 2:</h2>
-              <h3 className="text-xl font-semibold">Set up Emails</h3>
+          <div className="bg-[#2C2C2E] p-8 rounded-2xl">
+            <div className="mb-8">
+              <p className="text-[#8B5CF6] text-lg mb-2">Step 2:</p>
+              <h3 className="text-3xl font-semibold text-white">Set up Emails</h3>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-gray-400">
+            <div className="space-y-6">
+              <p className="text-gray-300">
                 Configure automated email reports and notifications for your store analytics.
               </p>
 
               <Link
                 href="/app/scheduler"
-                className={`inline-block w-full px-6 py-3 text-center ${
+                className={`inline-block w-full px-6 py-4 text-center text-white font-medium rounded-xl transition-colors ${
                   connectionStatus?.is_connected
-                    ? 'bg-purple-500 hover:bg-purple-600'
+                    ? 'bg-[#8B5CF6] hover:bg-[#7C3AED]'
                     : 'bg-gray-600 cursor-not-allowed'
-                } rounded-md transition-colors`}
+                }`}
               >
                 Configure Emails
               </Link>
