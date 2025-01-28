@@ -123,19 +123,19 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-[#25262b] p-8 rounded-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6">Schedule Weekly Analysis</h2>
+        <h2 className="text-2xl font-bold mb-6 text-white">Schedule Weekly Suggestion</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium mb-2">What would you like to analyze?</label>
+            <label className="block text-sm text-gray-400 mb-2">Select Suggestion Improvements:</label>
             <div className="space-y-2">
               {ANALYSIS_TYPES.map((type) => (
                 <div
                   key={type.name}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`p-4 rounded-lg cursor-pointer transition-all ${
                     analysisType === type.name
-                      ? 'border-purple-500 bg-purple-500/10'
-                      : 'border-gray-700 hover:border-purple-400'
+                      ? 'bg-[#2c2d32]'
+                      : 'bg-[#2c2d32] hover:bg-[#32333a]'
                   }`}
                   onClick={() => setAnalysisType(type.name)}
                   role="button"
@@ -147,8 +147,7 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
                     }
                   }}
                 >
-                  <div className="font-medium">{type.displayName}</div>
-                  <div className="text-sm text-gray-400 mt-1">{type.description}</div>
+                  <div className="font-medium text-white">{type.displayName}</div>
                 </div>
               ))}
             </div>
@@ -156,12 +155,12 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Day of the week</label>
+              <label className="block text-sm text-gray-400 mb-2">Day of the Week</label>
               <div className="relative">
                 <select
                   value={day}
                   onChange={(e) => setDay(e.target.value)}
-                  className="w-full p-2 bg-[#2c2d32] rounded-md border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 appearance-none cursor-pointer pr-8"
+                  className="w-full p-3 bg-[#2c2d32] rounded-lg text-white border-none focus:ring-1 focus:ring-[#8C74FF] appearance-none cursor-pointer pr-8"
                 >
                   {DAYS.map((d) => (
                     <option key={d.value} value={d.value} className="bg-[#2c2d32]">
@@ -178,12 +177,12 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Time</label>
+              <label className="block text-sm text-gray-400 mb-2">Time</label>
               <div className="relative">
                 <select
                   value={hour}
                   onChange={(e) => setHour(Number(e.target.value))}
-                  className="w-full p-2 bg-[#2c2d32] rounded-md border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 appearance-none cursor-pointer pr-8"
+                  className="w-full p-3 bg-[#2c2d32] rounded-lg text-white border-none focus:ring-1 focus:ring-[#8C74FF] appearance-none cursor-pointer pr-8"
                 >
                   {HOURS.map((h) => (
                     <option key={h.value} value={h.value} className="bg-[#2c2d32]">
@@ -201,18 +200,18 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Description (optional)</label>
+            <label className="block text-sm text-gray-400 mb-2">Description (Optional)</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 bg-[#2c2d32] rounded-md border border-gray-700 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+              className="w-full p-3 bg-[#2c2d32] rounded-lg text-white border-none focus:ring-1 focus:ring-[#8C74FF] resize-none"
               rows={2}
               placeholder="Add a note about this schedule..."
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-md text-red-400 text-sm">
+            <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
               {error}
             </div>
           )}
@@ -221,16 +220,16 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-300 hover:bg-[#2c2d32] rounded-md transition-colors"
+              className="px-6 py-2 text-white hover:bg-[#2c2d32] rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !analysisType}
-              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-[#8C74FF] hover:bg-[#7B63EE] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Scheduling...' : 'Schedule Analysis'}
+              {loading ? 'Scheduling...' : 'Schedule Suggestion'}
             </button>
           </div>
         </form>

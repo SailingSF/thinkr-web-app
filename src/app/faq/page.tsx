@@ -29,23 +29,23 @@ export default function FAQ() {
       <Navigation />
 
       {/* FAQ Content */}
-      <main className="max-w-3xl mx-auto px-8 py-16">
-        <h1 className="text-4xl font-bold mb-8 text-center">Frequently Asked Questions</h1>
+      <main className="max-w-3xl mx-auto px-xl py-3xl">
+        <h1 className="text-4xl font-bold mb-xl text-center">Frequently Asked Questions</h1>
         
-        <div className="space-y-8">
+        <div className="space-y-xl">
           {faqs.map((faq, index) => (
             <div key={index} className="bg-[#25262b] p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-3 text-purple-400">{faq.question}</h3>
+              <h3 className="text-xl font-semibold mb-md text-purple-400">{faq.question}</h3>
               <p className="text-gray-300">{faq.answer}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-gray-400 mb-4">Still have questions?</p>
+        <div className="mt-2xl text-center">
+          <p className="text-gray-400 mb-md">Still have questions?</p>
           <a 
             href="mailto:support@thinkr.com" 
-            className="inline-block px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
+            className="inline-block px-lg py-md bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
           >
             Contact Support
           </a>

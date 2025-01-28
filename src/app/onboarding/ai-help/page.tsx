@@ -9,23 +9,19 @@ import Image from 'next/image';
 const AI_HELP_AREAS = [
   {
     id: 'automation',
-    title: 'Automation',
-    description: 'Streamline your business processes'
+    title: 'Automation'
   },
   {
     id: 'analytics_forecasting',
-    title: 'Analytics & Forecasting',
-    description: 'Data-driven insights and predictions'
+    title: 'Analytics & Forecasting'
   },
   {
     id: 'knowledge_information',
-    title: 'Knowledge & Information',
-    description: 'Access and organize business knowledge'
+    title: 'Knowledge & Information'
   },
   {
     id: 'not_sure',
-    title: 'Not Sure',
-    description: 'Explore AI possibilities'
+    title: 'Not Sure'
   }
 ];
 
@@ -134,9 +130,9 @@ export default function OnboardingAIHelp() {
         </div>
 
         {/* Title Section */}
-        <div className="mb-8 md:mb-16 text-center md:text-left">
-          <h1 className="text-3xl md:text-[48px] leading-tight mb-2">
-            How would you think AI would<br className="hidden md:block" /> best help your business?
+        <div className="mb-8">
+          <h1 className="text-[48px] leading-tight">
+            How would you think AI would best help your business?
           </h1>
         </div>
 
@@ -147,16 +143,16 @@ export default function OnboardingAIHelp() {
         )}
 
         {/* AI Help Options Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-x-[19px] md:gap-y-[17px] mb-6 md:mb-9">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           {AI_HELP_AREAS.map(area => (
             <button
               key={area.id}
               onClick={() => toggleArea(area.id)}
               className={`
-                min-h-[53px] px-4 md:px-6 py-3
-                rounded-[4px]
-                flex flex-col md:flex-row justify-start md:justify-between items-start md:items-center
-                text-base
+                p-4
+                rounded-md
+                text-left
+                text-lg
                 transition-colors
                 ${selectedAreas.includes(area.id)
                   ? 'bg-[#7C5CFC]/20 border border-[#7C5CFC]'
@@ -164,8 +160,7 @@ export default function OnboardingAIHelp() {
                 }
               `}
             >
-              <span className="font-medium mb-1 md:mb-0">{area.title}</span>
-              <span className="text-[#6b7280] text-sm">{area.description}</span>
+              {area.title}
             </button>
           ))}
         </div>
@@ -184,7 +179,7 @@ export default function OnboardingAIHelp() {
             className="
               w-full md:w-[449px] h-12
               bg-[#7C5CFC]
-              rounded-[4px]
+              rounded-md
               font-normal
               transition-colors
               hover:bg-[#7C5CFC]/90

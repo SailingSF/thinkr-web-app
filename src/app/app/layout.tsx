@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navigation from "@/components/Navigation";
 import AppSidebar from "@/components/AppSidebar";
+import Navigation from "@/components/Navigation";
 import { useAuthFetch } from '@/utils/shopify';
 
 export default function AppLayout({
@@ -25,17 +25,14 @@ export default function AppLayout({
         
         if (!response.ok) {
           if (response.status === 401) {
-            // Redirect to home instead of login page
             router.replace('/');
             return;
           }
-          // For other errors, we'll show the content but log the error
           console.error('Auth check error:', response.status);
         }
       } catch (error: any) {
         if (!mounted) return;
         console.error('Auth check error:', error);
-        // Only redirect on auth errors, not on network errors
         if (error.message?.includes('401')) {
           router.replace('/');
         }
@@ -55,9 +52,8 @@ export default function AppLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1b1e] text-white">
-        <Navigation />
-        <div className="flex items-center justify-center h-[calc(100vh-64px)]">
+      <div className="min-h-screen bg-[#141718]">
+        <div className="flex items-center justify-center h-screen">
           <div className="text-xl text-purple-400">Loading...</div>
         </div>
       </div>
@@ -65,11 +61,11 @@ export default function AppLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1b1e] text-white">
+    <div className="min-h-screen bg-[#141718]">
       <Navigation />
-      <div className="flex">
+      <div className="flex min-h-[calc(100vh-96px)]">
         <AppSidebar />
-        <main className="flex-1">
+        <main className="flex-1 overflow-y-auto bg-[#141718]">
           {children}
         </main>
       </div>

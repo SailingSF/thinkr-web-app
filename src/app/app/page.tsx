@@ -1,41 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 import { useAuthFetch } from '@/utils/shopify';
-
-interface ConnectionStatus {
-  is_connected: boolean;
-  shop_domain: string | null;
-  last_sync: string | null;
-  subscription_status: string;
-}
-
-interface User {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  contact_email: string;
-  shopify_user_id: number;
-  store: string | null;
-}
+import { useLocalStorage, User, ConnectionStatus } from '@/hooks/useLocalStorage';
 
 export default function App() {
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const { storedData, updateStoredData, isExpired } = useLocalStorage();
+  const mountedRef = useRef(true);
+  const fetchingRef = useRef(false);
+  const initialLoadDoneRef = useRef(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [error, setError] = useState('');
-  const [user, setUser] = useState<User | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(storedData?.user || null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(storedData?.connectionStatus || null);
+  const [loading, setLoading] = useState(!storedData?.user || !storedData?.connectionStatus);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     async function fetchInitialData() {
+      // If we're already fetching or have completed initial load, don't fetch again
+      if (fetchingRef.current || initialLoadDoneRef.current) return;
+      
+      // If we have valid cached data, use it and mark initial load as done
+      if (!isExpired && storedData?.user && storedData?.connectionStatus) {
+        setUser(storedData.user);
+        setConnectionStatus(storedData.connectionStatus);
+        setLoading(false);
+        initialLoadDoneRef.current = true;
+        return;
+      }
+
+      fetchingRef.current = true;
+
       try {
         // Get user data first
         const userResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`);
@@ -47,25 +51,44 @@ export default function App() {
           throw new Error('Failed to fetch user data');
         }
         const userData = await userResponse.json();
-        setUser(userData);
-
+        
         // Then get connection status
         const statusResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/connection-status/`);
         if (!statusResponse.ok) {
           throw new Error('Failed to fetch connection status');
         }
         const statusData = await statusResponse.json();
-        setConnectionStatus(statusData);
+
+        if (mountedRef.current) {
+          setUser(userData);
+          setConnectionStatus(statusData);
+          // Update local storage
+          updateStoredData({
+            user: userData,
+            connectionStatus: statusData
+          });
+          setError('');
+        }
       } catch (err) {
         console.error('App error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load app data');
+        if (mountedRef.current) {
+          setError(err instanceof Error ? err.message : 'Failed to load app data');
+        }
       } finally {
-        setLoading(false);
+        if (mountedRef.current) {
+          setLoading(false);
+          initialLoadDoneRef.current = true;
+        }
+        fetchingRef.current = false;
       }
     }
 
     fetchInitialData();
-  }, [authFetch, router]);
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [authFetch, router, isExpired]); // Removed storedData and updateStoredData from dependencies
 
   const startOAuthFlow = async () => {
     if (!user?.email) {
@@ -117,48 +140,53 @@ export default function App() {
   }
 
   return (
-    <div className="p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome, {user?.first_name || 'User'}!</h1>
-          <p className="text-gray-400">Get started at growing your store:</p>
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
+      <div className="container mx-auto px-4 lg:px-8">
+        {/* Title Section */}
+        <div className="flex flex-col gap-1 mb-8">
+          <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
+            Dashboard
+          </h1>
+          <p className="text-[#8C74FF] text-[25px] font-normal m-0">
+            Overview of your store's performance.
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           {/* Connect Store Card */}
-          <div className="bg-[#25262b] p-6 rounded-xl border border-purple-400/20">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Step 1:</h2>
-              <h3 className="text-xl font-semibold">Connect your Store</h3>
+          <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-2xl">
+            <div className="mb-6 lg:mb-8">
+              <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
+              <h3 className="text-[32px] font-inter font-normal text-white">Connect your Store</h3>
             </div>
 
             {connectionStatus?.is_connected ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                  <span>Connected to {connectionStatus.shop_domain}</span>
+                  <span className="text-white text-sm lg:text-base">Connected to {connectionStatus.shop_domain}</span>
                 </div>
                 {connectionStatus.last_sync && (
-                  <p className="text-sm text-gray-400">
+                  <p className="text-xs lg:text-sm text-gray-400">
                     Last synced: {new Date(connectionStatus.last_sync).toLocaleString()}
                   </p>
                 )}
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="p-4 bg-[#2c2d32] rounded-lg border border-purple-400/10">
-                  <h4 className="font-medium text-purple-400 mb-2">Before connecting:</h4>
-                  <ul className="space-y-2 text-sm text-gray-300">
-                    <li className="flex items-start gap-2">
-                      <span className="text-purple-400">•</span>
+              <div className="space-y-4 lg:space-y-6">
+                <div className="p-4 lg:p-6 bg-[#1C1C1E] rounded-xl">
+                  <h4 className="font-medium text-[#8B5CF6] mb-3 lg:mb-4">Before connecting:</h4>
+                  <ul className="space-y-2 lg:space-y-3 text-sm lg:text-base text-gray-300">
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#8B5CF6]">•</span>
                       Install our Shopify app
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-purple-400">•</span>
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#8B5CF6]">•</span>
                       Ensure you have admin access
                     </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-purple-400">•</span>
+                    <li className="flex items-start gap-3">
+                      <span className="text-[#8B5CF6]">•</span>
                       Use email: {user?.email}
                     </li>
                   </ul>
@@ -173,30 +201,30 @@ export default function App() {
           </div>
 
           {/* Set up Emails Card */}
-          <div className="bg-[#25262b] p-6 rounded-xl border border-purple-400/20">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Step 2:</h2>
-              <h3 className="text-xl font-semibold">Set up Emails</h3>
+          <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-2xl">
+            <div className="mb-6 lg:mb-8">
+              <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 2:</p>
+              <h3 className="text-[32px] font-inter font-normal text-white">Set up Emails</h3>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-gray-400">
+            <div className="space-y-4 lg:space-y-6">
+              <p className="text-sm lg:text-base text-gray-300">
                 Configure automated email reports and notifications for your store analytics.
               </p>
 
               <Link
                 href="/app/scheduler"
-                className={`inline-block w-full px-6 py-3 text-center ${
+                className={`inline-block w-full px-4 lg:px-6 py-3 lg:py-4 text-center text-white font-medium rounded-xl transition-colors ${
                   connectionStatus?.is_connected
-                    ? 'bg-purple-500 hover:bg-purple-600'
+                    ? 'bg-[#8B5CF6] hover:bg-[#7C3AED]'
                     : 'bg-gray-600 cursor-not-allowed'
-                } rounded-md transition-colors`}
+                }`}
               >
                 Configure Emails
               </Link>
 
               {!connectionStatus?.is_connected && (
-                <p className="text-sm text-gray-500">
+                <p className="text-xs lg:text-sm text-gray-500">
                   Connect your store first to configure email settings
                 </p>
               )}

@@ -122,17 +122,17 @@ export function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-lg max-w-3xl mx-auto">
       {error && (
-        <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
+        <div className="p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
           {error}
         </div>
       )}
 
-      <div className="space-y-4 md:space-y-6">
-        <div className="flex flex-col md:flex-row gap-4 md:gap-5">
+      <div className="space-y-lg">
+        <div className="flex flex-col lg:flex-row gap-lg">
           <div className="flex-1">
-            <label htmlFor="full_name" className="block text-sm mb-1">
+            <label htmlFor="full_name" className="block text-sm font-medium text-[#7B7B7B] mb-sm">
               What's your full name?
             </label>
             <input
@@ -141,12 +141,12 @@ export function RegisterForm() {
               type="text"
               placeholder="John Smith"
               required
-              className="w-full px-4 md:px-6 py-3 md:py-4 h-[53px] rounded-[4px] bg-[#25262b] border-none focus:outline-none focus:ring-1 focus:ring-[#7C5CFC] text-sm md:text-base"
+              className="block w-full rounded-lg border-0 py-md px-md shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] sm:text-sm bg-[#242424] text-white transition-all duration-200"
             />
           </div>
 
           <div className="flex-1">
-            <label htmlFor="email" className="block text-sm mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-[#7B7B7B] mb-sm">
               What's your email address?
             </label>
             <input
@@ -155,14 +155,14 @@ export function RegisterForm() {
               type="email"
               placeholder="example@thinkrapp.com"
               required
-              className="w-full px-4 md:px-6 py-3 md:py-4 h-[53px] rounded-[4px] bg-[#25262b] border-none focus:outline-none focus:ring-1 focus:ring-[#7C5CFC] text-sm md:text-base"
+              className="block w-full rounded-lg border-0 py-md px-md shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] sm:text-sm bg-[#242424] text-white transition-all duration-200"
             />
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 md:gap-5">
+        <div className="flex flex-col lg:flex-row gap-lg">
           <div className="flex-1">
-            <label htmlFor="password" className="block text-sm mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-[#7B7B7B] mb-sm">
               Password
             </label>
             <input
@@ -172,27 +172,27 @@ export function RegisterForm() {
               value={password}
               onChange={handlePasswordChange}
               required
-              className="w-full px-4 md:px-6 py-3 md:py-4 h-[53px] rounded-[4px] bg-[#25262b] border-none focus:outline-none focus:ring-1 focus:ring-[#7C5CFC] text-sm md:text-base"
+              className="block w-full rounded-lg border-0 py-md px-md shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] sm:text-sm bg-[#242424] text-white transition-all duration-200"
             />
-            <div className="mt-2 md:mt-3">
-              <p className="text-xs md:text-sm text-gray-400">Password requirements:</p>
-              <ul className="text-xs md:text-sm space-y-1 text-gray-400 list-disc pl-4">
-                <li className={password.length >= 8 ? 'text-green-400' : ''}>
+            <div className="mt-md">
+              <p className="text-sm text-[#7B7B7B]">Password requirements:</p>
+              <ul className="mt-2 text-sm space-y-sm text-[#7B7B7B] list-disc pl-4">
+                <li className={password.length >= 8 ? 'text-[#22C55E]' : ''}>
                   At least 8 characters long
                 </li>
-                <li className={/[a-zA-Z]/.test(password) && /\d/.test(password) ? 'text-green-400' : ''}>
+                <li className={/[a-zA-Z]/.test(password) && /\d/.test(password) ? 'text-[#22C55E]' : ''}>
                   Contains both letters and numbers
                 </li>
-                <li className={(password.match(/\d/g) || []).length >= 6 ? 'text-green-400' : ''}>
+                <li className={(password.match(/\d/g) || []).length >= 6 ? 'text-[#22C55E]' : ''}>
                   At least 6 digits
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-lg">
             <div>
-              <label htmlFor="confirm_password" className="block text-sm mb-1">
+              <label htmlFor="confirm_password" className="block text-sm font-medium text-[#7B7B7B] mb-sm">
                 Confirm Password
               </label>
               <input
@@ -201,22 +201,26 @@ export function RegisterForm() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-4 md:px-6 py-3 md:py-4 h-[53px] rounded-[4px] bg-[#25262b] border-none focus:outline-none focus:ring-1 focus:ring-[#7C5CFC] text-sm md:text-base"
+                className="block w-full rounded-lg border-0 py-md px-md shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] sm:text-sm bg-[#242424] text-white transition-all duration-200"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading || !!passwordError || password !== confirmPassword}
-              className="w-full h-12 bg-[#7C5CFC] hover:bg-[#7C5CFC]/90 rounded-[4px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+              className={`w-full justify-center rounded-lg px-lg py-md text-base font-medium text-white shadow-md transition-all duration-200 ${
+                isLoading || !!passwordError || password !== confirmPassword
+                  ? 'bg-[#8C74FF]/50 cursor-not-allowed'
+                  : 'bg-[#8C74FF] hover:bg-[#8C74FF]/90 shadow-[#8C74FF]/20 hover:shadow-lg hover:shadow-[#8C74FF]/30'
+              }`}
             >
               {isLoading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <div className="flex items-center justify-center gap-3">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  <span>Creating account...</span>
+                  Creating account...
                 </div>
               ) : (
                 'Continue'
