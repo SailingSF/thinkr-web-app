@@ -4,6 +4,7 @@ import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const STORE_GOALS = [
   {
@@ -37,6 +38,7 @@ export default function GoalsPage() {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleGoal = (goalId: string) => {
     setSelectedGoals(prev => 
@@ -120,30 +122,53 @@ export default function GoalsPage() {
   return (
     <div className="min-h-screen bg-[#1A1B1E] text-white">
       {/* Header */}
-      <header className="h-[101px] border-b border-[#2C2D32]">
-        <div className="h-full max-w-[1800px] mx-auto px-12 flex justify-between items-center">
-          <div className="text-[22px] font-tofino tracking-[-0.05em]">thinkr</div>
-          <nav className="flex gap-14">
-            <Link href="/" className="hover:text-gray-300">Home</Link>
-            <Link href="/app" className="hover:text-gray-300">App</Link>
-            <Link href="/faq" className="hover:text-gray-300">FAQ</Link>
+      <header className="h-auto md:h-[101px] border-b border-[#2C2D32]">
+        <div className="h-full max-w-[1800px] mx-auto px-4 md:px-12 py-4 md:py-0 flex flex-col md:flex-row justify-between items-center relative">
+          <div className="flex w-full md:w-auto justify-between items-center">
+            <div className="text-[22px] font-tofino tracking-[-0.05em]">
+              <Image
+                src="/2 Thinkr logo white letter.png"
+                alt="Thinkr Logo"
+                width={108}
+                height={36}
+                priority
+                className="object-contain w-24 md:w-auto"
+              />
+            </div>
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden text-white p-2"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+          <nav className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex flex-col md:flex-row w-full md:w-auto items-center gap-4 md:gap-14 mt-4 md:mt-0`}>
+            <Link href="/" className="hover:text-gray-300 py-2 md:py-0">Home</Link>
+            <Link href="/app" className="hover:text-gray-300 py-2 md:py-0">App</Link>
+            <Link href="/faq" className="hover:text-gray-300 py-2 md:py-0">FAQ</Link>
           </nav>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[917px] mx-auto mt-[114px]">
+      <main className="max-w-[917px] mx-auto mt-8 md:mt-[114px] px-4 md:px-0">
         {/* Progress Dots */}
-        <div className="flex gap-2 mb-9">
+        <div className="flex gap-2 mb-6 md:mb-9 justify-center md:justify-start">
           <div className="w-2 h-2 rounded-full bg-[#7C5CFC]" />
           <div className="w-2 h-2 rounded-full bg-[#2C2D32]" />
           <div className="w-2 h-2 rounded-full bg-[#2C2D32]" />
         </div>
 
         {/* Title Section */}
-        <div className="mb-16">
-          <h1 className="text-[48px] leading-tight mb-2">Select your store goals.</h1>
-          <p className="text-[#7C5CFC] text-2xl">Can select more than one.</p>
+        <div className="mb-8 md:mb-16 text-center md:text-left">
+          <h1 className="text-3xl md:text-[48px] leading-tight mb-2">Select your store goals.</h1>
+          <p className="text-[#7C5CFC] text-xl md:text-2xl">Can select more than one.</p>
         </div>
 
         {error && (
@@ -153,13 +178,13 @@ export default function GoalsPage() {
         )}
 
         {/* Goals Grid */}
-        <div className="grid grid-cols-2 gap-x-[19px] gap-y-[17px] mb-9">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-x-[19px] md:gap-y-[17px] mb-6 md:mb-9">
           {STORE_GOALS.map(goal => (
             <button
               key={goal.id}
               onClick={() => toggleGoal(goal.id)}
               className={`
-                h-[53px] px-6
+                h-[53px] px-4 md:px-6
                 rounded-[4px]
                 text-left
                 text-base
@@ -176,12 +201,12 @@ export default function GoalsPage() {
         </div>
 
         {/* Continue Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-center md:justify-end mb-8 md:mb-0">
           <button
             onClick={handleSubmit}
             disabled={isLoading}
             className="
-              w-[449px] h-12
+              w-full md:w-[449px] h-12
               bg-[#7C5CFC]
               rounded-[4px]
               font-normal
