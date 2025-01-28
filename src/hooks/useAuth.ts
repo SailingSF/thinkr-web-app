@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useHybridNavigation, isShopifyEmbedded } from '@/utils/shopify';
 import { LoginResponse, OnboardingResponse } from '@/types/auth';
+import { useLocalStorage } from './useLocalStorage';
 
 interface UseAuthReturn {
   login: (email: string, password: string) => Promise<void>;
@@ -15,6 +16,7 @@ export function useAuth(redirectPath?: string | null): UseAuthReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { navigate } = useHybridNavigation();
+  const { clearStoredData } = useLocalStorage();
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -94,6 +96,8 @@ export function useAuth(redirectPath?: string | null): UseAuthReturn {
       localStorage.removeItem('user_data');
       // Clear the cookie
       document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      // Clear app data
+      clearStoredData();
     }
     // Redirect to home page
     navigate('/');

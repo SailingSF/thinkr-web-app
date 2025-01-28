@@ -4,16 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ScheduleModal from './ScheduleModal';
 import { useAuthFetch } from '@/utils/shopify';
-
-interface Schedule {
-  id: number;
-  analysis_type: string;
-  cron_expression: string;
-  is_active: boolean;
-  description: string;
-  last_run: string | null;
-  next_run: string | null;
-}
+import { useLocalStorage, Schedule } from '@/hooks/useLocalStorage';
 
 interface SchedulesResponse {
   schedules: Schedule[];
@@ -22,20 +13,30 @@ interface SchedulesResponse {
 export default function Scheduler() {
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const { storedData, updateStoredData, isExpired } = useLocalStorage();
   const mountedRef = useRef(true);
   const fetchingRef = useRef(false);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const initialLoadDoneRef = useRef(false);
+  const [schedules, setSchedules] = useState<Schedule[]>(storedData?.schedules || []);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isDeletingSchedule, setIsDeletingSchedule] = useState<number | null>(null);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!storedData?.schedules);
   const [error, setError] = useState('');
 
   useEffect(() => {
     mountedRef.current = true;
 
     async function fetchSchedules() {
-      if (fetchingRef.current) return;
+      if (fetchingRef.current || initialLoadDoneRef.current) return;
+      
+      if (!isExpired && storedData?.schedules) {
+        setSchedules(storedData.schedules);
+        setLoading(false);
+        initialLoadDoneRef.current = true;
+        return;
+      }
+
       fetchingRef.current = true;
 
       try {
@@ -51,6 +52,7 @@ export default function Scheduler() {
         
         if (mountedRef.current) {
           setSchedules(schedulesData.schedules);
+          updateStoredData({ schedules: schedulesData.schedules });
           setError('');
         }
       } catch (err) {
@@ -61,6 +63,7 @@ export default function Scheduler() {
       } finally {
         if (mountedRef.current) {
           setLoading(false);
+          initialLoadDoneRef.current = true;
         }
         fetchingRef.current = false;
       }
@@ -70,12 +73,15 @@ export default function Scheduler() {
 
     return () => {
       mountedRef.current = false;
-      fetchingRef.current = false;
     };
-  }, [authFetch, router]);
+  }, [authFetch, router, isExpired]);
 
   const handleScheduleAdd = async (newSchedule: Schedule) => {
-    setSchedules(prev => [...prev, newSchedule]);
+    setSchedules(prev => {
+      const updated = [...prev, newSchedule];
+      updateStoredData({ schedules: updated });
+      return updated;
+    });
   };
 
   const handleDeleteSchedule = async (scheduleId: number) => {
@@ -94,7 +100,11 @@ export default function Scheduler() {
         throw new Error(errorData.error || 'Failed to delete schedule');
       }
 
-      setSchedules(prev => prev.filter(s => s.id !== scheduleId));
+      setSchedules(prev => {
+        const updated = prev.filter(s => s.id !== scheduleId);
+        updateStoredData({ schedules: updated });
+        return updated;
+      });
     } catch (error) {
       console.error('Delete schedule error:', error);
       setError(error instanceof Error ? error.message : 'Failed to delete schedule');
@@ -123,6 +133,7 @@ export default function Scheduler() {
       );
 
       setSchedules([]);
+      updateStoredData({ schedules: [] });
     } catch (error) {
       console.error('Unsubscribe all error:', error);
       setError('Failed to delete all schedules. Please try again.');

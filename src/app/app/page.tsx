@@ -1,41 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 import { useAuthFetch } from '@/utils/shopify';
-
-interface ConnectionStatus {
-  is_connected: boolean;
-  shop_domain: string | null;
-  last_sync: string | null;
-  subscription_status: string;
-}
-
-interface User {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  contact_email: string;
-  shopify_user_id: number;
-  store: string | null;
-}
+import { useLocalStorage, User, ConnectionStatus } from '@/hooks/useLocalStorage';
 
 export default function App() {
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const { storedData, updateStoredData, isExpired } = useLocalStorage();
+  const mountedRef = useRef(true);
+  const fetchingRef = useRef(false);
+  const initialLoadDoneRef = useRef(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [error, setError] = useState('');
-  const [user, setUser] = useState<User | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(storedData?.user || null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(storedData?.connectionStatus || null);
+  const [loading, setLoading] = useState(!storedData?.user || !storedData?.connectionStatus);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     async function fetchInitialData() {
+      // If we're already fetching or have completed initial load, don't fetch again
+      if (fetchingRef.current || initialLoadDoneRef.current) return;
+      
+      // If we have valid cached data, use it and mark initial load as done
+      if (!isExpired && storedData?.user && storedData?.connectionStatus) {
+        setUser(storedData.user);
+        setConnectionStatus(storedData.connectionStatus);
+        setLoading(false);
+        initialLoadDoneRef.current = true;
+        return;
+      }
+
+      fetchingRef.current = true;
+
       try {
         // Get user data first
         const userResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`);
@@ -47,25 +51,44 @@ export default function App() {
           throw new Error('Failed to fetch user data');
         }
         const userData = await userResponse.json();
-        setUser(userData);
-
+        
         // Then get connection status
         const statusResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/connection-status/`);
         if (!statusResponse.ok) {
           throw new Error('Failed to fetch connection status');
         }
         const statusData = await statusResponse.json();
-        setConnectionStatus(statusData);
+
+        if (mountedRef.current) {
+          setUser(userData);
+          setConnectionStatus(statusData);
+          // Update local storage
+          updateStoredData({
+            user: userData,
+            connectionStatus: statusData
+          });
+          setError('');
+        }
       } catch (err) {
         console.error('App error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load app data');
+        if (mountedRef.current) {
+          setError(err instanceof Error ? err.message : 'Failed to load app data');
+        }
       } finally {
-        setLoading(false);
+        if (mountedRef.current) {
+          setLoading(false);
+          initialLoadDoneRef.current = true;
+        }
+        fetchingRef.current = false;
       }
     }
 
     fetchInitialData();
-  }, [authFetch, router]);
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [authFetch, router, isExpired]); // Removed storedData and updateStoredData from dependencies
 
   const startOAuthFlow = async () => {
     if (!user?.email) {

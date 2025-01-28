@@ -6,36 +6,28 @@ import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 import { useAuthFetch } from '@/utils/shopify';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-
-interface ConnectionStatus {
-  is_connected: boolean;
-  shop_domain: string | null;
-  last_sync: string | null;
-  subscription_status: string;
-}
-
-interface User {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  contact_email: string;
-  shopify_user_id: number;
-  store: string | null;
-}
+import { useLocalStorage, User, ConnectionStatus } from '@/hooks/useLocalStorage';
 
 export default function Integrations() {
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const { storedData, updateStoredData, isExpired } = useLocalStorage();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [error, setError] = useState('');
-  const [user, setUser] = useState<User | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(storedData?.user || null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(storedData?.connectionStatus || null);
+  const [loading, setLoading] = useState(isExpired);
 
   useEffect(() => {
     async function fetchInitialData() {
+      if (!isExpired && storedData?.user && storedData?.connectionStatus) {
+        setUser(storedData.user);
+        setConnectionStatus(storedData.connectionStatus);
+        setLoading(false);
+        return;
+      }
+
       try {
         // Get user data first
         const userResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`);
@@ -56,6 +48,12 @@ export default function Integrations() {
         }
         const statusData = await statusResponse.json();
         setConnectionStatus(statusData);
+
+        // Update local storage
+        updateStoredData({
+          user: userData,
+          connectionStatus: statusData
+        });
       } catch (err) {
         console.error('Integrations error:', err);
         setError(err instanceof Error ? err.message : 'Failed to load integration data');
@@ -65,7 +63,7 @@ export default function Integrations() {
     }
 
     fetchInitialData();
-  }, [authFetch, router]);
+  }, [authFetch, router, isExpired, storedData, updateStoredData]);
 
   const startOAuthFlow = async () => {
     if (!user?.email) {
@@ -164,7 +162,7 @@ export default function Integrations() {
             <div className="flex flex-col gap-sm sm:gap-md">
               <div className="flex flex-col gap-xs sm:gap-sm">
                 <img
-                  src="/globe.svg"
+                  src="/meta-icon-2.png"
                   alt="Meta"
                   className="w-6 h-[27px] object-contain"
                 />
@@ -184,7 +182,7 @@ export default function Integrations() {
             <div className="flex flex-col gap-sm sm:gap-md">
               <div className="flex flex-col gap-xs sm:gap-sm">
                 <img
-                  src="/globe.svg"
+                  src="/google-ads-icon-2.png"
                   alt="Google Ads"
                   className="w-6 h-[27px] object-contain"
                 />
@@ -204,7 +202,7 @@ export default function Integrations() {
             <div className="flex flex-col gap-sm sm:gap-md">
               <div className="flex flex-col gap-xs sm:gap-sm">
                 <img
-                  src="/globe.svg"
+                  src="/mailchimp-icon-2.png"
                   alt="Mailchimp"
                   className="w-6 h-[27px] object-contain"
                 />
