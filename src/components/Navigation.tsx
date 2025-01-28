@@ -12,9 +12,7 @@ const NAVIGATION_LINKS = {
     { href: '/faq', label: 'FAQ' },
   ],
   authenticated: [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/recommendations', label: 'Recommendations' },
-    { href: '/settings', label: 'Settings' },
+    { href: '/faq', label: 'Help' }
   ]
 };
 

@@ -85,19 +85,8 @@ export default function AppSidebar() {
 
   const sidebarContent = (
     <>
-      {/* Logo */}
-      <div className="p-8">
-        <Image
-          src="/2 Thinkr logo white letter.png"
-          alt="Thinkr Logo"
-          width={120}
-          height={38}
-          className="object-contain"
-        />
-      </div>
-
       {/* Navigation Links */}
-      <nav className="flex-1 px-5">
+      <nav className="flex-1 px-5 pt-5">
         <div className="space-y-3">
           {navigationItems.map((item) => (
             <Link
@@ -194,6 +183,13 @@ export default function AppSidebar() {
         </svg>
       </button>
 
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block w-[320px] p-4 bg-[#141718]">
+        <div className="bg-[#232627] rounded-2xl h-[calc(100vh-128px)] flex flex-col shadow-xl">
+          {sidebarContent}
+        </div>
+      </div>
+
       {/* Mobile Sidebar */}
       <div
         className={`fixed inset-0 z-40 lg:hidden ${
@@ -206,13 +202,6 @@ export default function AppSidebar() {
             isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {sidebarContent}
-        </div>
-      </div>
-
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-[320px] p-4">
-        <div className="bg-[#232627] rounded-2xl min-h-[calc(100vh-32px)] flex flex-col shadow-xl">
           {sidebarContent}
         </div>
       </div>
