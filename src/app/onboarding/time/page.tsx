@@ -117,35 +117,35 @@ export default function OnboardingTime() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[917px] mx-auto mt-8 md:mt-[114px] px-4 md:px-0">
+      <main className="max-w-[917px] mx-auto mt-xl md:mt-[114px] px-md md:px-0">
         {/* Progress Dots */}
-        <div className="flex gap-2 mb-6 md:mb-9 justify-center md:justify-start">
+        <div className="flex gap-md mb-lg md:mb-9 justify-center md:justify-start">
           <div className="w-2 h-2 rounded-full bg-[#2C2D32]" />
           <div className="w-2 h-2 rounded-full bg-[#7C5CFC]" />
           <div className="w-2 h-2 rounded-full bg-[#2C2D32]" />
         </div>
 
         {/* Title Section */}
-        <div className="mb-8 md:mb-16 text-center md:text-left">
+        <div className="mb-xl md:mb-16 text-center md:text-left">
           <h1 className="text-3xl md:text-[48px] leading-tight mb-2">
             How much time do you spend<br className="hidden md:block" /> operating the business?
           </h1>
         </div>
 
         {error && (
-          <div className="p-3 mb-4 text-sm text-red-500 bg-red-500/10 rounded-md">
+          <div className="p-3 mb-md text-sm text-red-500 bg-red-500/10 rounded-md">
             {error}
           </div>
         )}
 
         {/* Time Options Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-x-[19px] md:gap-y-[17px] mb-6 md:mb-9">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-md md:gap-x-[19px] md:gap-y-[17px] mb-lg md:mb-9">
           {TIME_OPTIONS.map(option => (
             <button
               key={option.id}
               onClick={() => setSelectedTime(option.id)}
               className={`
-                min-h-[53px] px-4 md:px-6 py-3
+                min-h-[53px] px-md md:px-lg py-md
                 rounded-[4px]
                 flex flex-col md:flex-row justify-start md:justify-between items-start md:items-center
                 text-base

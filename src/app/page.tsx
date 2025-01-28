@@ -10,7 +10,7 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#1a1b1e] flex flex-col">
+    <div className="min-h-screen bg-[#141718] flex flex-col">
       {/* Top Navigation Bar */}
       <header className="w-full flex flex-col md:hidden">
         <div className="flex justify-between items-center px-4 py-4">

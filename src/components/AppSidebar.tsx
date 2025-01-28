@@ -1,8 +1,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
 export default function AppSidebar() {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const navigationItems = [
     {
@@ -70,63 +83,139 @@ export default function AppSidebar() {
     },
   ];
 
-  return (
-    <div className="w-64 min-h-[calc(100vh-64px)] bg-[#25262b] border-r border-purple-400/20 flex flex-col">
+  const sidebarContent = (
+    <>
+      {/* Logo */}
+      <div className="p-8">
+        <Image
+          src="/2 Thinkr logo white letter.png"
+          alt="Thinkr Logo"
+          width={120}
+          height={38}
+          className="object-contain"
+        />
+      </div>
+
       {/* Navigation Links */}
-      <nav className="flex-1 p-4">
-        <div className="space-y-1">
+      <nav className="flex-1 px-5">
+        <div className="space-y-3">
           {navigationItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`flex items-center justify-between px-5 py-4 rounded-xl text-[16px] font-medium transition-colors ${
                 item.isActive
-                  ? 'bg-purple-500/20 text-purple-400'
-                  : 'text-gray-400 hover:bg-purple-500/10 hover:text-purple-400'
+                  ? 'bg-[#7B6EF6] text-white'
+                  : 'text-gray-300 hover:bg-[#2c2f30] hover:text-white'
               }`}
             >
-              {item.icon}
               <span>{item.name}</span>
+              <div className="w-6 h-6">
+                {item.icon}
+              </div>
             </Link>
           ))}
         </div>
 
+        <div className="my-8 border-t border-[#2c2f30]" />
+
         {/* Coming Soon Section */}
-        <div className="mt-8">
-          <h3 className="px-4 text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-            Coming Soon
-          </h3>
-          <div className="space-y-1">
-            {comingSoonItems.map((item) => (
-              <div
-                key={item.name}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 cursor-not-allowed"
-              >
-                {item.icon}
-                <span>{item.name}</span>
-                <span className="ml-auto text-xs bg-gray-700/50 px-2 py-1 rounded">Soon</span>
+        <div className="space-y-3">
+          {comingSoonItems.map((item) => (
+            <div
+              key={item.name}
+              className="flex items-center justify-between px-5 py-4 rounded-xl text-[16px] text-gray-500"
+            >
+              <span>{item.name}</span>
+              <div className="flex items-center gap-4">
+                <span className="text-[13px]">Coming Soon</span>
+                <div className="w-6 h-6">
+                  {item.icon}
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </nav>
 
       {/* Profile Link */}
-      <div className="p-4 border-t border-purple-400/20">
+      <div className="p-5">
         <Link
           href="/app/profile"
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+          className={`flex items-center justify-between px-5 py-4 rounded-xl text-[16px] font-medium transition-colors ${
             pathname === '/app/profile'
-              ? 'bg-purple-500/20 text-purple-400'
-              : 'text-gray-400 hover:bg-purple-500/10 hover:text-purple-400'
+              ? 'bg-[#7B6EF6] text-white'
+              : 'text-gray-300 hover:bg-[#2c2f30] hover:text-white'
           }`}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
           <span>Profile</span>
+          <div className="w-6 h-6">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
         </Link>
       </div>
-    </div>
+    </>
+  );
+
+  if (!isMounted) {
+    return null;
+  }
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-[#232627] lg:hidden"
+      >
+        <svg
+          className="w-6 h-6 text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {isMobileMenuOpen ? (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          )}
+        </svg>
+      </button>
+
+      {/* Mobile Sidebar */}
+      <div
+        className={`fixed inset-0 z-40 lg:hidden ${
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        } transition-opacity duration-300`}
+      >
+        <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
+        <div
+          className={`absolute left-0 top-0 h-full w-[320px] bg-[#232627] transform transition-transform duration-300 ${
+            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {sidebarContent}
+        </div>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block w-[320px] p-4">
+        <div className="bg-[#232627] rounded-2xl min-h-[calc(100vh-32px)] flex flex-col shadow-xl">
+          {sidebarContent}
+        </div>
+      </div>
+    </>
   );
 } 

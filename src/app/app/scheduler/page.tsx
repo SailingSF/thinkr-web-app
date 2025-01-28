@@ -133,136 +133,157 @@ export default function Scheduler() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-        <div className="text-xl text-purple-400">Loading...</div>
+      <div className="flex items-center justify-center h-[calc(100vh-64px)] bg-[#242424]">
+        <div className="text-xl text-[#8C74FF] flex items-center gap-3">
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          Loading...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-8 py-12">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
+      <div className="container mx-auto px-4 lg:px-8">
+        {/* Title Section */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
+              Analysis Scheduler
+            </h1>
+            <p className="text-[#8C74FF] text-[25px] font-normal m-0">
+              Schedule automated analysis for your store.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsScheduleModalOpen(true)}
+            className="mt-4 lg:mt-0 w-full lg:w-auto px-6 py-3 bg-[#8C74FF] hover:bg-[#8C74FF]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#8C74FF]/20 hover:shadow-lg hover:shadow-[#8C74FF]/30"
+          >
+            Add Schedule
+          </button>
+        </div>
+
         {error && (
-          <div className="mb-8 p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
+          <div className="mb-6 lg:mb-8 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
             {error}
           </div>
         )}
 
-        <div className="bg-[#25262b] p-6 rounded-xl border border-purple-400/20">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-2xl font-bold">Email Scheduler</h1>
-              <p className="text-gray-400 mt-1">Configure automated analysis reports for your store</p>
-            </div>
-            <button
-              onClick={() => setIsScheduleModalOpen(true)}
-              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
-            >
-              Add Schedule
-            </button>
-          </div>
+        <div className="bg-[#141718] rounded-2xl">
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold text-white mb-4">Active</h2>
+            
+            {schedules.length > 0 ? (
+              <div className="space-y-4">
+                {schedules.map((schedule) => {
+                  const [, hour, , , day] = schedule.cron_expression.split(' ');
+                  const dayLabel = {
+                    '0': 'Sunday',
+                    '1': 'Monday',
+                    '2': 'Tuesday',
+                    '3': 'Wednesday',
+                    '4': 'Thursday',
+                    '5': 'Friday',
+                    '6': 'Saturday'
+                  }[day] || 'Unknown';
+                  
+                  const timeLabel = parseInt(hour) === 0 ? '12 AM' : 
+                    parseInt(hour) === 12 ? '12 PM' : 
+                    parseInt(hour) > 12 ? `${parseInt(hour)-12} PM` : 
+                    `${hour} AM`;
 
-          {schedules.length > 0 ? (
-            <div className="space-y-4">
-              {schedules.map(schedule => {
-                const [, hour, , , day] = schedule.cron_expression.split(' ');
-                const dayLabel = {
-                  '0': 'Sunday',
-                  '1': 'Monday',
-                  '2': 'Tuesday',
-                  '3': 'Wednesday',
-                  '4': 'Thursday',
-                  '5': 'Friday',
-                  '6': 'Saturday'
-                }[day] || 'Unknown';
-                
-                const timeLabel = parseInt(hour) === 0 ? '12 AM' : 
-                  parseInt(hour) === 12 ? '12 PM' : 
-                  parseInt(hour) > 12 ? `${parseInt(hour)-12} PM` : 
-                  `${hour} AM`;
+                  const analysisLabel = schedule.analysis_type
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
 
-                const analysisLabel = schedule.analysis_type
-                  .split('_')
-                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(' ');
-
-                return (
-                  <div
-                    key={schedule.id}
-                    className="p-4 bg-[#2c2d32] rounded-lg border border-purple-400/10 hover:border-purple-400/30 transition-colors"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-purple-400">
-                            {analysisLabel}
-                          </h3>
-                          <span className={`px-2 py-0.5 text-xs rounded-full ${
-                            schedule.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
-                          }`}>
-                            {schedule.is_active ? 'Active' : 'Inactive'}
+                  return (
+                    <div
+                      key={schedule.id}
+                      className="p-4 lg:p-5 bg-[#141718] rounded-xl border border-[#8C74FF]/10 hover:border-[#8C74FF]/30 transition-all duration-200"
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <h3 className="font-semibold text-[#8C74FF] text-base lg:text-lg">
+                              {analysisLabel}
+                            </h3>
+                            <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                              schedule.is_active 
+                                ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
+                                : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
+                            }`}>
+                              {schedule.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-[#7B7B7B] leading-relaxed">
+                            {schedule.description || `Weekly analysis on ${dayLabel} at ${timeLabel}`}
+                          </p>
+                          <div className="text-xs space-y-2 text-[#7B7B7B]/80">
+                            {schedule.last_run && (
+                              <p className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-[#7B7B7B]/30"></span>
+                                Last run: {new Date(schedule.last_run).toLocaleString()}
+                              </p>
+                            )}
+                            {schedule.next_run && (
+                              <p className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-[#8C74FF]/30"></span>
+                                Next run: {new Date(schedule.next_run).toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-3">
+                          <span className="text-sm text-[#7B7B7B] whitespace-nowrap">
+                            {dayLabel}, {timeLabel}
                           </span>
+                          <button
+                            onClick={() => handleDeleteSchedule(schedule.id)}
+                            disabled={isDeletingSchedule === schedule.id}
+                            className="text-sm text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                          >
+                            {isDeletingSchedule === schedule.id ? 'Deleting...' : 'Delete Schedule'}
+                          </button>
                         </div>
-                        <p className="text-sm text-gray-400">
-                          {schedule.description || `Weekly analysis on ${dayLabel} at ${timeLabel}`}
-                        </p>
-                        <div className="text-xs text-gray-500 space-y-1">
-                          {schedule.last_run && (
-                            <p>Last run: {new Date(schedule.last_run).toLocaleString()}</p>
-                          )}
-                          {schedule.next_run && (
-                            <p>Next run: {new Date(schedule.next_run).toLocaleString()}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span className="text-sm text-gray-400 bg-[#25262b] px-3 py-1 rounded-md">
-                          {dayLabel}, {timeLabel}
-                        </span>
-                        <button
-                          onClick={() => handleDeleteSchedule(schedule.id)}
-                          disabled={isDeletingSchedule === schedule.id}
-                          className="text-sm text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {isDeletingSchedule === schedule.id ? 'Deleting...' : 'Delete Schedule'}
-                        </button>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
 
-              {schedules.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-purple-400/20">
+                <div className="mt-8 pt-8 border-t border-[#8C74FF]/10 flex justify-center">
                   <button
                     onClick={handleUnsubscribeAll}
                     disabled={isDeletingAll}
-                    className="w-full px-4 py-2 text-red-400 bg-red-400/10 hover:bg-red-400/20 disabled:bg-red-400/5 disabled:text-red-400/50 disabled:cursor-not-allowed rounded-md transition-colors"
+                    className="w-full lg:w-auto px-6 py-2.5 text-red-400 bg-red-400/5 hover:bg-red-400/10 disabled:bg-red-400/5 disabled:text-red-400/50 disabled:cursor-not-allowed rounded-lg transition-all duration-200 text-sm font-medium ring-1 ring-red-400/20"
                   >
                     {isDeletingAll ? 'Unsubscribing...' : 'Unsubscribe from All Analyses'}
                   </button>
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2">No schedules yet</h3>
-              <p className="text-gray-400 mb-6">
-                Add your first analysis schedule to start receiving automated reports
-              </p>
-              <button
-                onClick={() => setIsScheduleModalOpen(true)}
-                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
-              >
-                Add Your First Schedule
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-12 lg:py-16 px-4">
+                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-[#8C74FF]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 ring-1 ring-[#8C74FF]/20">
+                  <svg className="w-8 h-8 lg:w-10 lg:h-10 text-[#8C74FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <h3 className="text-xl lg:text-2xl font-bold mb-3 text-white">No schedules yet</h3>
+                <p className="text-base text-[#7B7B7B] mb-8 max-w-md mx-auto">
+                  Add your first analysis schedule to start receiving automated reports
+                </p>
+                <button
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className="px-8 py-3 bg-[#8C74FF] hover:bg-[#8C74FF]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#8C74FF]/20 hover:shadow-lg hover:shadow-[#8C74FF]/30"
+                >
+                  Add Schedule
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
