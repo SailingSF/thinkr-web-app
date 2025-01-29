@@ -96,13 +96,13 @@ export default function AppSidebar() {
         />
       </div>
       
-      <nav className="flex-1 px-4">
+      <nav className="flex-1 px-3">
         <div className="space-y-1">
           {navigationItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium transition-colors ${
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-base font-normal transition-colors ${
                 item.isActive
                   ? 'bg-[#7B6EF6] text-white'
                   : 'text-gray-300 hover:bg-[#232627] hover:text-white'
@@ -122,11 +122,11 @@ export default function AppSidebar() {
           {comingSoonItems.map((item) => (
             <div
               key={item.name}
-              className="flex items-center justify-between px-4 py-3 rounded-lg text-[15px]"
+              className="flex items-center justify-between px-4 py-3 rounded-lg text-base"
             >
               <span className="text-gray-500">{item.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600">Coming Soon</span>
+                <span className="text-sm text-gray-600">Coming Soon</span>
                 <div className="w-5 h-5 opacity-60 text-gray-600">
                   {item.icon}
                 </div>
@@ -136,10 +136,10 @@ export default function AppSidebar() {
         </div>
       </nav>
 
-      <div className="px-4 pb-4 mt-auto">
+      <div className="px-3 pb-4 mt-auto">
         <Link
           href="/app/profile"
-          className={`flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium transition-colors ${
+          className={`flex items-center justify-between px-4 py-3 rounded-lg text-base font-normal transition-colors ${
             pathname === '/app/profile'
               ? 'bg-[#7B6EF6] text-white'
               : 'text-gray-300 hover:bg-[#232627] hover:text-white'
