@@ -4,15 +4,14 @@ import Navigation from './Navigation';
 
 interface HybridLayoutProps {
   children: ReactNode;
-  onLogout?: () => void;
 }
 
-export default function HybridLayout({ children, onLogout }: HybridLayoutProps) {
+export default function HybridLayout({ children }: HybridLayoutProps) {
   return (
     <ShopifyAppBridgeProvider>
       <div className={`min-h-screen ${isShopifyEmbedded() ? '' : 'bg-[#1a1b1e] text-white'}`}>
         {/* Only show navigation in standalone mode */}
-        {!isShopifyEmbedded() && <Navigation onLogout={onLogout} />}
+        {!isShopifyEmbedded() && <Navigation />}
         
         {/* Main content */}
         <main className={`${isShopifyEmbedded() ? 'p-4' : 'container mx-auto px-8 py-12'}`}>

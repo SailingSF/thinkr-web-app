@@ -21,7 +21,15 @@ export default function Navigation() {
         logout();
         // Clear any stored tokens or session data
         localStorage.removeItem('shopify_token');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
         sessionStorage.clear();
+        // Clear all cookies
+        if (typeof window !== 'undefined') {
+          document.cookie.split(';').forEach(c => {
+            document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          });
+        }
         // Redirect to home page
         router.replace('/');
       }

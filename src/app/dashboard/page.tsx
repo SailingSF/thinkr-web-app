@@ -279,7 +279,7 @@ export default function Dashboard() {
   const { user, connectionStatus, schedules, error } = state;
 
   return (
-    <HybridLayout onLogout={handleLogout}>
+    <HybridLayout>
       <div className="max-w-3xl mx-auto space-y-8">
         {error && (
           <div className="mb-8 p-3 text-sm text-red-500 bg-red-500/10 rounded-md">
