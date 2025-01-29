@@ -10,32 +10,8 @@ export default function Navigation() {
   const authFetch = useAuthFetch();
   const { logout } = useAuth();
 
-  const handleLogout = async () => {
-    try {
-      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout/`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        // Clear auth state
-        logout();
-        // Clear any stored tokens or session data
-        localStorage.removeItem('shopify_token');
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_data');
-        sessionStorage.clear();
-        // Clear all cookies
-        if (typeof window !== 'undefined') {
-          document.cookie.split(';').forEach(c => {
-            document.cookie = c.trim().split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          });
-        }
-        // Redirect to home page
-        router.replace('/');
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+  const handleLogout = () => {
+    logout(); // This will clear storage and redirect to home
   };
 
   return (
