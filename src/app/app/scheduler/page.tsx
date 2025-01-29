@@ -228,8 +228,8 @@ export default function Scheduler() {
                   </div>
                   {weekDays.map(day => {
                     const schedulesForTimeSlot = schedules.filter(schedule => {
-                      const [, scheduleHour, , , scheduleDay] = schedule.cron_expression.split(' ');
-                      const dayIndex = parseInt(scheduleDay);
+                        const [, scheduleHour, , , scheduleDay] = schedule.cron_expression.split(' ');
+                        const dayIndex = parseInt(scheduleDay);
                       return parseInt(scheduleHour) === hour && weekDays[dayIndex - 1] === day;
                     });
 
@@ -261,8 +261,8 @@ export default function Scheduler() {
                               </h3>
                               <p className="text-xs text-[#7B7B7B] leading-relaxed">
                                 {schedulesForTimeSlot[0].description || `${schedulesForTimeSlot[0].analysis_type
-                                  .split('_')
-                                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .split('_')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                                   .join(' ')} Analysis`}
                               </p>
                               <div className="flex justify-end">
@@ -303,26 +303,26 @@ export default function Scheduler() {
                                   <div
                                     key={schedule.id}
                                     className={`p-3 bg-[#8C74FF]/10 rounded-lg relative ${index !== 0 ? 'mt-2' : ''}`}
-                                  >
-                                    <button
+                            >
+                              <button
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDeleteSchedule(schedule.id);
                                       }}
-                                      disabled={isDeletingSchedule === schedule.id}
+                                disabled={isDeletingSchedule === schedule.id}
                                       className="absolute -top-1.5 -right-1.5 text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-red-400/20 flex items-center justify-center transition-colors shadow-sm hover:shadow-md ring-1 ring-red-400/30"
-                                    >
-                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                    </button>
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
                                     <div className="space-y-2 pt-1">
-                                      <h3 className="text-sm font-medium text-[#8C74FF]">
+                                  <h3 className="text-sm font-medium text-[#8C74FF]">
                                         {schedule.analysis_type
                                           .split('_')
                                           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                                           .join(' ')}
-                                      </h3>
+                                  </h3>
                                       <p className="text-xs text-[#7B7B7B] leading-relaxed">
                                         {schedule.description || `${schedule.analysis_type
                                           .split('_')
@@ -330,14 +330,14 @@ export default function Scheduler() {
                                           .join(' ')} Analysis`}
                                       </p>
                                       <div className="flex justify-end">
-                                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                          schedule.is_active 
-                                            ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
-                                            : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
-                                        }`}>
-                                          {schedule.is_active ? 'Active' : 'Inactive'}
-                                        </span>
-                                      </div>
+                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                                    schedule.is_active 
+                                      ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
+                                      : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
+                                  }`}>
+                                    {schedule.is_active ? 'Active' : 'Inactive'}
+                                  </span>
+                                </div>
                                     </div>
                                   </div>
                                 ))}
@@ -345,9 +345,9 @@ export default function Scheduler() {
                             )}
                           </div>
                         )}
-                      </div>
-                    );
-                  })}
+                            </div>
+                          );
+                      })}
                 </div>
               ))}
             </div>
@@ -358,7 +358,8 @@ export default function Scheduler() {
   };
 
   const renderKanbanView = () => {
-    const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const allWeekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const weekDays = hideWeekends ? allWeekDays.slice(0, 5) : allWeekDays;
     const schedulesByDay = weekDays.reduce((acc, day) => {
       acc[day] = schedules.filter(schedule => {
         const [, , , , scheduleDay] = schedule.cron_expression.split(' ');
@@ -369,39 +370,47 @@ export default function Scheduler() {
     }, {} as Record<string, Schedule[]>);
 
     return (
-      <div className="mt-4 overflow-x-auto">
-        <div className="min-w-[900px] grid grid-cols-7 gap-4">
-          {weekDays.map(day => (
-            <div key={day} className="flex flex-col gap-4">
-              <div className="text-[#7B7B7B] text-sm font-medium sticky top-0 bg-[#141718] py-2">
-                {day}
-              </div>
-              <div className="space-y-4">
-                {schedulesByDay[day].map(schedule => {
-                  const [, hour] = schedule.cron_expression.split(' ');
-                  const timeLabel = parseInt(hour) === 0 ? '12 AM' : 
-                    parseInt(hour) === 12 ? '12 PM' : 
-                    parseInt(hour) > 12 ? `${parseInt(hour)-12} PM` : 
-                    `${hour} AM`;
-                  const analysisLabel = schedule.analysis_type
-                    .split('_')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(' ');
+      <div className="mt-4">
+        <div className="overflow-auto max-h-[calc(100vh-300px)] rounded-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+          <div className="min-w-[900px] relative">
+            {/* Days Header - Made sticky */}
+            <div className={`grid ${hideWeekends ? 'grid-cols-5' : 'grid-cols-7'} gap-4 sticky top-0 z-10 bg-[#141718] pt-4 pb-2 shadow-md border-b border-[#2C2D32]`}>
+              {weekDays.map(day => (
+                <div key={day} className="text-[#7B7B7B] text-sm font-medium">
+                  {day}
+                </div>
+              ))}
+            </div>
 
-                  return (
-                    <div
-                      key={schedule.id}
-                      className="bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors relative"
-                    >
-                      <button
-                        onClick={() => handleDeleteSchedule(schedule.id)}
-                        disabled={isDeletingSchedule === schedule.id}
-                        className="absolute -top-1.5 -right-1.5 text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-red-400/20 flex items-center justify-center transition-colors shadow-sm hover:shadow-md ring-1 ring-red-400/30"
+            {/* Schedule Grid */}
+            <div className={`grid ${hideWeekends ? 'grid-cols-5' : 'grid-cols-7'} gap-4 pt-4`}>
+              {weekDays.map(day => (
+                <div key={day} className="space-y-4">
+                  {schedulesByDay[day].map(schedule => {
+                    const [, hour] = schedule.cron_expression.split(' ');
+                    const timeLabel = parseInt(hour) === 0 ? '12 AM' : 
+                      parseInt(hour) === 12 ? '12 PM' : 
+                      parseInt(hour) > 12 ? `${parseInt(hour)-12} PM` : 
+                      `${hour} AM`;
+                    const analysisLabel = schedule.analysis_type
+                      .split('_')
+                      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                      .join(' ');
+
+                    return (
+                      <div
+                        key={schedule.id}
+                        className="bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors relative"
                       >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                          <button
+                            onClick={() => handleDeleteSchedule(schedule.id)}
+                            disabled={isDeletingSchedule === schedule.id}
+                        className="absolute -top-1.5 -right-1.5 text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-red-400/20 flex items-center justify-center transition-colors shadow-sm hover:shadow-md ring-1 ring-red-400/30"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                       <div className="space-y-2 pt-1">
                         <h3 className="text-sm font-medium text-[#8C74FF]">
                           {analysisLabel}
@@ -422,9 +431,10 @@ export default function Scheduler() {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     );
@@ -501,7 +511,7 @@ export default function Scheduler() {
                   Kanban View
                 </button>
               </div>
-              {viewMode === 'weekly' && (
+              {(viewMode === 'weekly' || viewMode === 'kanban') && (
                 <div className="flex items-center gap-3" title={hasWeekendSchedules ? "Can't hide weekends when schedules exist on weekends" : "Toggle weekend visibility"}>
                   <span className="text-sm text-[#7B7B7B]">Show Weekends</span>
                   <button
