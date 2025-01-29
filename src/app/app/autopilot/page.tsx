@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 export default function Autopilot() {
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4 lg:p-8 bg-gradient-to-br from-[#25262b] to-[#1a1b1e] font-inter">
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4 lg:p-8 bg-[#141718] font-inter">
       <div className="w-full max-w-2xl mx-auto text-center px-4">
         {/* Animated Robot Icon */}
         <motion.div
@@ -18,8 +18,10 @@ export default function Autopilot() {
               className="text-purple-400"
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              d="M12 4L12 2M8 8h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2zM10 11h.01M14 11h.01"
             />
+            <circle cx="10" cy="11" r="1" className="text-purple-400" fill="currentColor" />
+            <circle cx="14" cy="11" r="1" className="text-purple-400" fill="currentColor" />
           </svg>
         </motion.div>
 

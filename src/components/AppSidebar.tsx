@@ -53,7 +53,9 @@ export default function AppSidebar() {
       href: '/app/autopilot',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4L12 2M8 8h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2zM10 11h.01M14 11h.01" />
+          <circle cx="10" cy="11" r="1" className="text-current" fill="currentColor" />
+          <circle cx="14" cy="11" r="1" className="text-current" fill="currentColor" />
         </svg>
       ),
       isActive: pathname === '/app/autopilot',
@@ -85,7 +87,7 @@ export default function AppSidebar() {
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      <div className="px-6 py-6">
+      <div className="px-4 py-6">
         <Image
           src="/2 thinkr logo white letter.png"
           alt="Thinkr Logo"
