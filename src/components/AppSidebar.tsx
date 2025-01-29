@@ -163,9 +163,11 @@ export default function AppSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex p-4 w-[280px]">
-        <div className="w-full bg-[#1E1F20] rounded-[20px] shadow-lg">
-          {sidebarContent}
+      <div className="hidden lg:block fixed top-0 left-0 h-screen p-3">
+        <div className="h-full w-[320px]">
+          <div className="w-full h-full bg-[#1E1F20] rounded-[20px] shadow-lg">
+            {sidebarContent}
+          </div>
         </div>
       </div>
 
@@ -206,7 +208,7 @@ export default function AppSidebar() {
       >
         <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
         <div
-          className={`absolute left-0 top-0 h-full w-[280px] bg-[#1E1F20] transform transition-transform duration-300 ${
+          className={`absolute left-0 top-0 h-full w-[320px] bg-[#1E1F20] transform transition-transform duration-300 ${
             isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >

@@ -59,12 +59,10 @@ export default function AppLayout({
 
   return (
     <div className="min-h-screen bg-[#141718]">
-      <div className="flex">
-        <AppSidebar />
-        <main className="flex-1 p-4">
-          {children}
-        </main>
-      </div>
+      <AppSidebar />
+      <main className="lg:pl-[336px] p-4">
+        {children}
+      </main>
     </div>
   );
 } 
