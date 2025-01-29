@@ -43,7 +43,7 @@ export default function AppSidebar() {
       href: '/app/integrations',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
         </svg>
       ),
       isActive: pathname === '/app/integrations',
@@ -84,41 +84,50 @@ export default function AppSidebar() {
   ];
 
   const sidebarContent = (
-    <>
-      {/* Navigation Links */}
-      <nav className="flex-1 px-5 pt-5">
-        <div className="space-y-3">
+    <div className="flex flex-col h-full">
+      <div className="px-6 py-6">
+        <Image
+          src="/2 thinkr logo white letter.png"
+          alt="Thinkr Logo"
+          width={160}
+          height={50}
+          priority
+          className="w-auto h-10"
+        />
+      </div>
+      
+      <nav className="flex-1 px-4">
+        <div className="space-y-1">
           {navigationItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center justify-between px-5 py-4 rounded-xl text-[16px] font-medium transition-colors ${
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium transition-colors ${
                 item.isActive
                   ? 'bg-[#7B6EF6] text-white'
-                  : 'text-gray-300 hover:bg-[#2c2f30] hover:text-white'
+                  : 'text-gray-300 hover:bg-[#232627] hover:text-white'
               }`}
             >
               <span>{item.name}</span>
-              <div className="w-6 h-6">
+              <div className="w-5 h-5 opacity-60">
                 {item.icon}
               </div>
             </Link>
           ))}
         </div>
 
-        <div className="my-8 border-t border-[#2c2f30]" />
+        <div className="my-6 border-t border-[#232627]" />
 
-        {/* Coming Soon Section */}
-        <div className="space-y-3">
+        <div className="space-y-1">
           {comingSoonItems.map((item) => (
             <div
               key={item.name}
-              className="flex items-center justify-between px-5 py-4 rounded-xl text-[16px] text-gray-500"
+              className="flex items-center justify-between px-4 py-3 rounded-lg text-[15px]"
             >
-              <span>{item.name}</span>
-              <div className="flex items-center gap-4">
-                <span className="text-[13px]">Coming Soon</span>
-                <div className="w-6 h-6">
+              <span className="text-gray-500">{item.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-600">Coming Soon</span>
+                <div className="w-5 h-5 opacity-60 text-gray-600">
                   {item.icon}
                 </div>
               </div>
@@ -127,25 +136,24 @@ export default function AppSidebar() {
         </div>
       </nav>
 
-      {/* Profile Link */}
-      <div className="p-5">
+      <div className="px-4 pb-4 mt-auto">
         <Link
           href="/app/profile"
-          className={`flex items-center justify-between px-5 py-4 rounded-xl text-[16px] font-medium transition-colors ${
+          className={`flex items-center justify-between px-4 py-3 rounded-lg text-[15px] font-medium transition-colors ${
             pathname === '/app/profile'
               ? 'bg-[#7B6EF6] text-white'
-              : 'text-gray-300 hover:bg-[#2c2f30] hover:text-white'
+              : 'text-gray-300 hover:bg-[#232627] hover:text-white'
           }`}
         >
           <span>Profile</span>
-          <div className="w-6 h-6">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-5 h-5 opacity-60">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
         </Link>
       </div>
-    </>
+    </div>
   );
 
   if (!isMounted) {
@@ -154,6 +162,13 @@ export default function AppSidebar() {
 
   return (
     <>
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex p-4 w-[280px]">
+        <div className="w-full bg-[#1E1F20] rounded-[20px] shadow-lg">
+          {sidebarContent}
+        </div>
+      </div>
+
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -183,13 +198,6 @@ export default function AppSidebar() {
         </svg>
       </button>
 
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-[320px] p-4 bg-[#141718]">
-        <div className="bg-[#232627] rounded-2xl h-[calc(100vh-128px)] flex flex-col shadow-xl">
-          {sidebarContent}
-        </div>
-      </div>
-
       {/* Mobile Sidebar */}
       <div
         className={`fixed inset-0 z-40 lg:hidden ${
@@ -198,7 +206,7 @@ export default function AppSidebar() {
       >
         <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
         <div
-          className={`absolute left-0 top-0 h-full w-[320px] bg-[#232627] transform transition-transform duration-300 ${
+          className={`absolute left-0 top-0 h-full w-[280px] bg-[#1E1F20] transform transition-transform duration-300 ${
             isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
