@@ -29,7 +29,7 @@ interface Day {
 
 const ANALYSIS_TYPES: AnalysisType[] = [
   { name: 'inventory', displayName: 'Inventory Analysis', description: 'Track and analyze your inventory levels and movements' },
-  { name: 'orders', displayName: 'Orders Analysis', description: 'Monitor order patterns and performance metrics' },
+  { name: 'top_customers', displayName: 'Top Customer Analysis', description: 'Monitor top customers and their recent orders' },
   { name: 'financial_metrics', displayName: 'Financial Analysis', description: 'Analyze key financial indicators and trends' },
 ];
 
