@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AppSidebar from "@/components/AppSidebar";
+import Navigation from "@/components/Navigation";
 import { useAuthFetch } from '@/utils/shopify';
 
 export default function AppLayout({
@@ -58,9 +59,10 @@ export default function AppLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#141718]">
+    <div className="h-screen bg-[#141718] overflow-hidden">
+      <Navigation />
       <AppSidebar />
-      <main className="lg:pl-[336px] p-4">
+      <main className="lg:pl-[336px] pt-16 p-4 h-[calc(100vh-1rem)] overflow-auto">
         {children}
       </main>
     </div>

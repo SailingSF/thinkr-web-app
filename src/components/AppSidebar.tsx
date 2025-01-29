@@ -89,10 +89,10 @@ export default function AppSidebar() {
         <Image
           src="/2 thinkr logo white letter.png"
           alt="Thinkr Logo"
-          width={160}
-          height={50}
+          width={240}
+          height={80}
           priority
-          className="w-auto h-10"
+          className="w-auto h-16"
         />
       </div>
       
