@@ -1,4 +1,8 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Navigation from "@/components/Navigation";
+import AppSidebar from "@/components/AppSidebar";
 
 export default function FAQ() {
   const faqs = [
@@ -25,30 +29,39 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#1a1b1e] text-white">
+    <div className="h-screen bg-[#141718] overflow-hidden">
       <Navigation />
+      <AppSidebar />
+      
+      <main className="lg:pl-[336px] pt-16 p-4 h-[calc(100vh-1rem)] overflow-auto">
+        <div className="max-w-3xl mx-auto py-8 lg:py-12">
+          <div className="flex flex-col gap-1 mb-8">
+            <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
+              Frequently Asked Questions
+            </h1>
+            <p className="text-[25px] text-[#8C74FF] font-normal m-0">
+              Get answers to common questions about thinkr.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="bg-[#2C2C2E] p-6 lg:p-8 rounded-2xl">
+                <h3 className="text-xl font-medium text-[#8B5CF6] mb-3">{faq.question}</h3>
+                <p className="text-gray-300 text-base lg:text-lg">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
 
-      {/* FAQ Content */}
-      <main className="max-w-3xl mx-auto px-xl py-3xl">
-        <h1 className="text-4xl font-bold mb-xl text-center">Frequently Asked Questions</h1>
-        
-        <div className="space-y-xl">
-          {faqs.map((faq, index) => (
-            <div key={index} className="bg-[#25262b] p-6 rounded-lg">
-              <h3 className="text-xl font-semibold mb-md text-purple-400">{faq.question}</h3>
-              <p className="text-gray-300">{faq.answer}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-2xl text-center">
-          <p className="text-gray-400 mb-md">Still have questions?</p>
-          <a 
-            href="mailto:support@thinkr.com" 
-            className="inline-block px-lg py-md bg-purple-500 hover:bg-purple-600 rounded-md transition-colors"
-          >
-            Contact Support
-          </a>
+          <div className="mt-12 text-center">
+            <p className="text-gray-400 mb-4">Still have questions?</p>
+            <a 
+              href="mailto:support@thinkr.com" 
+              className="inline-block px-6 py-4 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-medium rounded-xl transition-colors"
+            >
+              Contact Support
+            </a>
+          </div>
         </div>
       </main>
     </div>

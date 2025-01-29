@@ -52,23 +52,19 @@ export default function AppLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#141718]">
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-xl text-purple-400">Loading...</div>
-        </div>
+      <div className="min-h-screen bg-[#141718] flex items-center justify-center">
+        <div className="text-xl text-purple-400">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#141718]">
+    <div className="h-screen bg-[#141718] overflow-hidden">
       <Navigation />
-      <div className="flex min-h-[calc(100vh-96px)]">
-        <AppSidebar />
-        <main className="flex-1 overflow-y-auto bg-[#141718]">
-          {children}
-        </main>
-      </div>
+      <AppSidebar />
+      <main className="lg:pl-[336px] pt-16 p-4 h-[calc(100vh-1rem)] overflow-auto">
+        {children}
+      </main>
     </div>
   );
 } 

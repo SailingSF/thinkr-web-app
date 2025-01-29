@@ -115,14 +115,14 @@ export default function Integrations() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-md sm:py-lg lg:py-xl font-inter">
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
       <div className="container mx-auto px-sm sm:px-md lg:px-lg">
         {/* Title Section */}
-        <div className="flex flex-col gap-xs sm:gap-sm mb-lg">
-          <h1 className="text-2xl sm:text-3xl lg:text-[35px] text-[#FFFFFF] font-normal m-0">
+        <div className="flex flex-col gap-1 mb-8">
+          <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
             Connected integrations
           </h1>
-          <p className="text-xl sm:text-2xl lg:text-[25px] text-[#8C74FF] font-normal m-0">
+          <p className="text-[25px] text-[#8C74FF] font-normal m-0">
             Manage your connected data sources.
           </p>
         </div>
@@ -156,9 +156,9 @@ export default function Integrations() {
           Let us know which integrations you would like to connect
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md lg:gap-lg w-full mt-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-md">
           {/* Meta Ads Card */}
-          <div className="w-full max-w-[364px] bg-[#242424] rounded-[10px] p-sm sm:p-md">
+          <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
             <div className="flex flex-col gap-sm sm:gap-md">
               <div className="flex flex-col gap-xs sm:gap-sm">
                 <img
@@ -173,12 +173,16 @@ export default function Integrations() {
                   Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
                 </p>
               </div>
-              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">Request</div>
+              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
+                <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                  Request
+                </a>
+              </div>
             </div>
           </div>
 
           {/* Google Ads Card */}
-          <div className="w-full max-w-[364px] bg-[#242424] rounded-[10px] p-sm sm:p-md">
+          <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
             <div className="flex flex-col gap-sm sm:gap-md">
               <div className="flex flex-col gap-xs sm:gap-sm">
                 <img
@@ -193,12 +197,16 @@ export default function Integrations() {
                   Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
                 </p>
               </div>
-              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">Request</div>
+              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
+                <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                  Request
+                </a>
+              </div>
             </div>
           </div>
 
           {/* Mailchimp Card */}
-          <div className="w-full max-w-[364px] bg-[#242424] rounded-[10px] p-sm sm:p-md">
+          <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
             <div className="flex flex-col gap-sm sm:gap-md">
               <div className="flex flex-col gap-xs sm:gap-sm">
                 <img
@@ -213,7 +221,11 @@ export default function Integrations() {
                   Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
                 </p>
               </div>
-              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">Request</div>
+              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
+                <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                  Request
+                </a>
+              </div>
             </div>
           </div>
         </div>
