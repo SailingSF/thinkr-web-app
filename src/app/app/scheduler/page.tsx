@@ -148,86 +148,91 @@ export default function Scheduler() {
   const renderWeeklyView = () => {
     const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const hours = Array.from({ length: 24 }, (_, i) => i);
+    const timeZoneAbbr = new Intl.DateTimeFormat('en', { timeZoneName: 'short' })
+      .formatToParts(new Date())
+      .find(part => part.type === 'timeZoneName')?.value || 'Local';
 
     return (
-      <div className="mt-4 overflow-x-auto">
-        <div className="min-w-[900px]">
-          {/* Time Column Headers */}
-          <div className="grid grid-cols-8 gap-4 mb-4">
-            <div className="text-[#7B7B7B] text-sm">BST</div>
-            {weekDays.map(day => (
-              <div key={day} className="text-[#7B7B7B] text-sm font-medium">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Time Grid */}
-          <div className="relative">
-            {hours.map(hour => (
-              <div key={hour} className="grid grid-cols-8 gap-4 border-t border-[#2C2D32] py-4">
-                <div className="text-[#7B7B7B] text-sm">
-                  {hour === 0 ? '12 AM' : 
-                   hour === 12 ? '12 PM' : 
-                   hour > 12 ? `${hour-12} PM` : 
-                   `${hour} AM`}
+      <div className="mt-4">
+        <div className="overflow-auto max-h-[calc(100vh-300px)] rounded-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+          <div className="min-w-[900px] relative">
+            {/* Time Column Headers - Made sticky */}
+            <div className="grid grid-cols-8 gap-4 mb-4 sticky top-0 z-10 bg-[#141718] pt-4 pb-2 shadow-md border-b border-[#2C2D32]">
+              <div className="text-[#7B7B7B] text-sm">{timeZoneAbbr}</div>
+              {weekDays.map(day => (
+                <div key={day} className="text-[#7B7B7B] text-sm font-medium">
+                  {day}
                 </div>
-                {weekDays.map(day => (
-                  <div key={`${day}-${hour}`} className="min-h-[60px] relative">
-                    {schedules.map(schedule => {
-                      const [, scheduleHour, , , scheduleDay] = schedule.cron_expression.split(' ');
-                      const dayIndex = parseInt(scheduleDay);
-                      if (parseInt(scheduleHour) === hour && weekDays[dayIndex - 1] === day) {
-                        const timeLabel = hour === 0 ? '12 AM' : 
-                          hour === 12 ? '12 PM' : 
-                          hour > 12 ? `${hour-12} PM` : 
-                          `${hour} AM`;
-                        const analysisLabel = schedule.analysis_type
-                          .split('_')
-                          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                          .join(' ');
+              ))}
+            </div>
 
-                        return (
-                          <div
-                            key={schedule.id}
-                            className="absolute inset-x-0 bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors group"
-                          >
-                            <button
-                              onClick={() => handleDeleteSchedule(schedule.id)}
-                              disabled={isDeletingSchedule === schedule.id}
-                              className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#141718] border border-red-400 flex items-center justify-center text-red-400 hover:text-red-300 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                            <div className="space-y-2">
-                              <div className="flex items-start justify-between gap-2">
-                                <h3 className="text-sm font-medium text-[#8C74FF]">
-                                  {analysisLabel}
-                                </h3>
-                                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                  schedule.is_active 
-                                    ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
-                                    : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
-                                }`}>
-                                  {schedule.is_active ? 'Active' : 'Inactive'}
-                                </span>
-                              </div>
-                              
-                              <p className="text-xs text-[#7B7B7B] leading-relaxed">
-                                {schedule.description || `${analysisLabel} Analysis`}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })}
+            {/* Time Grid */}
+            <div className="relative">
+              {hours.map(hour => (
+                <div key={hour} className={`grid grid-cols-8 gap-4 ${hour !== 0 ? 'border-t border-[#2C2D32]' : ''} py-4`}>
+                  <div className="text-[#7B7B7B] text-sm sticky left-0 bg-[#141718] z-[5] px-2">
+                    {hour === 0 ? '12 AM' : 
+                     hour === 12 ? '12 PM' : 
+                     hour > 12 ? `${hour-12} PM` : 
+                     `${hour} AM`}
                   </div>
-                ))}
-              </div>
-            ))}
+                  {weekDays.map(day => (
+                    <div key={`${day}-${hour}`} className="min-h-[60px] relative">
+                      {schedules.map(schedule => {
+                        const [, scheduleHour, , , scheduleDay] = schedule.cron_expression.split(' ');
+                        const dayIndex = parseInt(scheduleDay);
+                        if (parseInt(scheduleHour) === hour && weekDays[dayIndex - 1] === day) {
+                          const timeLabel = hour === 0 ? '12 AM' : 
+                            hour === 12 ? '12 PM' : 
+                            hour > 12 ? `${hour-12} PM` : 
+                            `${hour} AM`;
+                          const analysisLabel = schedule.analysis_type
+                            .split('_')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
+
+                          return (
+                            <div
+                              key={schedule.id}
+                              className="absolute inset-x-0 bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors group"
+                            >
+                              <button
+                                onClick={() => handleDeleteSchedule(schedule.id)}
+                                disabled={isDeletingSchedule === schedule.id}
+                                className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#141718] border border-red-400 flex items-center justify-center text-red-400 hover:text-red-300 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                              <div className="space-y-2">
+                                <div className="flex items-start justify-between gap-2">
+                                  <h3 className="text-sm font-medium text-[#8C74FF]">
+                                    {analysisLabel}
+                                  </h3>
+                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                                    schedule.is_active 
+                                      ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
+                                      : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
+                                  }`}>
+                                    {schedule.is_active ? 'Active' : 'Inactive'}
+                                  </span>
+                                </div>
+                                
+                                <p className="text-xs text-[#7B7B7B] leading-relaxed">
+                                  {schedule.description || `${analysisLabel} Analysis`}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
