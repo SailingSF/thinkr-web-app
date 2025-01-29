@@ -242,7 +242,7 @@ export default function Scheduler() {
                       <div key={slotKey} className="min-h-[60px] relative">
                         {schedulesForTimeSlot.length === 1 ? (
                           // Single schedule view
-                          <div className="absolute inset-x-0 bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors group relative">
+                          <div className="inset-x-0 bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors group relative">
                             <button
                               onClick={() => handleDeleteSchedule(schedulesForTimeSlot[0].id)}
                               disabled={isDeletingSchedule === schedulesForTimeSlot[0].id}
