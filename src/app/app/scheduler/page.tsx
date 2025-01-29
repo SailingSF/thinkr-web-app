@@ -10,7 +10,7 @@ interface SchedulesResponse {
   schedules: Schedule[];
 }
 
-type ViewMode = 'list' | 'weekly';
+type ViewMode = 'list' | 'weekly' | 'kanban';
 
 export default function Scheduler() {
   const router = useRouter();
@@ -224,7 +224,7 @@ export default function Scheduler() {
                               <button
                                 onClick={() => handleDeleteSchedule(schedule.id)}
                                 disabled={isDeletingSchedule === schedule.id}
-                                className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#141718] border border-red-400 flex items-center justify-center text-red-400 hover:text-red-300 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="text-[#7B7B7B] hover:text-white disabled:text-[#7B7B7B]/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-[#282C2D] flex items-center justify-center transition-colors"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -259,6 +259,84 @@ export default function Scheduler() {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderKanbanView = () => {
+    const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const schedulesByDay = weekDays.reduce((acc, day) => {
+      acc[day] = schedules.filter(schedule => {
+        const [, , , , scheduleDay] = schedule.cron_expression.split(' ');
+        const dayIndex = parseInt(scheduleDay);
+        return weekDays[dayIndex - 1] === day;
+      });
+      return acc;
+    }, {} as Record<string, Schedule[]>);
+
+    return (
+      <div className="mt-4 overflow-x-auto">
+        <div className="min-w-[900px] grid grid-cols-7 gap-4">
+          {weekDays.map(day => (
+            <div key={day} className="flex flex-col gap-4">
+              <div className="text-[#7B7B7B] text-sm font-medium sticky top-0 bg-[#141718] py-2">
+                {day}
+              </div>
+              <div className="space-y-4">
+                {schedulesByDay[day].map(schedule => {
+                  const [, hour] = schedule.cron_expression.split(' ');
+                  const timeLabel = parseInt(hour) === 0 ? '12 AM' : 
+                    parseInt(hour) === 12 ? '12 PM' : 
+                    parseInt(hour) > 12 ? `${parseInt(hour)-12} PM` : 
+                    `${hour} AM`;
+                  const analysisLabel = schedule.analysis_type
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+
+                  return (
+                    <div
+                      key={schedule.id}
+                      className="bg-[#1C1C1E] rounded-lg p-4 border border-[#2C2D32] hover:border-[#8C74FF]/40 transition-colors"
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between">
+                          <h3 className="text-sm font-medium text-[#8C74FF]">
+                            {analysisLabel}
+                          </h3>
+                          <button
+                            onClick={() => handleDeleteSchedule(schedule.id)}
+                            disabled={isDeletingSchedule === schedule.id}
+                            className="text-[#7B7B7B] hover:text-white disabled:text-[#7B7B7B]/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-[#282C2D] flex items-center justify-center transition-colors"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-[#7B7B7B]">{timeLabel}</span>
+                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                            schedule.is_active 
+                              ? 'bg-[#338452]/10 text-[#338452] ring-1 ring-[#338452]/20' 
+                              : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
+                          }`}>
+                            {schedule.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        {schedule.description && (
+                          <p className="text-xs text-[#7B7B7B] leading-relaxed">
+                            {schedule.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -325,6 +403,14 @@ export default function Scheduler() {
                   }`}
                 >
                   Weekly View
+                </button>
+                <button
+                  onClick={() => setViewMode('kanban')}
+                  className={`text-lg font-semibold transition-colors ${
+                    viewMode === 'kanban' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
+                  }`}
+                >
+                  Kanban View
                 </button>
               </div>
               {viewMode === 'weekly' && (
@@ -461,8 +547,10 @@ export default function Scheduler() {
                   </div>
                 )}
               </div>
-            ) : (
+            ) : viewMode === 'weekly' ? (
               renderWeeklyView()
+            ) : (
+              renderKanbanView()
             )}
           </div>
         </div>
