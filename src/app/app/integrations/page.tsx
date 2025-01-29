@@ -115,14 +115,14 @@ export default function Integrations() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-md sm:py-lg lg:py-xl font-inter">
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
       <div className="container mx-auto px-sm sm:px-md lg:px-lg">
         {/* Title Section */}
-        <div className="flex flex-col gap-xs sm:gap-sm mb-lg">
-          <h1 className="text-2xl sm:text-3xl lg:text-[35px] text-[#FFFFFF] font-normal m-0">
+        <div className="flex flex-col gap-1 mb-8">
+          <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
             Connected integrations
           </h1>
-          <p className="text-xl sm:text-2xl lg:text-[25px] text-[#8C74FF] font-normal m-0">
+          <p className="text-[25px] text-[#8C74FF] font-normal m-0">
             Manage your connected data sources.
           </p>
         </div>
