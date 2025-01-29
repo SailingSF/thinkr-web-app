@@ -79,6 +79,17 @@ export default function Scheduler() {
     };
   }, [authFetch, router, isExpired]);
 
+  useEffect(() => {
+    if (viewMode === 'weekly') {
+      setTimeout(() => {
+        const eightAMElement = document.getElementById('hour-8');
+        if (eightAMElement) {
+          eightAMElement.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [viewMode]);
+
   const handleScheduleAdd = async (newSchedule: Schedule) => {
     setSchedules(prev => {
       const updated = [...prev, newSchedule];
@@ -169,8 +180,12 @@ export default function Scheduler() {
             {/* Time Grid */}
             <div className="relative">
               {hours.map(hour => (
-                <div key={hour} className={`grid grid-cols-8 gap-4 ${hour !== 0 ? 'border-t border-[#2C2D32]' : ''} py-4`}>
-                  <div className="text-[#7B7B7B] text-sm sticky left-0 bg-[#141718] z-[5] px-2">
+                <div 
+                  key={hour} 
+                  id={`hour-${hour}`}
+                  className={`grid grid-cols-8 gap-4 ${hour !== 0 ? 'border-t border-[#2C2D32]' : ''} py-4`}
+                >
+                  <div className="text-[#7B7B7B]/80 text-sm sticky left-0 bg-[#141718] z-[5] px-2">
                     {hour === 0 ? '12 AM' : 
                      hour === 12 ? '12 PM' : 
                      hour > 12 ? `${hour-12} PM` : 
