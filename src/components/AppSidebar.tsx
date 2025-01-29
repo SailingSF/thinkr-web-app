@@ -89,7 +89,7 @@ export default function AppSidebar() {
     <div className="flex flex-col h-full">
       <div className="px-4 py-6">
         <Image
-          src="/2 thinkr logo white letter.png"
+          src="/2 Thinkr logo white letter.png"
           alt="Thinkr Logo"
           width={240}
           height={80}
