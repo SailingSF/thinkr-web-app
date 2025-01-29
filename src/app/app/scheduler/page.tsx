@@ -27,6 +27,7 @@ export default function Scheduler() {
   const [loading, setLoading] = useState(!storedData?.schedules);
   const [error, setError] = useState('');
   const [hideWeekends, setHideWeekends] = useState(false);
+  const [expandedTimeSlots, setExpandedTimeSlots] = useState<Set<string>>(new Set());
 
   const hasWeekendSchedules = useMemo(() => {
     return schedules.some(schedule => {
@@ -35,6 +36,18 @@ export default function Scheduler() {
       return dayNum === 6 || dayNum === 0; // Saturday is 6, Sunday is 0
     });
   }, [schedules]);
+
+  // Reset expanded state when view mode changes
+  useEffect(() => {
+    setExpandedTimeSlots(new Set());
+  }, [viewMode]);
+
+  // Reset expanded state when navigating away
+  useEffect(() => {
+    return () => {
+      setExpandedTimeSlots(new Set());
+    };
+  }, []);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -173,6 +186,18 @@ export default function Scheduler() {
       .formatToParts(new Date())
       .find(part => part.type === 'timeZoneName')?.value || 'Local';
 
+    const toggleTimeSlot = (slotKey: string) => {
+      setExpandedTimeSlots(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(slotKey)) {
+          newSet.delete(slotKey);
+        } else {
+          newSet.add(slotKey);
+        }
+        return newSet;
+      });
+    };
+
     return (
       <div className="mt-4">
         <div className="overflow-auto max-h-[calc(100vh-300px)] rounded-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
@@ -201,60 +226,128 @@ export default function Scheduler() {
                      hour > 12 ? `${hour-12} PM` : 
                      `${hour} AM`}
                   </div>
-                  {weekDays.map(day => (
-                    <div key={`${day}-${hour}`} className="min-h-[60px] relative">
-                      {schedules.map(schedule => {
-                        const [, scheduleHour, , , scheduleDay] = schedule.cron_expression.split(' ');
-                        const dayIndex = parseInt(scheduleDay);
-                        if (parseInt(scheduleHour) === hour && weekDays[dayIndex - 1] === day) {
-                          const timeLabel = hour === 0 ? '12 AM' : 
-                            hour === 12 ? '12 PM' : 
-                            hour > 12 ? `${hour-12} PM` : 
-                            `${hour} AM`;
-                          const analysisLabel = schedule.analysis_type
-                            .split('_')
-                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                            .join(' ');
+                  {weekDays.map(day => {
+                    const schedulesForTimeSlot = schedules.filter(schedule => {
+                      const [, scheduleHour, , , scheduleDay] = schedule.cron_expression.split(' ');
+                      const dayIndex = parseInt(scheduleDay);
+                      return parseInt(scheduleHour) === hour && weekDays[dayIndex - 1] === day;
+                    });
 
-                          return (
-                            <div
-                              key={schedule.id}
-                              className="absolute inset-x-0 bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors group"
+                    if (schedulesForTimeSlot.length === 0) return <div key={`${day}-${hour}`} className="min-h-[60px] relative" />;
+
+                    const slotKey = `${day}-${hour}`;
+                    const isExpanded = expandedTimeSlots.has(slotKey);
+
+                    return (
+                      <div key={slotKey} className="min-h-[60px] relative">
+                        {schedulesForTimeSlot.length === 1 ? (
+                          // Single schedule view
+                          <div className="absolute inset-x-0 bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors group relative">
+                            <button
+                              onClick={() => handleDeleteSchedule(schedulesForTimeSlot[0].id)}
+                              disabled={isDeletingSchedule === schedulesForTimeSlot[0].id}
+                              className="absolute -top-2 -right-2 text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-red-400/20 flex items-center justify-center transition-colors shadow-sm hover:shadow-md ring-1 ring-red-400/30"
                             >
-                              <button
-                                onClick={() => handleDeleteSchedule(schedule.id)}
-                                disabled={isDeletingSchedule === schedule.id}
-                                className="text-[#7B7B7B] hover:text-white disabled:text-[#7B7B7B]/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-[#282C2D] flex items-center justify-center transition-colors"
-                              >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                              <div className="space-y-2">
-                                <div className="flex items-start justify-between gap-2">
-                                  <h3 className="text-sm font-medium text-[#8C74FF]">
-                                    {analysisLabel}
-                                  </h3>
-                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                    schedule.is_active 
-                                      ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
-                                      : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
-                                  }`}>
-                                    {schedule.is_active ? 'Active' : 'Inactive'}
-                                  </span>
-                                </div>
-                                
-                                <p className="text-xs text-[#7B7B7B] leading-relaxed">
-                                  {schedule.description || `${analysisLabel} Analysis`}
-                                </p>
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                            <div className="space-y-2 pt-1">
+                              <h3 className="text-sm font-medium text-[#8C74FF]">
+                                {schedulesForTimeSlot[0].analysis_type
+                                  .split('_')
+                                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                  .join(' ')}
+                              </h3>
+                              <p className="text-xs text-[#7B7B7B] leading-relaxed">
+                                {schedulesForTimeSlot[0].description || `${schedulesForTimeSlot[0].analysis_type
+                                  .split('_')
+                                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                  .join(' ')} Analysis`}
+                              </p>
+                              <div className="flex justify-end">
+                                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                                  schedulesForTimeSlot[0].is_active 
+                                    ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
+                                    : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
+                                }`}>
+                                  {schedulesForTimeSlot[0].is_active ? 'Active' : 'Inactive'}
+                                </span>
                               </div>
                             </div>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-                  ))}
+                          </div>
+                        ) : (
+                          // Multiple schedules view
+                          <div className="absolute inset-x-0">
+                            <button
+                              onClick={() => toggleTimeSlot(slotKey)}
+                              className="w-full bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors text-left"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-[#8C74FF]">
+                                  {schedulesForTimeSlot.length} Schedules
+                                </span>
+                                <svg
+                                  className={`w-4 h-4 text-[#8C74FF] transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </button>
+                            {isExpanded && (
+                              <div className="absolute inset-x-0 top-full mt-1 z-10 bg-[#1C1C1E] rounded-lg border border-[#2C2D32] shadow-lg overflow-hidden p-2 space-y-2">
+                                {schedulesForTimeSlot.map((schedule, index) => (
+                                  <div
+                                    key={schedule.id}
+                                    className={`p-3 bg-[#8C74FF]/10 rounded-lg relative ${index !== 0 ? 'mt-2' : ''}`}
+                                  >
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteSchedule(schedule.id);
+                                      }}
+                                      disabled={isDeletingSchedule === schedule.id}
+                                      className="absolute -top-1.5 -right-1.5 text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-red-400/20 flex items-center justify-center transition-colors shadow-sm hover:shadow-md ring-1 ring-red-400/30"
+                                    >
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                    <div className="space-y-2 pt-1">
+                                      <h3 className="text-sm font-medium text-[#8C74FF]">
+                                        {schedule.analysis_type
+                                          .split('_')
+                                          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                          .join(' ')}
+                                      </h3>
+                                      <p className="text-xs text-[#7B7B7B] leading-relaxed">
+                                        {schedule.description || `${schedule.analysis_type
+                                          .split('_')
+                                          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                          .join(' ')} Analysis`}
+                                      </p>
+                                      <div className="flex justify-end">
+                                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                                          schedule.is_active 
+                                            ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
+                                            : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
+                                        }`}>
+                                          {schedule.is_active ? 'Active' : 'Inactive'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
             </div>
@@ -298,38 +391,33 @@ export default function Scheduler() {
                   return (
                     <div
                       key={schedule.id}
-                      className="bg-[#1C1C1E] rounded-lg p-4 border border-[#2C2D32] hover:border-[#8C74FF]/40 transition-colors"
+                      className="bg-[#8C74FF]/10 rounded-lg p-3 border border-[#8C74FF]/20 hover:border-[#8C74FF]/40 transition-colors relative"
                     >
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-start justify-between">
-                          <h3 className="text-sm font-medium text-[#8C74FF]">
-                            {analysisLabel}
-                          </h3>
-                          <button
-                            onClick={() => handleDeleteSchedule(schedule.id)}
-                            disabled={isDeletingSchedule === schedule.id}
-                            className="text-[#7B7B7B] hover:text-white disabled:text-[#7B7B7B]/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-[#282C2D] flex items-center justify-center transition-colors"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-[#7B7B7B]">{timeLabel}</span>
+                      <button
+                        onClick={() => handleDeleteSchedule(schedule.id)}
+                        disabled={isDeletingSchedule === schedule.id}
+                        className="absolute -top-1.5 -right-1.5 text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed w-5 h-5 rounded-full bg-red-400/20 flex items-center justify-center transition-colors shadow-sm hover:shadow-md ring-1 ring-red-400/30"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <div className="space-y-2 pt-1">
+                        <h3 className="text-sm font-medium text-[#8C74FF]">
+                          {analysisLabel}
+                        </h3>
+                        <p className="text-xs text-[#7B7B7B] leading-relaxed">
+                          {schedule.description || `${analysisLabel} Analysis - Weekly on ${timeLabel}`}
+                        </p>
+                        <div className="flex justify-end">
                           <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                             schedule.is_active 
-                              ? 'bg-[#338452]/10 text-[#338452] ring-1 ring-[#338452]/20' 
+                              ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
                               : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
                           }`}>
                             {schedule.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </div>
-                        {schedule.description && (
-                          <p className="text-xs text-[#7B7B7B] leading-relaxed">
-                            {schedule.description}
-                          </p>
-                        )}
                       </div>
                     </div>
                   );
