@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import ScheduleModal from './ScheduleModal';
 import { useAuthFetch } from '@/utils/shopify';
@@ -26,6 +26,15 @@ export default function Scheduler() {
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [loading, setLoading] = useState(!storedData?.schedules);
   const [error, setError] = useState('');
+  const [hideWeekends, setHideWeekends] = useState(false);
+
+  const hasWeekendSchedules = useMemo(() => {
+    return schedules.some(schedule => {
+      const [, , , , day] = schedule.cron_expression.split(' ');
+      const dayNum = parseInt(day);
+      return dayNum === 6 || dayNum === 0; // Saturday is 6, Sunday is 0
+    });
+  }, [schedules]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -157,7 +166,8 @@ export default function Scheduler() {
   };
 
   const renderWeeklyView = () => {
-    const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const allWeekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const weekDays = hideWeekends ? allWeekDays.slice(0, 5) : allWeekDays;
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const timeZoneAbbr = new Intl.DateTimeFormat('en', { timeZoneName: 'short' })
       .formatToParts(new Date())
@@ -168,7 +178,7 @@ export default function Scheduler() {
         <div className="overflow-auto max-h-[calc(100vh-300px)] rounded-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
           <div className="min-w-[900px] relative">
             {/* Time Column Headers - Made sticky */}
-            <div className="grid grid-cols-8 gap-4 mb-4 sticky top-0 z-10 bg-[#141718] pt-4 pb-2 shadow-md border-b border-[#2C2D32]">
+            <div className={`grid ${hideWeekends ? 'grid-cols-6' : 'grid-cols-8'} gap-4 mb-4 sticky top-0 z-10 bg-[#141718] pt-4 pb-2 shadow-md border-b border-[#2C2D32]`}>
               <div className="text-[#7B7B7B] text-sm">{timeZoneAbbr}</div>
               {weekDays.map(day => (
                 <div key={day} className="text-[#7B7B7B] text-sm font-medium">
@@ -183,7 +193,7 @@ export default function Scheduler() {
                 <div 
                   key={hour} 
                   id={`hour-${hour}`}
-                  className={`grid grid-cols-8 gap-4 ${hour !== 0 ? 'border-t border-[#2C2D32]' : ''} py-4`}
+                  className={`grid ${hideWeekends ? 'grid-cols-6' : 'grid-cols-8'} gap-4 ${hour !== 0 ? 'border-t border-[#2C2D32]' : ''} py-4`}
                 >
                   <div className="text-[#7B7B7B]/80 text-sm sticky left-0 bg-[#141718] z-[5] px-2">
                     {hour === 0 ? '12 AM' : 
@@ -298,23 +308,47 @@ export default function Scheduler() {
         <div className="bg-[#141718] rounded-2xl">
           <div className="mt-8">
             {/* View Mode Selector */}
-            <div className="flex items-center gap-6 mb-6">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`text-lg font-semibold transition-colors ${
-                  viewMode === 'list' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
-                }`}
-              >
-                List View
-              </button>
-              <button
-                onClick={() => setViewMode('weekly')}
-                className={`text-lg font-semibold transition-colors ${
-                  viewMode === 'weekly' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
-                }`}
-              >
-                Weekly View
-              </button>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`text-lg font-semibold transition-colors ${
+                    viewMode === 'list' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
+                  }`}
+                >
+                  List View
+                </button>
+                <button
+                  onClick={() => setViewMode('weekly')}
+                  className={`text-lg font-semibold transition-colors ${
+                    viewMode === 'weekly' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
+                  }`}
+                >
+                  Weekly View
+                </button>
+              </div>
+              {viewMode === 'weekly' && (
+                <div className="flex items-center gap-3" title={hasWeekendSchedules ? "Can't hide weekends when schedules exist on weekends" : "Toggle weekend visibility"}>
+                  <span className="text-sm text-[#7B7B7B]">Show Weekends</span>
+                  <button
+                    onClick={() => setHideWeekends(!hideWeekends)}
+                    disabled={hasWeekendSchedules}
+                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#338452]/50 focus:ring-offset-2 focus:ring-offset-[#141718] disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: hideWeekends ? '#282C2D' : '#338452' }}
+                  >
+                    <span
+                      className={`${
+                        hideWeekends ? 'translate-x-1' : 'translate-x-6'
+                      } inline-block h-4 w-4 transform rounded-full bg-[#1C1C1C] shadow-lg transition duration-200 ease-in-out`}
+                    />
+                  </button>
+                  {hasWeekendSchedules && (
+                    <span className="text-xs bg-[#2C2D32] px-2 py-0.5 rounded text-[#7B7B7B]">
+                      Weekend schedules exist
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {viewMode === 'list' ? (
