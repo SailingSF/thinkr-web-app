@@ -2,8 +2,28 @@
 
 import { useState } from 'react';
 import { useHybridNavigation, isShopifyEmbedded } from '@/utils/shopify';
-import { LoginResponse, OnboardingResponse } from '@/types/auth';
+import { LoginResponse } from '@/types/auth';
 import { useLocalStorage } from './useLocalStorage';
+
+// Define the onboarding data structure
+interface OnboardingData {
+  how_much_time_on_business?: string;
+  where_ai_helps?: string[];
+  business_goals?: string[];
+  [key: string]: any; // Allow for other fields
+}
+
+interface OnboardingResponse {
+  data: OnboardingData;
+  available_fields: string[];
+}
+
+// Define required onboarding fields and their corresponding pages
+const REQUIRED_ONBOARDING_FIELDS = [
+  { field: 'how_much_time_on_business', page: '/onboarding/time' },
+  { field: 'where_ai_helps', page: '/onboarding/ai-help' },
+  { field: 'business_goals', page: '/onboarding/goals' },
+] as const;
 
 interface UseAuthReturn {
   login: (email: string, password: string) => Promise<void>;
@@ -63,24 +83,25 @@ export function useAuth(redirectPath?: string | null): UseAuthReturn {
         },
       });
       
-      if (onboardingResponse.ok) {
-        const onboardingData = await onboardingResponse.json() as OnboardingResponse;
-        
-        // Check if essential onboarding fields are filled
-        const hasName = Boolean(onboardingData.data?.name);
-        const hasGoals = Boolean(onboardingData.data?.business_goals?.length);
+      if (!onboardingResponse.ok) {
+        // If we can't fetch onboarding data, direct to first onboarding page
+        navigate(REQUIRED_ONBOARDING_FIELDS[0].page);
+        return;
+      }
 
-        // Determine the next page in the onboarding flow
-        let nextPage = '/app';
-        if (!hasName) {
-          nextPage = '/onboarding';
-        } else if (!hasGoals) {
-          nextPage = '/onboarding/goals';
-        }
+      const onboardingData = await onboardingResponse.json() as OnboardingResponse;
+      
+      // Find the first missing required field
+      const missingField = REQUIRED_ONBOARDING_FIELDS.find(
+        ({ field }) => !onboardingData.data?.[field]
+      );
 
-        navigate(nextPage);
+      if (missingField) {
+        // Redirect to the page for the first missing field
+        navigate(missingField.page);
       } else {
-        navigate('/onboarding');
+        // All required fields are present, send them to the app
+        navigate('/app');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
