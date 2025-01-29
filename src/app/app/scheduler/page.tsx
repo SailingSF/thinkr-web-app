@@ -185,7 +185,7 @@ export default function Scheduler() {
 
         <div className="bg-[#141718] rounded-2xl">
           <div className="mt-8">
-            <h2 className="text-lg font-semibold text-white mb-4">Active</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">List View</h2>
             
             {schedules.length > 0 ? (
               <div className="space-y-4">

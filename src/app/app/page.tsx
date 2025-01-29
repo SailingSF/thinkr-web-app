@@ -145,10 +145,10 @@ export default function App() {
         {/* Title Section */}
         <div className="flex flex-col gap-1 mb-8">
           <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
-            Dashboard
+            Action Hub
           </h1>
           <p className="text-[#8C74FF] text-[25px] font-normal m-0">
-            Overview of your store's performance.
+            Boost your store's performance.
           </p>
         </div>
 
