@@ -20,8 +20,60 @@ export default {
         'xl': '2rem',       // 32px
         '2xl': '3rem',      // 48px
         '3xl': '4rem',      // 64px
-      }
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            lineHeight: '1.5',
+            h1: {
+              lineHeight: '1.5',
+              marginTop: '1.5em',
+              marginBottom: '0.5em',
+            },
+            h2: {
+              lineHeight: '1.5',
+              marginTop: '1.5em',
+              marginBottom: '0.5em',
+            },
+            h3: {
+              lineHeight: '1.5',
+              marginTop: '1.5em',
+              marginBottom: '0.5em',
+            },
+            'ul, ol': {
+              lineHeight: '1.5',
+              margin: '1em 0',
+            },
+            'li': {
+              marginTop: '0.5em',
+              marginBottom: '0.5em',
+            },
+            'p': {
+              marginTop: '1em',
+              marginBottom: '1em',
+            },
+            'blockquote': {
+              fontStyle: 'italic',
+              borderLeftWidth: '4px',
+              borderLeftColor: '#4B5563',
+              paddingLeft: '1em',
+              marginLeft: 0,
+            },
+            'code': {
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              padding: '0.2em 0.4em',
+              borderRadius: '0.25em',
+              fontSize: '0.9em',
+            },
+            'pre': {
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              padding: '1em',
+              borderRadius: '0.5em',
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 } satisfies Config;

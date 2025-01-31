@@ -25,16 +25,24 @@ const REQUIRED_ONBOARDING_FIELDS = [
   { field: 'business_goals', page: '/onboarding/goals' },
 ] as const;
 
+interface User {
+  token: string;
+  email: string;
+  id: number;
+}
+
 interface UseAuthReturn {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   error: string;
+  user: User | null;
 }
 
 export function useAuth(redirectPath?: string | null): UseAuthReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [user, setUser] = useState<User | null>(null);
   const { navigate } = useHybridNavigation();
   const { clearStoredData } = useLocalStorage();
 
@@ -124,5 +132,5 @@ export function useAuth(redirectPath?: string | null): UseAuthReturn {
     navigate('/');
   };
 
-  return { login, logout, isLoading, error };
+  return { login, logout, isLoading, error, user };
 } 
