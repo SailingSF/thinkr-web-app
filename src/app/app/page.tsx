@@ -338,7 +338,7 @@ export default function App() {
                       </div>
                     )}
                     <div className="bg-white p-6 rounded-xl">
-                      <div className="prose prose-lg max-w-none"
+                      <div className="prose prose-lg prose-light max-w-none"
                         dangerouslySetInnerHTML={{ __html: selectedRecommendation.content }}
                       />
                     </div>
@@ -354,7 +354,7 @@ export default function App() {
                           {selectedRecommendation.implementation_emails.map((email, index) => (
                             <div key={index} className="bg-white p-6 rounded-xl">
                               <h5 className="text-[#8B5CF6] text-lg mb-4 font-medium">{email.subject}</h5>
-                              <div className="prose prose-lg max-w-none"
+                              <div className="prose prose-lg prose-light max-w-none"
                                 dangerouslySetInnerHTML={{ __html: email.content }}
                               />
                               <div className="mt-4 text-sm text-gray-500 flex items-center gap-2">
