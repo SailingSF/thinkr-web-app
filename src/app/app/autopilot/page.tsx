@@ -18,10 +18,10 @@ export default function Autopilot() {
               className="text-purple-400"
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M12 4L12 2M8 8h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2zM10 11h.01M14 11h.01"
+              d="M12 4L12 2M8 8h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2zM10 12h.01M14 12h.01"
             />
-            <circle cx="10" cy="11" r="1" className="text-purple-400" fill="currentColor" />
-            <circle cx="14" cy="11" r="1" className="text-purple-400" fill="currentColor" />
+            <circle cx="10" cy="12" r="1" className="text-purple-400" fill="currentColor" />
+            <circle cx="14" cy="12" r="1" className="text-purple-400" fill="currentColor" />
           </svg>
         </motion.div>
 
@@ -56,14 +56,18 @@ export default function Autopilot() {
           <div className="relative bg-[#2c2d32] border border-purple-400/20 rounded-xl p-4 lg:p-8">
             <div className="grid grid-cols-3 gap-4 lg:gap-6 mb-4 lg:mb-6">
               {[1, 2, 3].map((i) => (
-                <div
+                <motion.div
                   key={i}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.8, delay: 0.8 + (i * 0.2) }}
                   className="h-1.5 lg:h-2 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full"
                 />
               ))}
             </div>
             <p className="text-sm lg:text-base text-gray-400">
-              Experience the future of automated store management
+              Experience the future of automated store management with our AI agent that handles day-to-day operations, 
+              enabling entrepreneurs to focus on growth while we take care of inventory, pricing, and customer service tasks.
             </p>
           </div>
         </motion.div>
