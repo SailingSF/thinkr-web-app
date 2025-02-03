@@ -68,6 +68,72 @@ export default {
       typography: {
         DEFAULT: {
           css: {
+            color: 'white',
+            lineHeight: '1.5',
+            h1: {
+              color: 'white',
+              lineHeight: '1.5',
+              marginTop: '1.5em',
+              marginBottom: '0.5em',
+            },
+            h2: {
+              color: 'white',
+              lineHeight: '1.5',
+              marginTop: '1.5em',
+              marginBottom: '0.5em',
+            },
+            h3: {
+              color: 'white',
+              lineHeight: '1.5',
+              marginTop: '1.5em',
+              marginBottom: '0.5em',
+            },
+            'ul, ol': {
+              color: 'white',
+              lineHeight: '1.5',
+              margin: '1em 0',
+            },
+            'li': {
+              color: 'white',
+              marginTop: '0.5em',
+              marginBottom: '0.5em',
+            },
+            'p': {
+              color: 'white',
+              marginTop: '1em',
+              marginBottom: '1em',
+            },
+            'blockquote': {
+              color: 'white',
+              fontStyle: 'italic',
+              borderLeftWidth: '4px',
+              borderLeftColor: '#4B5563',
+              paddingLeft: '1em',
+              marginLeft: 0,
+            },
+            'code': {
+              color: 'white',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              padding: '0.2em 0.4em',
+              borderRadius: '0.25em',
+              fontSize: '0.9em',
+            },
+            'pre': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              padding: '1em',
+              borderRadius: '0.5em',
+            },
+            a: {
+              color: '#8B5CF6',
+              textDecoration: 'underline',
+              '&:hover': {
+                color: '#7C3AED',
+              },
+            },
+          },
+        },
+        light: {
+          css: {
             color: '#333333',
             lineHeight: '1.5',
             h1: {
