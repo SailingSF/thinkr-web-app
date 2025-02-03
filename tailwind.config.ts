@@ -68,35 +68,43 @@ export default {
       typography: {
         DEFAULT: {
           css: {
+            color: '#333333',
             lineHeight: '1.5',
             h1: {
+              color: '#333333',
               lineHeight: '1.5',
               marginTop: '1.5em',
               marginBottom: '0.5em',
             },
             h2: {
+              color: '#333333',
               lineHeight: '1.5',
               marginTop: '1.5em',
               marginBottom: '0.5em',
             },
             h3: {
+              color: '#333333',
               lineHeight: '1.5',
               marginTop: '1.5em',
               marginBottom: '0.5em',
             },
             'ul, ol': {
+              color: '#333333',
               lineHeight: '1.5',
               margin: '1em 0',
             },
             'li': {
+              color: '#333333',
               marginTop: '0.5em',
               marginBottom: '0.5em',
             },
             'p': {
+              color: '#333333',
               marginTop: '1em',
               marginBottom: '1em',
             },
             'blockquote': {
+              color: '#333333',
               fontStyle: 'italic',
               borderLeftWidth: '4px',
               borderLeftColor: '#4B5563',
@@ -104,6 +112,7 @@ export default {
               marginLeft: 0,
             },
             'code': {
+              color: '#333333',
               backgroundColor: 'rgba(0, 0, 0, 0.1)',
               padding: '0.2em 0.4em',
               borderRadius: '0.25em',
@@ -113,6 +122,13 @@ export default {
               backgroundColor: 'rgba(0, 0, 0, 0.1)',
               padding: '1em',
               borderRadius: '0.5em',
+            },
+            a: {
+              color: '#8B5CF6',
+              textDecoration: 'underline',
+              '&:hover': {
+                color: '#7C3AED',
+              },
             },
           },
         },

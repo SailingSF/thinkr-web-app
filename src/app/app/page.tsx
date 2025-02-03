@@ -8,6 +8,30 @@ import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 import { useAuthFetch } from '@/utils/shopify';
 import { useLocalStorage, User, ConnectionStatus } from '@/hooks/useLocalStorage';
 
+interface Recommendation {
+  id: string;
+  subject: string;
+  created_at: string;
+  store: string;
+  has_implementation_steps: boolean;
+}
+
+interface RecommendationDetail {
+  id: string;
+  subject: string;
+  content: string;
+  text_content: string;
+  created_at: string;
+  store: string;
+  result_data: any;
+  implementation_emails: {
+    subject: string;
+    content: string;
+    sent_at: string | null;
+    created_at: string;
+  }[];
+}
+
 export default function App() {
   const router = useRouter();
   const authFetch = useAuthFetch();
@@ -21,6 +45,9 @@ export default function App() {
   const [user, setUser] = useState<User | null>(storedData?.user || null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(storedData?.connectionStatus || null);
   const [loading, setLoading] = useState(!storedData?.user || !storedData?.connectionStatus);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [selectedRecommendation, setSelectedRecommendation] = useState<RecommendationDetail | null>(null);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -89,6 +116,39 @@ export default function App() {
       mountedRef.current = false;
     };
   }, [authFetch, router, isExpired]); // Removed storedData and updateStoredData from dependencies
+
+  useEffect(() => {
+    async function fetchRecommendations() {
+      if (!user) return;
+      
+      setLoadingRecommendations(true);
+      try {
+        const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/recommendations/`);
+        if (!response.ok) throw new Error('Failed to fetch recommendations');
+        const data = await response.json();
+        setRecommendations(data.recommendations);
+      } catch (error) {
+        console.error('Failed to fetch recommendations:', error);
+      } finally {
+        setLoadingRecommendations(false);
+      }
+    }
+
+    fetchRecommendations();
+  }, [user, authFetch]);
+
+  const fetchRecommendationDetail = async (id: string) => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/recommendations/?recommendation_id=${id}`
+      );
+      if (!response.ok) throw new Error('Failed to fetch recommendation detail');
+      const data = await response.json();
+      setSelectedRecommendation(data);
+    } catch (error) {
+      console.error('Failed to fetch recommendation detail:', error);
+    }
+  };
 
   const startOAuthFlow = async () => {
     if (!user?.email) {
@@ -230,6 +290,121 @@ export default function App() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Recommendations Section */}
+        <div className="mt-8 lg:mt-12">
+          <div className="mb-8">
+            <h2 className="text-[32px] text-white font-normal">Email Recommendations</h2>
+            <p className="text-[#8C74FF] text-lg">View your personalized store recommendations</p>
+          </div>
+
+          {loadingRecommendations ? (
+            <div className="text-center text-gray-400">Loading recommendations...</div>
+          ) : recommendations.length === 0 ? (
+            <div className="bg-[#2C2C2E] p-6 rounded-2xl text-center">
+              <p className="text-gray-400">No recommendations available yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {selectedRecommendation ? (
+                <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-2xl">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h3 className="text-2xl text-white mb-2">{selectedRecommendation.subject}</h3>
+                      <p className="text-gray-400 text-sm">
+                        {new Date(selectedRecommendation.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedRecommendation(null)}
+                      className="text-[#8B5CF6] hover:text-[#7C3AED] flex items-center gap-2"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      Back to list
+                    </button>
+                  </div>
+                  <div className="space-y-6">
+                    {selectedRecommendation.result_data && (
+                      <div className="grid grid-cols-2 gap-4 bg-[#1C1C1E] p-4 rounded-xl">
+                        {Object.entries(selectedRecommendation.result_data).map(([key, value]) => (
+                          <div key={key} className="flex flex-col">
+                            <span className="text-[#8B5CF6] text-sm capitalize">{key.replace(/_/g, ' ')}:</span>
+                            <span className="text-white">{String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="bg-white p-6 rounded-xl">
+                      <div className="prose prose-lg max-w-none"
+                        dangerouslySetInnerHTML={{ __html: selectedRecommendation.content }}
+                      />
+                    </div>
+                    {selectedRecommendation.implementation_emails.length > 0 && (
+                      <div className="mt-8">
+                        <h4 className="text-xl text-white mb-4 flex items-center gap-2">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          Implementation Steps
+                        </h4>
+                        <div className="space-y-4">
+                          {selectedRecommendation.implementation_emails.map((email, index) => (
+                            <div key={index} className="bg-white p-6 rounded-xl">
+                              <h5 className="text-[#8B5CF6] text-lg mb-4 font-medium">{email.subject}</h5>
+                              <div className="prose prose-lg max-w-none"
+                                dangerouslySetInnerHTML={{ __html: email.content }}
+                              />
+                              <div className="mt-4 text-sm text-gray-500 flex items-center gap-2">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M8 4V8L10.5 10.5M15 8C15 11.866 11.866 15 8 15C4.13401 15 1 11.866 1 8C1 4.13401 4.13401 1 8 1C11.866 1 15 4.13401 15 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                                {email.sent_at ? `Sent on ${new Date(email.sent_at).toLocaleDateString()}` : 'Pending implementation'}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {recommendations.map((rec) => (
+                    <div
+                      key={rec.id}
+                      className="bg-[#2C2C2E] p-6 rounded-2xl cursor-pointer hover:bg-[#3C3C3E] transition-colors group"
+                      onClick={() => fetchRecommendationDetail(rec.id)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="text-white text-xl mb-2 group-hover:text-[#8B5CF6] transition-colors">{rec.subject}</h3>
+                          <p className="text-gray-400 text-sm flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M8 4V8L10.5 10.5M15 8C15 11.866 11.866 15 8 15C4.13401 15 1 11.866 1 8C1 4.13401 4.13401 1 8 1C11.866 1 15 4.13401 15 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            {new Date(rec.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {rec.has_implementation_steps && (
+                            <span className="bg-[#8B5CF6] text-white text-xs px-3 py-1 rounded-full">
+                              Has Implementation Steps
+                            </span>
+                          )}
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400 group-hover:text-[#8B5CF6] transition-colors">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
