@@ -15,7 +15,7 @@ export default function DeepResearch() {
     setError('');
 
     try {
-      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/research/`, {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/deep-research/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export default function DeepResearch() {
         <h1 className="text-2xl font-semibold text-white mb-6">Deep Research</h1>
         
         <p className="text-gray-300 mb-8">
-          Submit your e-commerce research question, and our AI agent will conduct thorough research and email you the results.
+          Submit your e-commerce research question, and our AI agent will conduct thorough research via the web and the latest AI reasoning models, then email you the results.
         </p>
 
         {status === 'success' ? (
