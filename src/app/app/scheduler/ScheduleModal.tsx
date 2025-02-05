@@ -28,9 +28,12 @@ interface Day {
 }
 
 const ANALYSIS_TYPES: AnalysisType[] = [
-  { name: 'inventory', displayName: 'Inventory Analysis', description: 'Track and analyze your inventory levels and movements' },
-  { name: 'top_customers', displayName: 'Top Customer Analysis', description: 'Monitor top customers and their recent orders' },
-  { name: 'financial_metrics', displayName: 'Financial Analysis', description: 'Analyze key financial indicators and trends' },
+  { name: 'revenue_growth', displayName: 'Revenue Growth', description: 'Analyze revenue trends and growth opportunities' },
+  { name: 'customer_retention', displayName: 'Customer Retention', description: 'Track customer loyalty and retention metrics' },
+  { name: 'marketing_roi', displayName: 'Marketing ROI', description: 'Measure return on investment for marketing campaigns' },
+  { name: 'pricing_optimization', displayName: 'Pricing Optimization', description: 'Optimize pricing strategies for maximum profitability' },
+  { name: 'content_seo', displayName: 'Content & SEO', description: 'Analyze content performance and SEO effectiveness' },
+  { name: 'general_insights', displayName: 'General Insights', description: 'Get comprehensive business performance insights' },
 ];
 
 const DAYS: Day[] = [
@@ -122,20 +125,20 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#25262b] p-8 rounded-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-white">Schedule Weekly Suggestion</h2>
+      <div className="bg-[#25262b] p-8 rounded-xl w-full max-w-3xl font-inter">
+        <h2 className="text-2xl font-normal mb-6 text-white">Schedule Weekly Suggestion</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Select Suggestion Improvements:</label>
-            <div className="space-y-2">
+            <h2 className="text-[40px] font-semibold text-white mb-8">Select your goals.</h2>
+            <div className="grid grid-cols-2 gap-3">
               {ANALYSIS_TYPES.map((type) => (
                 <div
                   key={type.name}
-                  className={`p-4 rounded-lg cursor-pointer transition-all ${
+                  className={`p-4 rounded-lg cursor-pointer transition-all border-2 ${
                     analysisType === type.name
-                      ? 'bg-[#2c2d32]'
-                      : 'bg-[#2c2d32] hover:bg-[#32333a]'
+                      ? 'bg-[#8C74FF]/10 border-[#8C74FF]'
+                      : 'bg-[#2c2d32] hover:bg-[#32333a] border-transparent'
                   }`}
                   onClick={() => setAnalysisType(type.name)}
                   role="button"
@@ -147,7 +150,9 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
                     }
                   }}
                 >
-                  <div className="font-medium text-white">{type.displayName}</div>
+                  <div className={`font-medium ${analysisType === type.name ? 'text-[#8C74FF]' : 'text-white'}`}>
+                    {type.displayName}
+                  </div>
                 </div>
               ))}
             </div>
@@ -220,16 +225,16 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 text-white hover:bg-[#2c2d32] rounded-lg transition-colors"
+              className="px-6 py-2.5 text-white hover:bg-[#2c2d32] rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !analysisType}
-              className="px-6 py-2 bg-[#8C74FF] hover:bg-[#7B63EE] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-2.5 bg-[#8C74FF] hover:bg-[#7B63EE] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Scheduling...' : 'Schedule Suggestion'}
+              {loading ? 'Scheduling...' : 'Continue'}
             </button>
           </div>
         </form>
