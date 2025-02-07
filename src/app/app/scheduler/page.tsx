@@ -495,20 +495,20 @@ export default function Scheduler() {
                   List View
                 </button>
                 <button
-                  onClick={() => setViewMode('weekly')}
-                  className={`text-lg font-semibold transition-colors ${
-                    viewMode === 'weekly' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
-                  }`}
-                >
-                  Weekly View
-                </button>
-                <button
                   onClick={() => setViewMode('kanban')}
                   className={`text-lg font-semibold transition-colors ${
                     viewMode === 'kanban' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
                   }`}
                 >
                   Kanban View
+                </button>
+                <button
+                  onClick={() => setViewMode('weekly')}
+                  className={`text-lg font-semibold transition-colors ${
+                    viewMode === 'weekly' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
+                  }`}
+                >
+                  Weekly View
                 </button>
               </div>
               {(viewMode === 'weekly' || viewMode === 'kanban') && (
