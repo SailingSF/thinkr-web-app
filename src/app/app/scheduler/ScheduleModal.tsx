@@ -28,12 +28,12 @@ interface Day {
 }
 
 const ANALYSIS_TYPES: AnalysisType[] = [
-  { name: 'revenue_growth', displayName: 'Revenue Growth', description: 'Analyze revenue trends and growth opportunities' },
-  { name: 'customer_retention', displayName: 'Customer Retention', description: 'Track customer loyalty and retention metrics' },
-  { name: 'marketing_roi', displayName: 'Marketing ROI', description: 'Measure return on investment for marketing campaigns' },
-  { name: 'pricing_optimization', displayName: 'Pricing Optimization', description: 'Optimize pricing strategies for maximum profitability' },
-  { name: 'content_seo', displayName: 'Content & SEO', description: 'Analyze content performance and SEO effectiveness' },
-  { name: 'general_insights', displayName: 'General Insights', description: 'Get comprehensive business performance insights' },
+  { name: 'top_customers', displayName: 'Revenue Growth', description: 'Analyze revenue trends and growth opportunities' },
+  { name: 'top_customers', displayName: 'Customer Retention', description: 'Track customer loyalty and retention metrics' },
+  { name: 'financial_metrics', displayName: 'Marketing ROI', description: 'Measure return on investment for marketing campaigns' },
+  { name: 'inventory', displayName: 'Pricing Optimization', description: 'Optimize pricing strategies for maximum profitability' },
+  { name: 'inventory', displayName: 'Content & SEO', description: 'Analyze content performance and SEO effectiveness' },
+  { name: 'financial_metrics', displayName: 'General Insights', description: 'Get comprehensive business performance insights' },
 ];
 
 const DAYS: Day[] = [
