@@ -20,22 +20,62 @@ export default function ActionsPage() {
     let mounted = true;
     let timeoutId = null;
 
-    const handleResponse = (data) => {
-      if (data.status?.toLowerCase() === 'completed') {
-        console.log('Setting completed state from data:', data);
-        setStatus('completed');
-        if (data.error) {
-          setError(data.error);
+    const pollStatus = async (actionId, taskId) => {
+      try {
+        console.log('Polling status for action:', actionId, 'task:', taskId);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/check-shop-action-status/?action_id=${actionId}&task_id=${taskId}`
+        );
+        const data = await response.json();
+        console.log('Poll response:', data);
+
+        if (!mounted) return;
+
+        if (!response.ok) {
+          setError(data.error || 'Failed to check status');
+          setStatus('error');
+          return false;
         }
-        if (data.result?.message) {
+
+        if (data.status === 'COMPLETED') {
           setResult(data.result);
-          setMessage(data.result.message);
-        } else if (data.result) {
-          setResult(data.result);
+          setStatus('completed');
+          return false;
         }
-        return true;
+
+        if (data.status === 'FAILED') {
+          setError(data.error || 'Action failed');
+          setStatus('error');
+          return false;
+        }
+
+        if (data.status === 'APPROVED' || data.status === 'PENDING' || data.status === 'processing') {
+          return true; // Continue polling
+        }
+
+        setError('Unknown status received');
+        setStatus('error');
+        return false;
+      } catch (err) {
+        console.error('Error polling status:', err);
+        if (!mounted) return;
+        setError('Failed to check status');
+        setStatus('error');
+        return false;
       }
-      return false;
+    };
+
+    const startPolling = (actionId, taskId) => {
+      console.log('Starting polling for action:', actionId, 'task:', taskId);
+      setStatus('processing');
+      const poll = async () => {
+        const shouldContinue = await pollStatus(actionId, taskId);
+        if (shouldContinue && mounted) {
+          timeoutId = setTimeout(poll, POLLING_INTERVAL);
+        }
+      };
+
+      poll();
     };
 
     const executeAction = async () => {
@@ -46,13 +86,6 @@ export default function ActionsPage() {
         console.log('No action parameter found');
         setError('Missing action parameter');
         setStatus('error');
-        return;
-      }
-
-      // If we have cached response data, use it
-      if (responseData.current) {
-        console.log('Using cached response data');
-        handleResponse(responseData.current);
         return;
       }
 
@@ -70,27 +103,28 @@ export default function ActionsPage() {
         const data = await response.json();
         console.log('API response:', data);
 
-        // Cache the response data
-        responseData.current = data;
+        if (!mounted) return;
 
-        if (!mounted) {
-          console.log('Component unmounted, but caching response for next mount');
+        if (data.error) {
+          console.log('Error in response:', data.error);
+          setStatus('error');
+          setError(data.error);
+          if (data.result) {
+            setResult(data.result);
+          }
           return;
         }
 
-        // Handle the response
-        if (!handleResponse(data)) {
-          // Only proceed with polling if we didn't handle it as completed
-          if (data.status === 'processing' && data.action_id && data.task_id) {
-            console.log('Received processing status, starting polling');
-            setStatus('loading');
-            startPolling(data.action_id, data.task_id);
-          } else {
-            console.log('Unexpected response, setting error');
-            setStatus('error');
-            setError(data.error || 'Unexpected response from server');
-          }
+        if (data.status === 'processing') {
+          console.log('Action started processing, starting polling');
+          setMessage(data.message); // Show "Action execution started" message
+          startPolling(data.action_id, data.task_id);
+          return;
         }
+
+        // Handle any other unexpected responses
+        setStatus('error');
+        setError('Unexpected response from server');
       } catch (err) {
         console.error('Error executing action:', err);
         if (!mounted) return;
@@ -111,7 +145,6 @@ export default function ActionsPage() {
   console.log('Render with status:', status, 'error:', error, 'message:', message, 'result:', result);
 
   if (!status) {
-    console.log('No status yet, returning null');
     return null;
   }
 
@@ -123,18 +156,6 @@ export default function ActionsPage() {
         </h1>
 
         <div className="space-y-4">
-          {status === 'loading' && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="font-medium">Action Pending</span>
-              </div>
-              <p className="text-gray-600 dark:text-gray-300">
-                Your action request is being initialized...
-              </p>
-            </div>
-          )}
-
           {status === 'processing' && (
             <div className="space-y-2">
               <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
@@ -142,7 +163,7 @@ export default function ActionsPage() {
                 <span className="font-medium">Processing Action</span>
               </div>
               <p className="text-gray-600 dark:text-gray-300">
-                Your action is being processed. This may take a few moments...
+                {message || 'Your action is being processed. This may take a few moments...'}
               </p>
             </div>
           )}
@@ -150,41 +171,22 @@ export default function ActionsPage() {
           {status === 'completed' && (
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                {error ? (
-                  <XCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                ) : (
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                )}
-                <span className={`font-medium ${error ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
-                  {error ? 'Action Completed with Message:' : 'Action Completed Successfully'}
+                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <span className="font-medium text-green-600 dark:text-green-400">
+                  Action Completed Successfully
                 </span>
               </div>
-
-              {error && (
-                <div className="text-amber-600 dark:text-amber-400 font-medium">
-                  {error}
-                </div>
-              )}
-
-              {message && (
+              {result && (
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <p className="text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
-                    {message}
+                    {result.message || JSON.stringify(result, null, 2)}
                   </p>
-                </div>
-              )}
-
-              {result && !message && (
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <pre className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
-                    {typeof result === 'object' ? JSON.stringify(result, null, 2) : result}
-                  </pre>
                 </div>
               )}
             </div>
           )}
 
-          {status === 'error' && !result && (
+          {status === 'error' && (
             <div className="space-y-4">
               <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
                 <XCircle className="h-5 w-5" />
@@ -193,10 +195,10 @@ export default function ActionsPage() {
               <div className="text-red-600 dark:text-red-400">
                 {error}
               </div>
-              {message && (
+              {result && result.message && (
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <p className="text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
-                    {message}
+                    {result.message}
                   </p>
                 </div>
               )}
