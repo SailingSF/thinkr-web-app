@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 const POLLING_INTERVAL = 2000; // Poll every 2 seconds
+const MAX_RETRIES = 3; // Maximum number of retries for task ID issues
+const RETRY_DELAY = 1000; // Wait 1 second between retries
 
 export default function ActionsPage() {
   const searchParams = useSearchParams();
@@ -13,16 +15,18 @@ export default function ActionsPage() {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const executionAttempted = useRef(false);
-  const responseData = useRef(null);
+  const retryCount = useRef(0);
 
   useEffect(() => {
     console.log('Effect started, current status:', status);
     let mounted = true;
     let timeoutId = null;
 
-    const pollStatus = async (actionId, taskId) => {
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const pollStatus = async (actionId, taskId, isRetry = false) => {
       try {
-        console.log('Polling status for action:', actionId, 'task:', taskId);
+        console.log('Polling status for action:', actionId, 'task:', taskId, 'isRetry:', isRetry);
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/check-shop-action-status/?action_id=${actionId}&task_id=${taskId}`
         );
@@ -30,6 +34,23 @@ export default function ActionsPage() {
         console.log('Poll response:', data);
 
         if (!mounted) return;
+
+        // Handle task ID validation errors with retry logic
+        if (!response.ok && data.error && 
+            (data.error === 'Invalid task ID' || data.error === 'No task ID found in cache')) {
+          if (!isRetry && retryCount.current < MAX_RETRIES) {
+            console.log(`Task ID validation failed, retrying (${retryCount.current + 1}/${MAX_RETRIES})`);
+            retryCount.current++;
+            await delay(RETRY_DELAY);
+            return await pollStatus(actionId, taskId, true);
+          }
+          setError(data.error);
+          setStatus('error');
+          return false;
+        }
+
+        // Reset retry count on successful response
+        retryCount.current = 0;
 
         if (!response.ok) {
           setError(data.error || 'Failed to check status');
@@ -59,6 +80,15 @@ export default function ActionsPage() {
       } catch (err) {
         console.error('Error polling status:', err);
         if (!mounted) return;
+        
+        // Also apply retry logic for network errors
+        if (!isRetry && retryCount.current < MAX_RETRIES) {
+          console.log(`Network error, retrying (${retryCount.current + 1}/${MAX_RETRIES})`);
+          retryCount.current++;
+          await delay(RETRY_DELAY);
+          return await pollStatus(actionId, taskId, true);
+        }
+
         setError('Failed to check status');
         setStatus('error');
         return false;
@@ -107,15 +137,21 @@ export default function ActionsPage() {
 
         if (data.error) {
           console.log('Error in response:', data.error);
-          setStatus('error');
-          setError(data.error);
-          if (data.result) {
-            setResult(data.result);
+          if (data.status === 'completed') {
+            // Handle case where action was already processed
+            setStatus('completed');
+            setError(data.error);
+            if (data.result) {
+              setResult(data.result);
+            }
+          } else {
+            setStatus('error');
+            setError(data.error);
           }
           return;
         }
 
-        if (data.status === 'processing') {
+        if (data.status === 'processing' && data.action_id && data.task_id) {
           console.log('Action started processing, starting polling');
           setMessage(data.message); // Show "Action execution started" message
           startPolling(data.action_id, data.task_id);
