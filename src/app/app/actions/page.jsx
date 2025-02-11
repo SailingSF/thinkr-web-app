@@ -124,33 +124,59 @@ export default function ActionsPage() {
 
         <div className="space-y-4">
           {status === 'loading' && (
-            <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Initializing action...</span>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="font-medium">Action Pending</span>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                Your action request is being initialized...
+              </p>
             </div>
           )}
 
           {status === 'processing' && (
-            <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Processing your action request...</span>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="font-medium">Processing Action</span>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                Your action is being processed. This may take a few moments...
+              </p>
             </div>
           )}
 
           {status === 'completed' && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
-                <CheckCircle2 className="h-5 w-5" />
-                <span>{error ? 'Action completed with message:' : 'Action completed successfully!'}</span>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                {error ? (
+                  <XCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                ) : (
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                )}
+                <span className={`font-medium ${error ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
+                  {error ? 'Action Completed with Message:' : 'Action Completed Successfully'}
+                </span>
               </div>
-              {(error || message) && (
-                <div className="flex items-center space-x-2 text-amber-600 dark:text-amber-400">
-                  <span>{error || message}</span>
+
+              {error && (
+                <div className="text-amber-600 dark:text-amber-400 font-medium">
+                  {error}
                 </div>
               )}
+
+              {message && (
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <p className="text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
+                    {message}
+                  </p>
+                </div>
+              )}
+
               {result && !message && (
-                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
-                  <pre className="whitespace-pre-wrap text-sm">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <pre className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
                     {typeof result === 'object' ? JSON.stringify(result, null, 2) : result}
                   </pre>
                 </div>
@@ -159,14 +185,19 @@ export default function ActionsPage() {
           )}
 
           {status === 'error' && !result && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-amber-600 dark:text-amber-400">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
                 <XCircle className="h-5 w-5" />
-                <span>{error}</span>
+                <span className="font-medium">Error</span>
+              </div>
+              <div className="text-red-600 dark:text-red-400">
+                {error}
               </div>
               {message && (
-                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
-                  <pre className="whitespace-pre-wrap text-sm">{message}</pre>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <p className="text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
+                    {message}
+                  </p>
                 </div>
               )}
             </div>
