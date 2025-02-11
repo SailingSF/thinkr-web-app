@@ -58,23 +58,33 @@ export default function ActionsPage() {
           return false;
         }
 
-        if (data.status === 'COMPLETED') {
+        const currentStatus = data.status?.toLowerCase();
+
+        if (currentStatus === 'completed') {
           setResult(data.result);
           setStatus('completed');
           return false;
         }
 
-        if (data.status === 'FAILED') {
+        if (currentStatus === 'failed') {
           setError(data.error || 'Action failed');
           setStatus('error');
           return false;
         }
 
-        if (data.status === 'APPROVED' || data.status === 'PENDING' || data.status === 'processing') {
+        if (currentStatus === 'approved') {
+          setStatus('processing');
+          setMessage('Action approved, waiting for processing to begin...');
           return true; // Continue polling
         }
 
-        setError('Unknown status received');
+        if (currentStatus === 'pending' || currentStatus === 'processing') {
+          setStatus('processing');
+          return true; // Continue polling
+        }
+
+        console.log('Unexpected status received:', data.status);
+        setError(`Unexpected status: ${data.status}`);
         setStatus('error');
         return false;
       } catch (err) {
