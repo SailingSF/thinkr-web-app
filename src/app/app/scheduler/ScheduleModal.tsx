@@ -51,6 +51,22 @@ const HOURS = Array.from({ length: 24 }, (_, i) => ({
   label: i === 0 ? '12 AM' : i === 12 ? '12 PM' : i > 12 ? `${i-12} PM` : `${i} AM`
 }));
 
+// Helper function to convert local hour to UTC
+const convertToUTC = (localHour: number, localDay: string): { hour: number, day: string } => {
+  const now = new Date();
+  const localDate = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + (parseInt(localDay) - now.getDay()),
+    localHour
+  );
+  
+  const utcHour = localDate.getUTCHours();
+  const utcDay = localDate.getUTCDay().toString();
+  
+  return { hour: utcHour, day: utcDay };
+};
+
 export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: ScheduleModalProps) {
   const [analysisType, setAnalysisType] = useState<string>('');
   const [day, setDay] = useState<string>('1'); // Default to Monday
@@ -62,7 +78,8 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
   if (!isOpen) return null;
 
   const getCronExpression = (): string => {
-    return `0 ${hour} * * ${day}`;
+    const { hour: utcHour, day: utcDay } = convertToUTC(hour, day);
+    return `0 ${utcHour} * * ${utcDay}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,6 +144,9 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-[#25262b] p-8 rounded-xl w-full max-w-3xl font-inter">
         <h2 className="text-2xl font-normal mb-6 text-white">Schedule Weekly Suggestion</h2>
+        <p className="text-sm text-[#7B7B7B] mb-6">
+          All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+        </p>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

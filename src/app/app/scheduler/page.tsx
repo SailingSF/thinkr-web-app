@@ -12,6 +12,22 @@ interface SchedulesResponse {
 
 type ViewMode = 'list' | 'weekly' | 'kanban';
 
+// Helper function to convert UTC to local time
+const convertFromUTC = (utcHour: number, utcDay: string): { hour: number, day: string } => {
+  const now = new Date();
+  const utcDate = new Date(Date.UTC(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + (parseInt(utcDay) - now.getUTCDay()),
+    utcHour
+  ));
+  
+  const localHour = utcDate.getHours();
+  const localDay = utcDate.getDay().toString();
+  
+  return { hour: localHour, day: localDay };
+};
+
 export default function Scheduler() {
   const router = useRouter();
   const authFetch = useAuthFetch();
@@ -48,6 +64,34 @@ export default function Scheduler() {
       setExpandedTimeSlots(new Set());
     };
   }, []);
+
+  const timeZoneAbbr = useMemo(() => {
+    return new Intl.DateTimeFormat('en', { timeZoneName: 'short' })
+      .formatToParts(new Date())
+      .find(part => part.type === 'timeZoneName')?.value || 'Local';
+  }, []);
+
+  const formatScheduleTime = (schedule: Schedule) => {
+    const [, utcHour, , , utcDay] = schedule.cron_expression.split(' ');
+    const { hour: localHour, day: localDay } = convertFromUTC(parseInt(utcHour), utcDay);
+    
+    const dayLabel = {
+      '0': 'Sunday',
+      '1': 'Monday',
+      '2': 'Tuesday',
+      '3': 'Wednesday',
+      '4': 'Thursday',
+      '5': 'Friday',
+      '6': 'Saturday'
+    }[localDay] || 'Unknown';
+    
+    const timeLabel = localHour === 0 ? '12 AM' : 
+      localHour === 12 ? '12 PM' : 
+      localHour > 12 ? `${localHour-12} PM` : 
+      `${localHour} AM`;
+
+    return { dayLabel, timeLabel, hour: localHour };
+  };
 
   useEffect(() => {
     mountedRef.current = true;
@@ -182,9 +226,6 @@ export default function Scheduler() {
     const allWeekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const weekDays = hideWeekends ? allWeekDays.slice(0, 5) : allWeekDays;
     const hours = Array.from({ length: 24 }, (_, i) => i);
-    const timeZoneAbbr = new Intl.DateTimeFormat('en', { timeZoneName: 'short' })
-      .formatToParts(new Date())
-      .find(part => part.type === 'timeZoneName')?.value || 'Local';
 
     const toggleTimeSlot = (slotKey: string) => {
       setExpandedTimeSlots(prev => {
@@ -200,11 +241,12 @@ export default function Scheduler() {
 
     return (
       <div className="mt-4">
-        <div className="overflow-auto max-h-[calc(100vh-300px)] rounded-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+        <div className="overflow-auto max-h-[calc(100vh-400px)] rounded-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
           <div className="min-w-[900px] relative">
-            {/* Time Column Headers - Made sticky */}
             <div className={`grid ${hideWeekends ? 'grid-cols-6' : 'grid-cols-8'} gap-4 mb-4 sticky top-0 z-10 bg-[#141718] pt-4 pb-2 shadow-md border-b border-[#2C2D32]`}>
-              <div className="text-[#7B7B7B] text-sm">{timeZoneAbbr}</div>
+              <div className="text-[#7B7B7B] text-sm">
+                {timeZoneAbbr}
+              </div>
               {weekDays.map(day => (
                 <div key={day} className="text-[#7B7B7B] text-sm font-medium">
                   {day}
@@ -212,7 +254,6 @@ export default function Scheduler() {
               ))}
             </div>
 
-            {/* Time Grid */}
             <div className="relative">
               {hours.map(hour => (
                 <div 
@@ -228,9 +269,8 @@ export default function Scheduler() {
                   </div>
                   {weekDays.map(day => {
                     const schedulesForTimeSlot = schedules.filter(schedule => {
-                        const [, scheduleHour, , , scheduleDay] = schedule.cron_expression.split(' ');
-                        const dayIndex = parseInt(scheduleDay);
-                      return parseInt(scheduleHour) === hour && weekDays[dayIndex - 1] === day;
+                      const { dayLabel, hour: localHour } = formatScheduleTime(schedule);
+                      return localHour === hour && dayLabel === day;
                     });
 
                     if (schedulesForTimeSlot.length === 0) return <div key={`${day}-${hour}`} className="min-h-[60px] relative" />;
@@ -362,18 +402,16 @@ export default function Scheduler() {
     const weekDays = hideWeekends ? allWeekDays.slice(0, 5) : allWeekDays;
     const schedulesByDay = weekDays.reduce((acc, day) => {
       acc[day] = schedules.filter(schedule => {
-        const [, , , , scheduleDay] = schedule.cron_expression.split(' ');
-        const dayIndex = parseInt(scheduleDay);
-        return weekDays[dayIndex - 1] === day;
+        const { dayLabel } = formatScheduleTime(schedule);
+        return dayLabel === day;
       });
       return acc;
     }, {} as Record<string, Schedule[]>);
 
     return (
       <div className="mt-4">
-        <div className="overflow-auto max-h-[calc(100vh-300px)] rounded-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+        <div className="overflow-auto max-h-[calc(100vh-400px)] rounded-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
           <div className="min-w-[900px] relative">
-            {/* Days Header - Made sticky */}
             <div className={`grid ${hideWeekends ? 'grid-cols-5' : 'grid-cols-7'} gap-4 sticky top-0 z-10 bg-[#141718] pt-4 pb-2 shadow-md border-b border-[#2C2D32]`}>
               {weekDays.map(day => (
                 <div key={day} className="text-[#7B7B7B] text-sm font-medium">
@@ -382,7 +420,6 @@ export default function Scheduler() {
               ))}
             </div>
 
-            {/* Schedule Grid */}
             <div className={`grid ${hideWeekends ? 'grid-cols-5' : 'grid-cols-7'} gap-4 pt-4`}>
               {weekDays.map(day => (
                 <div key={day} className="space-y-4">
@@ -442,7 +479,7 @@ export default function Scheduler() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)] bg-[#242424]">
+      <div className="flex items-center justify-center h-full">
         <div className="text-xl text-[#8C74FF] flex items-center gap-3">
           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -455,9 +492,8 @@ export default function Scheduler() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
+    <div className="h-full bg-[#141718] py-8 lg:py-12 font-inter">
       <div className="container mx-auto px-4 lg:px-8">
-        {/* Title Section */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div className="flex flex-col gap-1">
             <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
@@ -465,6 +501,9 @@ export default function Scheduler() {
             </h1>
             <p className="text-[#8C74FF] text-[25px] font-normal m-0">
               Schedule automated analysis for your store.
+              <span className="text-sm text-[#7B7B7B] block mt-1">
+                All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+              </span>
             </p>
           </div>
           <button
@@ -483,7 +522,6 @@ export default function Scheduler() {
 
         <div className="bg-[#141718] rounded-2xl">
           <div className="mt-8">
-            {/* View Mode Selector */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-6">
                 <button
@@ -540,22 +578,7 @@ export default function Scheduler() {
                 {schedules.length > 0 ? (
                   <div className="space-y-4">
                     {schedules.map((schedule) => {
-                      const [, hour, , , day] = schedule.cron_expression.split(' ');
-                      const dayLabel = {
-                        '0': 'Sunday',
-                        '1': 'Monday',
-                        '2': 'Tuesday',
-                        '3': 'Wednesday',
-                        '4': 'Thursday',
-                        '5': 'Friday',
-                        '6': 'Saturday'
-                      }[day] || 'Unknown';
-                      
-                      const timeLabel = parseInt(hour) === 0 ? '12 AM' : 
-                        parseInt(hour) === 12 ? '12 PM' : 
-                        parseInt(hour) > 12 ? `${parseInt(hour)-12} PM` : 
-                        `${hour} AM`;
-
+                      const { dayLabel, timeLabel } = formatScheduleTime(schedule);
                       const analysisLabel = schedule.analysis_type
                         .split('_')
                         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
