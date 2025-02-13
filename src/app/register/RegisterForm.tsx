@@ -30,16 +30,13 @@ export function RegisterForm() {
     const hasMinLength = value.length >= 8;
     const hasNumber = /\d/.test(value);
     const hasLetter = /[a-zA-Z]/.test(value);
-    const hasMinDigits = (value.match(/\d/g) || []).length >= 6;
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
 
     if (!hasMinLength) {
       return 'Password must be at least 8 characters long';
     }
-    if (!hasNumber || !hasLetter) {
-      return 'Password must contain both letters and numbers';
-    }
-    if (!hasMinDigits) {
-      return 'Password must contain at least 6 digits';
+    if (!hasNumber || !hasLetter || !hasSpecialChar) {
+      return 'Password must contain letters, numbers, and special characters';
     }
     return '';
   };
@@ -122,17 +119,17 @@ export function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-lg max-w-3xl mx-auto">
+    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto space-y-8">
       {error && (
         <div className="p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
           {error}
         </div>
       )}
 
-      <div className="space-y-lg">
-        <div className="flex flex-col lg:flex-row gap-lg">
-          <div className="flex-1">
-            <label htmlFor="full_name" className="block text-sm font-medium text-[#7B7B7B] mb-sm">
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="full_name" className="block text-sm font-medium text-[#7B7B7B] mb-2">
               What's your full name?
             </label>
             <input
@@ -141,12 +138,12 @@ export function RegisterForm() {
               type="text"
               placeholder="John Smith"
               required
-              className="block w-full rounded-lg border-0 py-md px-md shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] sm:text-sm bg-[#242424] text-white transition-all duration-200"
+              className="block w-full rounded-lg border-0 py-3 px-4 shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] text-sm bg-[#242424] text-white transition-all duration-200"
             />
           </div>
 
-          <div className="flex-1">
-            <label htmlFor="email" className="block text-sm font-medium text-[#7B7B7B] mb-sm">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-[#7B7B7B] mb-2">
               What's your email address?
             </label>
             <input
@@ -155,14 +152,14 @@ export function RegisterForm() {
               type="email"
               placeholder="example@thinkrapp.com"
               required
-              className="block w-full rounded-lg border-0 py-md px-md shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] sm:text-sm bg-[#242424] text-white transition-all duration-200"
+              className="block w-full rounded-lg border-0 py-3 px-4 shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] text-sm bg-[#242424] text-white transition-all duration-200"
             />
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-lg">
-          <div className="flex-1">
-            <label htmlFor="password" className="block text-sm font-medium text-[#7B7B7B] mb-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-[#7B7B7B] mb-2">
               Password
             </label>
             <input
@@ -172,27 +169,24 @@ export function RegisterForm() {
               value={password}
               onChange={handlePasswordChange}
               required
-              className="block w-full rounded-lg border-0 py-md px-md shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] sm:text-sm bg-[#242424] text-white transition-all duration-200"
+              className="block w-full rounded-lg border-0 py-3 px-4 shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] text-sm bg-[#242424] text-white transition-all duration-200"
             />
-            <div className="mt-md">
+            <div className="mt-3">
               <p className="text-sm text-[#7B7B7B]">Password requirements:</p>
-              <ul className="mt-2 text-sm space-y-sm text-[#7B7B7B] list-disc pl-4">
+              <ul className="mt-2 text-sm space-y-1.5 text-[#7B7B7B] list-disc pl-4">
                 <li className={password.length >= 8 ? 'text-[#22C55E]' : ''}>
                   At least 8 characters long
                 </li>
-                <li className={/[a-zA-Z]/.test(password) && /\d/.test(password) ? 'text-[#22C55E]' : ''}>
-                  Contains both letters and numbers
-                </li>
-                <li className={(password.match(/\d/g) || []).length >= 6 ? 'text-[#22C55E]' : ''}>
-                  At least 6 digits
+                <li className={/[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password) ? 'text-[#22C55E]' : ''}>
+                  Contains letters, numbers, and special characters
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="flex-1 space-y-lg">
+          <div className="space-y-6">
             <div>
-              <label htmlFor="confirm_password" className="block text-sm font-medium text-[#7B7B7B] mb-sm">
+              <label htmlFor="confirm_password" className="block text-sm font-medium text-[#7B7B7B] mb-2">
                 Confirm Password
               </label>
               <input
@@ -201,14 +195,14 @@ export function RegisterForm() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="block w-full rounded-lg border-0 py-md px-md shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] sm:text-sm bg-[#242424] text-white transition-all duration-200"
+                className="block w-full rounded-lg border-0 py-3 px-4 shadow-sm ring-1 ring-inset ring-[#8C74FF]/20 placeholder:text-[#7B7B7B] focus:ring-2 focus:ring-inset focus:ring-[#8C74FF] text-sm bg-[#242424] text-white transition-all duration-200"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading || !!passwordError || password !== confirmPassword}
-              className={`w-full justify-center rounded-lg px-lg py-md text-base font-medium text-white shadow-md transition-all duration-200 ${
+              className={`w-full justify-center rounded-lg px-6 py-3 text-base font-medium text-white shadow-md transition-all duration-200 ${
                 isLoading || !!passwordError || password !== confirmPassword
                   ? 'bg-[#8C74FF]/50 cursor-not-allowed'
                   : 'bg-[#8C74FF] hover:bg-[#8C74FF]/90 shadow-[#8C74FF]/20 hover:shadow-lg hover:shadow-[#8C74FF]/30'

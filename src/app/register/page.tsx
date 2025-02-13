@@ -46,11 +46,11 @@ export default function Register() {
       </header>
 
       {/* Registration Form */}
-      <main className="flex flex-col items-center justify-center px-4 md:px-8 pt-8 md:pt-20 pb-8 md:pb-32">
-        <div className="w-full max-w-[917px] space-y-6 md:space-y-8">
-          <div className="text-center md:text-left">
-            <h2 className="text-3xl md:text-[55.2px] font-normal">Create your account.</h2>
-            <p className="text-xl md:text-[25px] text-[#7C5CFC]">Let's get started.</p>
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-101px)] px-4 md:px-8">
+        <div className="w-full max-w-[917px] space-y-8 md:space-y-10">
+          <div className="text-center space-y-3">
+            <h2 className="text-4xl md:text-[55px] font-normal leading-tight">Create your account.</h2>
+            <p className="text-xl md:text-2xl text-[#7C5CFC]">Let's get started.</p>
           </div>
 
           <RegisterForm />
