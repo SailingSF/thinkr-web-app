@@ -13,8 +13,8 @@ export default function ShopifyErrorModal({
   error,
   userEmail,
 }: ShopifyErrorModalProps) {
-  // Hardcoded Calendly link
-  const CALENDLY_LINK = 'https://calendly.com/edu-thinkr/15min-thinkr';
+  // Hardcoded cal.com link
+  const CAL_LINK = 'https://cal.com/edu-samayoa-im7mvi';
 
   console.log('ShopifyErrorModal props:', { isOpen, error, userEmail });
 
@@ -50,7 +50,7 @@ export default function ShopifyErrorModal({
               <span className="text-purple-400">1.</span>
               Install our Shopify app from the{' '}
               <a
-                href="#" // TODO: Replace with actual app store link
+                href="https://apps.shopify.com/thinkr"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-purple-400 hover:underline"
@@ -75,7 +75,7 @@ export default function ShopifyErrorModal({
           <div className="border-t border-gray-700 pt-4 mt-6">
             <p className="mb-3">Need help? Book a 15-minute call with our team:</p>
             <a
-              href={CALENDLY_LINK}
+              href={CAL_LINK}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded-lg text-white transition-colors"
