@@ -20,6 +20,8 @@ interface AnalysisType {
   name: string;
   displayName: string;
   description: string;
+  color: string;
+  icon: JSX.Element;
 }
 
 interface Day {
@@ -28,12 +30,72 @@ interface Day {
 }
 
 const ANALYSIS_TYPES: AnalysisType[] = [
-  { name: 'top_customers', displayName: 'Revenue Growth', description: 'Analyze revenue trends and growth opportunities' },
-  { name: 'top_customers', displayName: 'Customer Retention', description: 'Track customer loyalty and retention metrics' },
-  { name: 'financial_metrics', displayName: 'Marketing ROI', description: 'Measure return on investment for marketing campaigns' },
-  { name: 'inventory', displayName: 'Pricing Optimization', description: 'Optimize pricing strategies for maximum profitability' },
-  { name: 'inventory', displayName: 'Content & SEO', description: 'Analyze content performance and SEO effectiveness' },
-  { name: 'financial_metrics', displayName: 'General Insights', description: 'Get comprehensive business performance insights' },
+  { 
+    name: 'revenue_growth', 
+    displayName: 'Revenue Growth', 
+    description: 'Analyze revenue trends and growth opportunities',
+    color: '#4CAF50',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    )
+  },
+  { 
+    name: 'top_customers', 
+    displayName: 'Top Customers', 
+    description: 'Track the top customers of your store in the past 30 days',
+    color: '#2196F3',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    )
+  },
+  { 
+    name: 'financial_metrics', 
+    displayName: 'Financial Metrics', 
+    description: 'Track your store\'s financial metrics',
+    color: '#FF9800',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    )
+  },
+  { 
+    name: 'inventory', 
+    displayName: 'Inventory', 
+    description: 'Track your store\'s inventory',
+    color: '#9C27B0',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+      </svg>
+    )
+  },
+  { 
+    name: 'pricing_optimization', 
+    displayName: 'Pricing Optimization', 
+    description: 'Optimize pricing strategies for maximum profitability',
+    color: '#F44336',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+      </svg>
+    )
+  },
+  { 
+    name: 'general_insights', 
+    displayName: 'General Insights', 
+    description: 'Get comprehensive business performance insights',
+    color: '#00BCD4',
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    )
+  },
 ];
 
 const DAYS: Day[] = [
@@ -141,8 +203,8 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#25262b] p-8 rounded-xl w-full max-w-3xl font-inter">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#25262b] p-6 md:p-8 rounded-xl w-full max-w-3xl font-inter max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-normal mb-6 text-white">Schedule Weekly Suggestion</h2>
         <p className="text-sm text-[#7B7B7B] mb-6">
           All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
@@ -151,30 +213,56 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <h2 className="text-[40px] font-semibold text-white mb-8">Select your goals.</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {ANALYSIS_TYPES.map((type) => (
-                <div
-                  key={type.name}
-                  className={`p-4 rounded-lg cursor-pointer transition-all border-2 ${
-                    analysisType === type.name
-                      ? 'bg-[#8C74FF]/10 border-[#8C74FF]'
-                      : 'bg-[#2c2d32] hover:bg-[#32333a] border-transparent'
-                  }`}
-                  onClick={() => setAnalysisType(type.name)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setAnalysisType(type.name);
-                    }
-                  }}
-                >
-                  <div className={`font-medium ${analysisType === type.name ? 'text-[#8C74FF]' : 'text-white'}`}>
-                    {type.displayName}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {ANALYSIS_TYPES.map((type) => {
+                const isSelected = analysisType === type.name;
+                return (
+                  <div
+                    key={type.name}
+                    className={`p-5 rounded-lg cursor-pointer transition-all border-2 ${
+                      isSelected
+                        ? 'bg-opacity-10 border-opacity-100'
+                        : 'bg-[#2c2d32] hover:bg-[#32333a] border-transparent hover:border-[#3c3d42]'
+                    }`}
+                    style={{
+                      borderColor: isSelected ? type.color : 'transparent',
+                      backgroundColor: isSelected ? `${type.color}20` : '#2c2d32'
+                    }}
+                    onClick={() => setAnalysisType(type.name)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setAnalysisType(type.name);
+                      }
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-1" style={{ color: type.color }}>
+                        {type.icon}
+                      </div>
+                      <div className="flex-1">
+                        <div className={`font-medium text-lg mb-2`} style={{ color: isSelected ? type.color : 'white' }}>
+                          {type.displayName}
+                        </div>
+                        <p className="text-sm text-[#9a9a9a] leading-relaxed">
+                          {type.description}
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <div className="flex-shrink-0 ml-auto">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: type.color }}>
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
