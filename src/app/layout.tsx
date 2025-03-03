@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Thinkr - Shopify Analytics',
-  description: 'Advanced AI analytics and Agents for Shopify',
+  title: 'Thinkr - Shopify AI Agent',
+  description: 'Automate your Shopify store with AI',
 };
 
 export default function RootLayout({
