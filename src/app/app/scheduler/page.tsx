@@ -378,9 +378,9 @@ export default function Scheduler() {
                                             {schedule.is_active ? 'Active' : 'Inactive'}
                                           </span>
                                         </div>
-                                        <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                                          {schedule.description || `${formatAnalysisType(schedule.analysis_type)} Analysis`}
-                                        </p>
+                                        <div className="text-sm text-[#7B7B7B] whitespace-nowrap mt-2">
+                                          {formatScheduleTime(schedule).dayLabel}, {formatScheduleTime(schedule).timeLabel}
+                                        </div>
                                       </div>
                                     </div>
                                     <button
@@ -497,11 +497,8 @@ export default function Scheduler() {
                                 {schedule.is_active ? 'Active' : 'Inactive'}
                               </span>
                             </div>
-                            <p className="text-xs text-[#7B7B7B] leading-relaxed">
-                              {schedule.description || `${analysisLabel} Analysis - ${timeLabel}`}
-                            </p>
                             <div className="text-sm text-[#7B7B7B] whitespace-nowrap mt-2">
-                              {formatScheduleTime(schedule).dayLabel}, {timeLabel}
+                              {formatScheduleTime(schedule).dayLabel}, {formatScheduleTime(schedule).timeLabel}
                             </div>
                           </div>
                         </div>
@@ -648,16 +645,21 @@ export default function Scheduler() {
                           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                             <div className="space-y-3">
                               <div className="flex flex-wrap items-center gap-3">
-                                <h3 className="font-semibold text-[#8C74FF] text-base lg:text-lg">
-                                  {analysisLabel}
-                                </h3>
-                                <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                                  schedule.is_active 
-                                    ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
-                                    : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
-                                }`}>
-                                  {schedule.is_active ? 'Active' : 'Inactive'}
-                                </span>
+                                <div className="flex justify-between items-center">
+                                  <h3 className="font-semibold text-white mr-2">
+                                    {analysisLabel}
+                                  </h3>
+                                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                                    schedule.is_active 
+                                      ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
+                                      : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
+                                  }`}>
+                                    {schedule.is_active ? 'Active' : 'Inactive'}
+                                  </span>
+                                </div>
+                                <div className="text-sm text-[#7B7B7B] whitespace-nowrap mt-2">
+                                  {formatScheduleTime(schedule).dayLabel}, {formatScheduleTime(schedule).timeLabel}
+                                </div>
                               </div>
                               <p className="text-sm text-[#7B7B7B] leading-relaxed">
                                 {schedule.description || `Weekly analysis on ${dayLabel} at ${timeLabel}`}
