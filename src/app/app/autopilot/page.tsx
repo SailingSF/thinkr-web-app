@@ -26,6 +26,18 @@ type ActionType = {
   fields: FieldType[];
 };
 
+// Add a LoadingOverlay component for consistent loading UI
+const LoadingOverlay = ({ message }: { message: string }) => (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div className="bg-[#1c1d1f] p-6 rounded-xl max-w-md w-full">
+      <div className="flex items-center justify-center mb-4">
+        <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+      <p className="text-white text-center">{message}</p>
+    </div>
+  </div>
+);
+
 // Action types
 const ACTION_TYPES: ActionType[] = [
   {
@@ -79,6 +91,7 @@ export default function Autopilot() {
   const [feedback, setFeedback] = useState('');
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [executingAction, setExecutingAction] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
   // Get the selected action type details
   const selectedActionType = ACTION_TYPES.find(action => action.id === selectedAction);
@@ -105,163 +118,320 @@ export default function Autopilot() {
   // Clear polling interval when component unmounts
   useEffect(() => {
     return () => {
-      if (pollingInterval) clearInterval(pollingInterval);
+      if (pollingInterval) {
+        console.log('Clearing polling interval on unmount');
+        clearInterval(pollingInterval);
+      }
     };
   }, [pollingInterval]);
 
-  // Poll for status updates
-  const pollForStatus = useCallback(async () => {
-    if (!taskId && !proposalId) return;
-    
-    try {
-      console.log(`Polling for status: taskId=${taskId}, proposalId=${proposalId}`);
-      
-      // Prioritize using taskId for polling when available
-      const queryParams = taskId 
-        ? { taskId } 
-        : proposalId ? { proposalId } : {};
-        
-      // If we have neither taskId nor proposalId, we can't poll
-      if (Object.keys(queryParams).length === 0) {
-        console.log('No taskId or proposalId available for polling');
-        return;
-      }
-        
-      console.log('Polling with params:', queryParams);
-      const data = await autopilotApi.checkStatus(queryParams);
-      
-      console.log('Status response:', data);
-      
-      // Check for status values from the Django API
-      // Map Django status to our frontend states if needed
-      const statusMap: Record<string, AutopilotStatus> = {
-        'processing': 'processing',
-        'executing': 'executing',
-        'refining': 'refining',
-        'pending': 'pending',
-        'ready': 'ready',
-        'executed': 'executed',
-        'success': 'success',
-        'failed': 'failed',
-        'rejected': 'rejected',
-        'PENDING': 'pending',
-        'APPROVED': 'approved',
-        'EXECUTED': 'executed',
-        'FAILED': 'failed',
-        'REJECTED': 'rejected',
-        'REJECTED_WITH_FEEDBACK': 'rejected'
-      };
-      
-      const normalizedStatus = statusMap[data.status] || data.status;
-      
-      // If still processing, continue polling
-      if (normalizedStatus === 'processing' || normalizedStatus === 'refining' || normalizedStatus === 'executing') {
-        console.log(`Still ${normalizedStatus}, continuing polling...`);
-        return; // Continue polling
-      }
-      
-      // If we got here, we have a final status result - stop polling
-      if (pollingInterval) {
-        console.log('Received final status, clearing polling interval');
-        clearInterval(pollingInterval);
-        setPollingInterval(null);
-      }
-      
-      // Reset execution state
-      setExecutingAction(false);
-      
-      // Check for proposal_id in the response
-      if (data.proposal_id && !proposalId) {
-        console.log('Setting proposal ID from response:', data.proposal_id);
-        setProposalId(data.proposal_id);
-      }
-      
-      // Check for task_id in the response if we don't have one yet
-      if (data.task_id && !taskId) {
-        console.log('Setting task ID from response:', data.task_id);
-        setTaskId(data.task_id);
-      }
-      
-      // RESULT CASE: Action was executed and completed
-      if ((normalizedStatus === 'executed' || normalizedStatus === 'success') && data.result) {
-        console.log('Action executed successfully, showing results:', data.result);
-        setResult(data.result);
-        setCurrentStep('result');
-        return;
-      }
-      
-      // PROPOSAL CASE: API returns a proposal that needs user review
-      if ((normalizedStatus === 'pending' || normalizedStatus === 'ready') && data.proposal) {
-        console.log('Received proposal data for review:', data.proposal);
-        setProposal(data.proposal);
-        
-        // Only update step if we're not already in review (prevents UI jumping)
-        if (currentStep !== 'review') {
-          setCurrentStep('review');
-        }
-        return;
-      }
-      
-      // PROPOSAL FALLBACK: For backward compatibility with older API responses
-      if (data.proposal) {
-        console.log('Received proposal data through fallback path:', data.proposal);
-        setProposal(data.proposal);
-        
-        // Only update step if not already in review
-        if (currentStep !== 'review') {
-          setCurrentStep('review');
-        }
-        return;
-      }
-      
-      // LEGACY FORMAT: Some API responses might include the proposal data directly
-      if (data.explanation && data.parameters) {
-        console.log('Received legacy format proposal data:', data);
-        // Create a synthetic proposal object from the direct data
-        const syntheticProposal: AutopilotProposal = {
-          id: data.proposal_id || proposalId || '',
-          proposal_id: data.proposal_id || proposalId || '',
-          status: normalizedStatus,
-          description: data.description || '',
-          explanation: data.explanation,
-          parameters: data.parameters,
-          expected_outcome: data.expected_outcome,
-        };
-        
-        setProposal(syntheticProposal);
-        if (currentStep !== 'review') {
-          setCurrentStep('review');
-        }
-        return;
-      }
-      
-      // Error handling for failed states
-      if (normalizedStatus === 'failed' || normalizedStatus === 'rejected') {
-        console.error('Task failed or rejected:', data.error || 'Unknown error');
-        setError(data.error || 'The task failed to complete. Please try again.');
-        return;
-      }
-      
-      // Handle generic errors
-      if (data.error) {
-        console.error('Error from API:', data.error);
-        setError(data.error);
-      }
-      
-    } catch (err: any) {
-      console.error('Error polling for status:', err);
-      setError('Failed to check proposal status. Please try again.');
-      
-      if (pollingInterval) clearInterval(pollingInterval);
+  // Helper function to stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingInterval) {
+      console.log('Stopping polling');
+      clearInterval(pollingInterval);
       setPollingInterval(null);
     }
-  }, [autopilotApi, taskId, proposalId, pollingInterval, currentStep]);
+    // Always ensure these states are properly reset when stopping polling
+    setExecutingAction(false);
+    setLoadingMessage(null);
+    setIsSubmitting(false);
+  }, [pollingInterval]);
+
+  // Helper function to start polling
+  const startPolling = useCallback((newTaskId: string) => {
+    // First stop any existing polling
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null); // Ensure we reset this state
+    }
+    
+    console.log(`Starting polling for taskId: ${newTaskId}`);
+    setTaskId(newTaskId);
+    setExecutingAction(true);
+    setLoadingMessage('Processing your request...'); // Ensure loading message is set
+    
+    // Track consecutive errors to implement exponential backoff
+    let consecutiveErrors = 0;
+    const MAX_CONSECUTIVE_ERRORS = 5; // Allow up to 5 errors before stopping
+    
+    const fetchStatusWithWindow = async (taskId: string) => {
+      try {
+        // Use window.fetch with minimal options to avoid CORS preflight
+        // Include only essential auth headers
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/autopilot/status/?task_id=${taskId}`;
+        
+        // Try to get auth headers from an existing fetch function
+        let headers = {};
+        try {
+          // Get any existing auth cookies from document.cookie
+          const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+            const [key, value] = cookie.trim().split('=');
+            acc[key] = value;
+            return acc;
+          }, {} as Record<string, string>);
+          
+          // If we have an authorization cookie, use it
+          if (cookies['Authorization']) {
+            headers = { 'Authorization': cookies['Authorization'] };
+          }
+        } catch (cookieErr) {
+          console.error('Error getting auth cookies:', cookieErr);
+        }
+        
+        const response = await window.fetch(url, {
+          method: 'GET',
+          credentials: 'include', // Include cookies for auth
+          headers, // Include minimal headers for auth if available
+        });
+        
+        if (!response.ok) {
+          // If authentication failed, try using the authFetch as fallback
+          if (response.status === 401 || response.status === 403) {
+            console.log('Authentication failed with simple fetch, trying authFetch');
+            const authResponse = await autopilotApi.checkStatus({ taskId });
+            return authResponse;
+          }
+          throw new Error(`Status check failed with status: ${response.status}`);
+        }
+        
+        // Parse response
+        const data = await response.json();
+        return data;
+      } catch (err) {
+        console.error('Error in window.fetch status check:', err);
+        
+        // If window.fetch fails for any reason, try the autopilotApi as a fallback
+        try {
+          console.log('Falling back to autopilotApi.checkStatus');
+          const fallbackData = await autopilotApi.checkStatus({ taskId });
+          return fallbackData;
+        } catch (fallbackErr) {
+          console.error('Fallback also failed:', fallbackErr);
+          throw err; // Re-throw the original error if fallback also fails
+        }
+      }
+    };
+    
+    const newPollFunction = async () => {
+      if (!newTaskId) return;
+      
+      console.log(`Polling for taskId=${newTaskId}`);
+      
+      try {
+        // Try using window.fetch for status check - simplest possible method to avoid preflight
+        const statusData = await fetchStatusWithWindow(newTaskId);
+        console.log('Poll response (window.fetch):', statusData);
+        
+        // Status check succeeded, reset consecutive errors counter
+        consecutiveErrors = 0;
+        
+        // Safety check to ensure we have data
+        if (!statusData) {
+          console.error('Empty status response');
+          return;
+        }
+        
+        // Update loading message based on status
+        if (statusData.status === 'processing') {
+          setLoadingMessage('Processing your request...');
+        } else if (statusData.status === 'refining') {
+          setLoadingMessage('Refining the proposal...');
+        } else if (statusData.status === 'executing') {
+          setLoadingMessage('Executing the action...');
+        } else if (statusData.status === 'completed' || statusData.status === 'success') {
+          // Don't set a completion message, we'll clear it right after updating the state
+          
+          // Stop polling when we get a completed/success status
+          if (pollingInterval) {
+            clearInterval(pollingInterval);
+            setPollingInterval(null);
+          }
+          setExecutingAction(false);
+          setIsSubmitting(false);
+          
+          // Handle the result or proposal
+          if (statusData.result) {
+            console.log('Setting result from poll:', statusData.result);
+            setResult(statusData.result);
+            setCurrentStep('result');
+            // Clear loading message immediately after setting the result
+            setLoadingMessage(null);
+          } else if (statusData.proposal) {
+            console.log('Setting proposal from poll:', statusData.proposal);
+            setProposal(statusData.proposal);
+            setProposalId(statusData.proposal.id || statusData.proposal_id);
+            setCurrentStep('review');
+            // Clear loading message immediately after setting the proposal
+            setLoadingMessage(null);
+          } else {
+            console.warn('Completed status but no result or proposal found');
+            // Fall back to showing form again if we have no data
+            setCurrentStep('form');
+            setLoadingMessage(null);
+          }
+        } else {
+          console.log(`Unknown status: ${statusData.status}`);
+        }
+      } catch (err) {
+        console.error('Error polling for status:', err);
+        consecutiveErrors++;
+        
+        // Only display error after several consecutive failures
+        if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+          console.error(`Multiple polling errors (${consecutiveErrors}), showing error message`);
+          setError(`We're having trouble checking the status. Please wait or try again.`);
+          
+          // Even after consecutive errors, we'll keep trying
+          // Don't stop the polling interval, just let the user know there's an issue
+        }
+      }
+    };
+    
+    // Poll immediately once
+    newPollFunction().catch(err => {
+      console.error('Error in initial poll:', err);
+      // Don't abort on initial poll error, the interval will retry
+    });
+    
+    // Then set up the interval - save it in a variable first to ensure it's set
+    const interval = setInterval(newPollFunction, 2000);
+    console.log('Created new polling interval:', interval);
+    setPollingInterval(interval);
+    
+    // Return the interval ID in case we need to clear it outside
+    return interval;
+  }, [pollingInterval]);
+
+  // Poll for status updates - for manual polling if needed
+  const pollForStatus = useCallback(async () => {
+    console.log(`Manual pollForStatus called, taskId: ${taskId}`);
+    
+    if (!taskId) {
+      console.log('No taskId for polling, skipping');
+      return;
+    }
+    
+    try {
+      // Use window.fetch with proper auth
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/autopilot/status/?task_id=${taskId}`;
+      console.log('Making manual status request to:', url);
+      
+      // Try to get auth headers
+      let headers = {};
+      try {
+        // Get any existing auth cookies from document.cookie
+        const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+          const [key, value] = cookie.trim().split('=');
+          acc[key] = value;
+          return acc;
+        }, {} as Record<string, string>);
+        
+        // If we have an authorization cookie, use it
+        if (cookies['Authorization']) {
+          headers = { 'Authorization': cookies['Authorization'] };
+        }
+      } catch (cookieErr) {
+        console.error('Error getting auth cookies:', cookieErr);
+      }
+      
+      const response = await window.fetch(url, {
+        method: 'GET',
+        credentials: 'include', // Include cookies for auth
+        headers, // Include minimal headers for auth if available
+      });
+      
+      if (!response.ok) {
+        // If authentication failed, try using the API client
+        if (response.status === 401 || response.status === 403) {
+          console.log('Authentication failed in manual poll, trying API client');
+          const apiData = await autopilotApi.checkStatus({ taskId });
+          console.log('API client manual status check response:', apiData);
+          
+          // Handle API client response
+          if (!apiData) {
+            console.error('Empty API status response');
+            return;
+          }
+          
+          // Update loading message based on status
+          handleStatusUpdate(apiData);
+          return;
+        }
+        throw new Error(`Manual status check failed with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Manual status check response:', data);
+      
+      // Safety check
+      if (!data) {
+        console.error('Empty status response');
+        return;
+      }
+      
+      // Handle the status update
+      handleStatusUpdate(data);
+    } catch (err) {
+      console.error('Error in manual poll:', err);
+      
+      // Try the API client as fallback
+      try {
+        console.log('Trying API client as fallback for manual poll');
+        const apiData = await autopilotApi.checkStatus({ taskId });
+        handleStatusUpdate(apiData);
+      } catch (apiErr) {
+        console.error('API fallback for manual poll also failed:', apiErr);
+        // Don't stop polling on error - let the interval continue
+      }
+    }
+    
+    // Helper function to handle status updates
+    function handleStatusUpdate(data: any) {
+      // Update loading message based on status
+      if (data.status) {
+        if (data.status === 'processing') {
+          setLoadingMessage('Processing your request...');
+        } else if (data.status === 'refining') {
+          setLoadingMessage('Refining the proposal...');
+        } else if (data.status === 'executing') {
+          setLoadingMessage('Executing the action...');
+        } else if (data.status === 'completed' || data.status === 'success') {
+          // Don't set a completion message here either
+          
+          // Stop polling when completed
+          stopPolling();
+          
+          // Handle result or proposal
+          if (data.result) {
+            console.log('Setting result from manual poll:', data.result);
+            setResult(data.result);
+            setCurrentStep('result');
+            // Clear loading message
+            setLoadingMessage(null);
+          } else if (data.proposal) {
+            console.log('Setting proposal from manual poll:', data.proposal);
+            setProposal(data.proposal);
+            setProposalId(data.proposal.id || data.proposal_id);
+            setCurrentStep('review');
+            // Clear loading message
+            setLoadingMessage(null);
+          } else {
+            console.warn('Completed status but no result or proposal found');
+            // Clear loading message
+            setLoadingMessage(null);
+          }
+        }
+      }
+    }
+  }, [taskId, stopPolling, autopilotApi]);
 
   // Submit the autopilot action
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setLoadingMessage('Submitting your request...');
     
     try {
       // Build request payload based on action type
@@ -277,102 +447,36 @@ export default function Autopilot() {
       const data = await autopilotApi.createProposal(description, formData);
       console.log('Create proposal response:', data);
       
-      // First stop any existing polling
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-        setPollingInterval(null);
-      }
-      
       // Reset states that might be set from previous operations
       setProposal(null);
       setResult(null);
+      setProposalId(null);
       
-      // Set task_id from response - this is critical for status polling
-      if (data.task_id) {
-        setTaskId(data.task_id);
-        console.log('Set task_id for polling:', data.task_id);
-        
-        // Update proposal_id if available
-        if (data.proposal_id) {
-          setProposalId(data.proposal_id);
-          console.log('Also got proposal_id:', data.proposal_id);
-        }
-        
-        // Even if we have a proposal in the response, we'll need to poll
-        // for status updates until the action is complete
-        
-        // Show processing state while waiting for updates
-        setExecutingAction(true);
-        
-        // If the response already contains a complete proposal, handle it
-        if (data.proposal && data.status === 'pending') {
-          console.log('Response includes a pending proposal:', data.proposal);
-          setProposal(data.proposal);
-          setCurrentStep('review');
-        }
-        // If we get a complete result already, show it
-        else if (data.result && (data.status === 'executed' || data.status === 'success')) {
-          console.log('Response already includes completed result:', data.result);
-          setResult(data.result);
-          setCurrentStep('result');
-          setExecutingAction(false); // No need to show loading anymore
-        }
-        
-        // Regardless of what's in the initial response, we set up polling
-        // to catch any status changes or updates
-        const interval = setInterval(pollForStatus, 2000);
-        setPollingInterval(interval);
-        
-        // Poll immediately without waiting for interval
-        pollForStatus();
-        
-        // If we don't have an immediate result or proposal, let polling handle it
-      } 
-      // Direct proposal in response without task_id (uncommon but possible)
-      else if (data.proposal) {
-        console.log('Direct proposal in response without task_id:', data.proposal);
+      // If we immediately have a completed status with a proposal, show it
+      if ((data.status === 'completed' || data.status === 'success') && data.proposal) {
+        console.log('Immediate proposal available');
         setProposal(data.proposal);
-        
-        if (data.proposal_id) {
-          setProposalId(data.proposal_id);
-        }
-        
+        setProposalId(data.proposal.id || data.proposal_id);
         setCurrentStep('review');
-      }
-      // Legacy format - proposal data embedded directly in response
-      else if (data.status && data.parameters) {
-        console.log('Legacy format proposal data in response:', data);
-        
-        // Use any proposal_id or create a temporary one
-        if (data.proposal_id) {
-          setProposalId(data.proposal_id);
-        }
-        
-        // Create a synthetic proposal from the data
-        const syntheticProposal: AutopilotProposal = {
-          id: data.proposal_id || `temp-${Date.now()}`,
-          proposal_id: data.proposal_id || `temp-${Date.now()}`,
-          status: data.status as AutopilotStatus,
-          description: data.description || description,
-          explanation: data.explanation,
-          parameters: data.parameters,
-          expected_outcome: data.expected_outcome,
-        };
-        
-        setProposal(syntheticProposal);
-        setCurrentStep('review');
-      }
-      // No recognizable data in response - error case
-      else {
-        console.error('No task_id or proposal data in response:', data);
-        setError('Invalid response from server. Could not find task ID or proposal data.');
+        setIsSubmitting(false);
+        setLoadingMessage(null);
+        return;
       }
       
+      // Extract the task_id from the response
+      if (data.task_id) {
+        startPolling(data.task_id);
+      } else {
+        console.error('No task_id in create response');
+        setError('Failed to create task. Please try again.');
+        setIsSubmitting(false);
+        setLoadingMessage(null);
+      }
     } catch (err: any) {
       console.error('Error creating proposal:', err);
       setError(err.message || 'Failed to create proposal. Please try again.');
-    } finally {
       setIsSubmitting(false);
+      setLoadingMessage(null);
     }
   };
 
@@ -386,22 +490,63 @@ export default function Autopilot() {
     setIsSubmitting(true);
     setError(null);
     
+    // For 'approve' action, we don't want to stop the polling right away,
+    // but we need to reset it to use the new task_id we'll get
+    if (action !== 'approve') {
+      // Make sure any existing polling is stopped for other actions
+      stopPolling();
+    }
+    
+    // Set appropriate loading message based on action
+    if (action === 'approve') {
+      setLoadingMessage('Approving and executing...');
+    } else if (action === 'reject') {
+      setLoadingMessage('Rejecting proposal...');
+    } else if (action === 'refine') {
+      setLoadingMessage('Sending refinement feedback...');
+    }
+    
     try {
       if (action === 'refine' && !feedback.trim()) {
         setError('Please provide feedback for refinement');
         setIsSubmitting(false);
+        setLoadingMessage(null);
         return;
       }
       
-      console.log(`Sending ${action} feedback for proposal ${proposalId}:`, feedback);
-      const data = await autopilotApi.handleFeedback(
-        proposalId,
-        action,
-        action === 'refine' ? feedback : undefined
-      );
+      console.log(`Sending ${action} feedback for proposal ${proposalId}`);
+      
+      // Implement retry logic for feedback request
+      let retryCount = 0;
+      const MAX_RETRIES = 3;
+      let data = null;
+      
+      while (retryCount < MAX_RETRIES) {
+        try {
+          data = await autopilotApi.handleFeedback(
+            proposalId,
+            action,
+            action === 'refine' ? feedback : undefined
+          );
+          // Success - break out of retry loop
+          break;
+        } catch (retryErr) {
+          retryCount++;
+          console.warn(`Feedback attempt ${retryCount} failed:`, retryErr);
+          
+          if (retryCount >= MAX_RETRIES) {
+            // Let it bubble up to the main catch
+            throw retryErr;
+          }
+          
+          // Wait a bit before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, retryCount * 500));
+        }
+      }
+      
       console.log(`${action} feedback response:`, data);
       
-      // REJECT: Reset everything and go back to action selection
+      // For reject, reset and go back to action selection
       if (action === 'reject') {
         setCurrentStep('select');
         setSelectedAction(null);
@@ -410,115 +555,205 @@ export default function Autopilot() {
         setTaskId(null);
         setProposal(null);
         setResult(null);
+        setIsSubmitting(false);
+        setLoadingMessage(null);
         return;
       }
       
-      // APPROVE or REFINE: These both require waiting for a server response
-      
-      // Show loading state
-      setExecutingAction(true);
-      
-      // Reset any existing polling
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-        setPollingInterval(null);
-      }
-      
-      // Handle the response from the feedback API call
-      
-      // CASE 1: Response contains a task_id for polling
-      if (data.task_id) {
-        setTaskId(data.task_id);
-        console.log(`Set task_id for polling after ${action}:`, data.task_id);
-        
-        // If we got a new proposal_id, update it
-        if (data.proposal_id && data.proposal_id !== proposalId) {
-          setProposalId(data.proposal_id);
-          console.log(`Got new proposal_id after ${action}:`, data.proposal_id);
+      // For immediate responses
+      if (data && (data.status === 'completed' || data.status === 'success')) {
+        if (data.result) {
+          console.log('Immediate result available after feedback');
+          setResult(data.result);
+          setCurrentStep('result');
+          setIsSubmitting(false);
+          setLoadingMessage(null);
+          return;
+        } else if (data.proposal) {
+          console.log('Immediate proposal available after feedback');
+          setProposal(data.proposal);
+          setProposalId(data.proposal.id || data.proposal_id);
+          setCurrentStep('review');
+          setIsSubmitting(false);
+          setLoadingMessage(null);
+          return;
         }
-        
-        // For refinement, reset the current proposal so we'll recognize the new one
-        if (action === 'refine') {
-          setProposal(null);
+      }
+      
+      // For approve action, ensure we stop any existing polling before starting new one
+      if (action === 'approve') {
+        // Stop any existing polling
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
         }
+      }
+      
+      // For async responses, start polling with the new task_id
+      if (data && data.task_id) {
+        console.log(`Starting polling for feedback action=${action} with taskId=${data.task_id}`);
         
-        // Check if the response already contains the status we need
-        if (action === 'approve' && data.status === 'executing') {
-          console.log('Proposal approved and execution started');
-        } else if (action === 'refine' && data.status === 'refining') {
-          console.log('Proposal refinement started');
+        // Start fresh polling with the new task ID - this should continue regardless of action type
+        const interval = startPolling(data.task_id);
+        console.log('New polling interval created:', interval);
+        
+        // For approve action specifically - make sure we stay in executing state
+        if (action === 'approve') {
+          setExecutingAction(true);
         }
+      } else {
+        // If no task_id and no immediate result, but we have an old task_id,
+        // try to continue polling the old task_id as a fallback
+        console.warn('No new task_id in feedback response. Checking for existing taskId.');
         
-        // Start polling for updates (both approve and refine use polling)
-        const interval = setInterval(pollForStatus, 2000);
-        setPollingInterval(interval);
-        
-        // Poll immediately without waiting for interval
-        pollForStatus();
-        
-        return;
-      }
-      
-      // CASE 2: Response already contains the result (for approve)
-      if (action === 'approve' && data.result) {
-        console.log('Approve response already contains result:', data.result);
-        setResult(data.result);
-        setCurrentStep('result');
-        setExecutingAction(false);
-        return;
-      }
-      
-      // CASE 3: Response already contains a new proposal (for refine)
-      if (action === 'refine' && data.proposal) {
-        console.log('Refine response already contains new proposal:', data.proposal);
-        setProposal(data.proposal);
-        
-        // Update proposal_id if available and different
-        if (data.proposal.id && data.proposal.id !== proposalId) {
-          setProposalId(data.proposal.id);
-        } else if (data.proposal_id && data.proposal_id !== proposalId) {
-          setProposalId(data.proposal_id);
+        if (taskId) {
+          console.log('Attempting to poll existing taskId:', taskId);
+          const interval = startPolling(taskId);
+          console.log('Fallback polling interval created:', interval);
+        } else {
+          // No task_id at all - just show generic message
+          console.warn('No task_id available for polling');
+          setIsSubmitting(false);
+          setLoadingMessage(null);
+          
+          // Add safety check - if we've sent approval but got no task_id,
+          // try to manually poll once to see if there's any update
+          if (action === 'approve') {
+            console.log('Attempting direct status check after approve action');
+            try {
+              // Use window.fetch with minimal auth options to avoid CORS preflight
+              const url = `${process.env.NEXT_PUBLIC_API_URL}/autopilot/status/?proposal_id=${proposalId}`;
+              
+              // Try to get auth headers
+              let headers = {};
+              try {
+                // Get any existing auth cookies from document.cookie
+                const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+                  const [key, value] = cookie.trim().split('=');
+                  acc[key] = value;
+                  return acc;
+                }, {} as Record<string, string>);
+                
+                // If we have an authorization cookie, use it
+                if (cookies['Authorization']) {
+                  headers = { 'Authorization': cookies['Authorization'] };
+                }
+              } catch (cookieErr) {
+                console.error('Error getting auth cookies:', cookieErr);
+              }
+              
+              const response = await window.fetch(url, {
+                method: 'GET',
+                credentials: 'include', // Include cookies for auth
+                headers, // Include minimal headers for auth if available
+              });
+              
+              if (!response.ok) {
+                // If authentication failed, try using the authFetch as fallback
+                if (response.status === 401 || response.status === 403) {
+                  console.log('Authentication failed with simple fetch, trying authFetch');
+                  const statusData = await autopilotApi.checkStatus({ proposalId });
+                  console.log('Auth API status check response:', statusData);
+                  
+                  // Use the response from the API client
+                  if (statusData && (statusData.status === 'completed' || statusData.status === 'success')) {
+                    if (statusData.result) {
+                      setResult(statusData.result);
+                      setCurrentStep('result');
+                    } else if (statusData.proposal) {
+                      setProposal(statusData.proposal);
+                      setProposalId(statusData.proposal.id || statusData.proposal_id);
+                      setCurrentStep('review');
+                    }
+                  } else if (taskId) {
+                    // If no immediate result and we have a taskId, start polling it
+                    console.log('No immediate result from API but we have taskId, starting polling:', taskId);
+                    const interval = startPolling(taskId);
+                    console.log('Started polling after API check with interval:', interval);
+                  }
+                  return;
+                }
+                throw new Error(`Direct status check failed with status: ${response.status}`);
+              }
+              
+              const statusData = await response.json();
+              console.log('Direct status check response:', statusData);
+              
+              // If successful, update UI based on status
+              if (statusData && (statusData.status === 'completed' || statusData.status === 'success')) {
+                if (statusData.result) {
+                  setResult(statusData.result);
+                  setCurrentStep('result');
+                } else if (statusData.proposal) {
+                  setProposal(statusData.proposal);
+                  setProposalId(statusData.proposal.id || statusData.proposal_id);
+                  setCurrentStep('review');
+                }
+              } else if (taskId) {
+                // If no immediate result and we have a taskId, start polling it
+                console.log('No immediate result but we have taskId, starting polling:', taskId);
+                const interval = startPolling(taskId);
+                console.log('Started polling after direct check with interval:', interval);
+              }
+            } catch (statusErr) {
+              console.error('Direct status check failed:', statusErr);
+              
+              // Try API client as fallback if direct check fails
+              try {
+                console.log('Trying API client after direct check failure');
+                const apiStatusData = await autopilotApi.checkStatus({ proposalId });
+                console.log('API fallback status response:', apiStatusData);
+                
+                if (apiStatusData && (apiStatusData.status === 'completed' || apiStatusData.status === 'success')) {
+                  if (apiStatusData.result) {
+                    setResult(apiStatusData.result);
+                    setCurrentStep('result');
+                    return;
+                  } else if (apiStatusData.proposal) {
+                    setProposal(apiStatusData.proposal);
+                    setProposalId(apiStatusData.proposal.id || apiStatusData.proposal_id);
+                    setCurrentStep('review');
+                    return;
+                  }
+                }
+              } catch (apiErr) {
+                console.error('API fallback also failed:', apiErr);
+              }
+              
+              // If direct check fails but we have a taskId, start polling it
+              if (taskId) {
+                console.log('Direct check failed but we have taskId, starting polling:', taskId);
+                const interval = startPolling(taskId);
+                console.log('Started polling after failed direct check with interval:', interval);
+              }
+            }
+          }
         }
-        
-        setExecutingAction(false);
-        return;
       }
-      
-      // CASE 4: No recognizable data in response, but we'll try to handle common formats
-      if (data.status === 'executing' || data.status === 'processing' || data.status === 'refining') {
-        console.log(`Response indicates ${data.status} status, will continue polling`);
-        
-        // We'll need to poll for status updates
-        const interval = setInterval(pollForStatus, 2000);
-        setPollingInterval(interval);
-        
-        // Poll immediately
-        pollForStatus();
-        
-        return;
-      }
-      
-      // CASE 5: Unexpected response format
-      console.error(`Unexpected response format after ${action}:`, data);
-      setError(`Received unexpected response after ${action}. Please try again.`);
-      setExecutingAction(false);
-      
     } catch (err: any) {
       console.error(`Error ${action}ing proposal:`, err);
       setError(err.message || `Failed to ${action} proposal. Please try again.`);
-      setExecutingAction(false);
-    } finally {
-      setIsSubmitting(false);
+      
+      // If we encounter an error but have a taskId, try polling it as a last resort
+      if (taskId && action === 'approve') {
+        console.log('Error encountered, but attempting to poll existing taskId as recovery:', taskId);
+        const interval = startPolling(taskId);
+        console.log('Recovery polling interval created:', interval);
+      } else {
+        setIsSubmitting(false);
+        setLoadingMessage(null);
+      }
+      
+      // If we encounter an error and action is not approve, stop any ongoing polling
+      if (action !== 'approve') {
+        stopPolling();
+      }
     }
   };
 
   // Reset everything and start over
   const handleReset = () => {
-    // Clear any ongoing polling
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
-    }
+    stopPolling();
     
     // Reset all state
     setCurrentStep('select');
@@ -530,8 +765,16 @@ export default function Autopilot() {
     setResult(null);
     setError(null);
     setFeedback('');
-    setExecutingAction(false);
   };
+
+  // Ensure we stop polling when reaching final states
+  useEffect(() => {
+    if (currentStep === 'result') {
+      stopPolling();
+    }
+    // We no longer stop polling when reaching the review step
+    // This allows polling to continue when approving from the review step
+  }, [currentStep, stopPolling]);
 
   // Update proposal ID when we get a proposal
   useEffect(() => {
@@ -539,37 +782,40 @@ export default function Autopilot() {
       setProposalId(proposal.id);
     }
   }, [proposal, proposalId]);
-  
-  // Display the processing state and ensure polling when we have a taskId
+
+  // Safety mechanism: if we have an active taskId but no polling interval,
+  // and we're not in a final state, restart polling
   useEffect(() => {
-    // If we have a task_id but no polling interval, start polling
-    if (taskId && !pollingInterval) {
-      console.log('Starting polling due to new taskId:', taskId);
-      setExecutingAction(true);
-      
-      // Start polling for status updates
-      const interval = setInterval(pollForStatus, 2000);
-      setPollingInterval(interval);
-      
-      // Poll immediately without waiting for interval
-      pollForStatus();
-    }
+    const isActiveState = currentStep !== 'review' && currentStep !== 'result';
     
-    // If we're in form step with a taskId, ensure we show processing
-    if (taskId && !proposalId && !proposal && !result && currentStep === 'form') {
-      setExecutingAction(true);
+    if (taskId && !pollingInterval && executingAction && isActiveState) {
+      console.log('Safety mechanism: restarting polling for taskId:', taskId);
+      const interval = startPolling(taskId);
+      console.log('Restarted polling interval:', interval);
     }
-    
-    // Clean up interval when unmounting or when taskId changes
-    return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-      }
-    };
-  }, [taskId, proposalId, proposal, result, currentStep, pollingInterval, pollForStatus]);
+  }, [taskId, pollingInterval, executingAction, currentStep, startPolling]);
+
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log(`State updated - Step: ${currentStep}, TaskId: ${taskId}, Polling: ${!!pollingInterval}, Executing: ${executingAction}`);
+  }, [currentStep, taskId, pollingInterval, executingAction]);
+
+  // Also add an effect to clear the loading message when we reach the result step
+  useEffect(() => {
+    if (currentStep === 'result') {
+      // When we reach the result step, ensure loading and error states are cleared
+      stopPolling();
+      setLoadingMessage(null);
+      setIsSubmitting(false);
+      setExecutingAction(false);
+    }
+  }, [currentStep, stopPolling]);
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex flex-col p-4 lg:p-8 bg-[#141718] font-inter">
+      {/* Loading Overlay */}
+      {loadingMessage && <LoadingOverlay message={loadingMessage} />}
+      
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center mb-4">
