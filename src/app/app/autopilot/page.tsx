@@ -24,6 +24,7 @@ type ActionType = {
   description: string;
   icon: React.ReactNode;
   fields: FieldType[];
+  comingSoon?: boolean;
 };
 
 // Add a LoadingOverlay component for consistent loading UI
@@ -71,7 +72,105 @@ const ACTION_TYPES: ActionType[] = [
       { name: 'currency_code', label: 'Currency Code (Optional)', placeholder: 'e.g., USD, CAD, EUR', type: 'text', defaultValue: 'USD' },
       { name: 'round_to', label: 'Round To (Optional)', placeholder: 'e.g., 0.99 for $19.99, 0.95 for $19.95', type: 'number', defaultValue: 0.99 },
     ],
-  }
+  },
+  // New "coming soon" action types
+  {
+    id: 'bulk_tag',
+    label: 'Bulk Add Product Tags',
+    description: 'Add tags to multiple products at once',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+      </svg>
+    ),
+    comingSoon: true,
+    fields: [],
+  },
+  {
+    id: 'auto_seo',
+    label: 'Auto-Optimize SEO',
+    description: 'Generate optimized titles, descriptions, and alt texts',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+    ),
+    comingSoon: true,
+    fields: [],
+  },
+  {
+    id: 'abandon_cart',
+    label: 'Customize Abandoned Cart Emails',
+    description: 'Create personalized abandoned cart recovery emails',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+      </svg>
+    ),
+    comingSoon: true,
+    fields: [],
+  },
+  {
+    id: 'product_bundles',
+    label: 'Create Product Bundles',
+    description: 'Bundle products together with special pricing',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+      </svg>
+    ),
+    comingSoon: true,
+    fields: [],
+  },
+  {
+    id: 'seasonal_promo',
+    label: 'Schedule Seasonal Promotions',
+    description: 'Set up time-based discounts for holidays and events',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+      </svg>
+    ),
+    comingSoon: true,
+    fields: [],
+  },
+  {
+    id: 'auto_social',
+    label: 'Auto-Generate Social Media Posts',
+    description: 'Create social media content for your products',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+      </svg>
+    ),
+    comingSoon: true,
+    fields: [],
+  },
+  {
+    id: 'customer_segment',
+    label: 'Create Customer Segments',
+    description: 'Group customers based on buying behavior',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+      </svg>
+    ),
+    comingSoon: true,
+    fields: [],
+  },
+  {
+    id: 'cross_sell',
+    label: 'Setup Cross-Sell Recommendations',
+    description: 'Create intelligent product recommendations',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
+      </svg>
+    ),
+    comingSoon: true,
+    fields: [],
+  },
 ];
 
 // Main component
@@ -87,7 +186,7 @@ export default function Autopilot() {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [proposal, setProposal] = useState<AutopilotProposal | null>(null);
   const [result, setResult] = useState<AutopilotResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | React.ReactNode | null>(null);
   const [feedback, setFeedback] = useState('');
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [executingAction, setExecutingAction] = useState(false);
@@ -811,6 +910,31 @@ export default function Autopilot() {
     }
   }, [currentStep, stopPolling]);
 
+  // Handle action selection
+  const handleActionSelect = (actionId: string) => {
+    const action = ACTION_TYPES.find(action => action.id === actionId);
+    
+    // Check if the action is coming soon
+    if (action && action.comingSoon) {
+      setError(
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-500/20 text-amber-400">
+              Coming Soon
+            </span>
+          </div>
+          <p>The "{action.label}" action is coming soon! Check back later for updates.</p>
+        </div>
+      );
+      return;
+    }
+    
+    // Otherwise proceed normally
+    setSelectedAction(actionId);
+    setCurrentStep('form');
+    setError(null); // Clear any previous errors
+  };
+
   return (
     <div className="min-h-[calc(100vh-64px)] flex flex-col p-4 lg:p-8 bg-[#141718] font-inter">
       {/* Loading Overlay */}
@@ -841,44 +965,45 @@ export default function Autopilot() {
 
       {/* Main Content */}
       <div className="flex flex-1 gap-6">
-        {/* Step Indicator */}
-        <div className="hidden lg:flex flex-col gap-4 w-64 bg-[#1c1d1f] rounded-xl p-4">
-          <h2 className="text-lg font-medium text-white mb-4">Progress</h2>
-          {['select', 'form', 'review', 'result'].map((step, index) => (
-            <div key={step} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 
-                ${currentStep === step 
-                  ? 'bg-purple-500 text-white' 
-                  : index < ['select', 'form', 'review', 'result'].indexOf(currentStep) 
-                    ? 'bg-green-500 text-white' 
-                    : 'bg-[#2c2d32] text-gray-400'}`}>
-                {index < ['select', 'form', 'review', 'result'].indexOf(currentStep) ? (
-                  <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  index + 1
-                )}
+        {/* Step Indicator - Only show if we're not in action selection */}
+        {currentStep !== 'select' && (
+          <div className="hidden lg:flex flex-col gap-4 w-64 bg-[#1c1d1f] rounded-xl p-4">
+            <h2 className="text-lg font-medium text-white mb-4">Progress</h2>
+            {['form', 'review', 'result'].map((step, index) => (
+              <div key={step} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 
+                  ${currentStep === step 
+                    ? 'bg-purple-500 text-white' 
+                    : index < ['form', 'review', 'result'].indexOf(currentStep) 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-[#2c2d32] text-gray-400'}`}>
+                  {index < ['form', 'review', 'result'].indexOf(currentStep) ? (
+                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    index + 1
+                  )}
+                </div>
+                <span className={currentStep === step ? 'text-white' : 'text-gray-400'}>
+                  {step === 'form' && 'Configure'}
+                  {step === 'review' && 'Review'}
+                  {step === 'result' && 'Results'}
+                </span>
               </div>
-              <span className={currentStep === step ? 'text-white' : 'text-gray-400'}>
-                {step === 'select' && 'Select Action'}
-                {step === 'form' && 'Configure'}
-                {step === 'review' && 'Review'}
-                {step === 'result' && 'Results'}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {/* Main Content Area */}
-        <div className="flex-1 bg-[#1c1d1f] rounded-xl p-6 overflow-auto">
+        {/* Main Content Area - Full width on action selection, narrower with step indicator otherwise */}
+        <div className={`${currentStep === 'select' ? 'w-full' : 'flex-1'} bg-[#1c1d1f] rounded-xl p-6 overflow-auto`}>
           {error && (
             <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200">
-              <p>{error}</p>
+              {typeof error === 'string' ? <p>{error}</p> : error}
             </div>
           )}
 
-          {/* Step 1: Select Action Type */}
+          {/* Step 1: Select Action */}
           {currentStep === 'select' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -892,14 +1017,11 @@ export default function Autopilot() {
                     key={action.id}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`p-4 rounded-lg cursor-pointer border-2 transition-all
+                    className={`p-4 rounded-lg cursor-pointer border-2 transition-all relative
                       ${selectedAction === action.id 
                         ? 'border-purple-500 bg-purple-500/10' 
                         : 'border-gray-700 bg-[#2c2d32] hover:border-purple-500/50'}`}
-                    onClick={() => {
-                      setSelectedAction(action.id);
-                      setCurrentStep('form');
-                    }}
+                    onClick={() => handleActionSelect(action.id)}
                   >
                     <div className="flex items-center mb-3">
                       <div className="w-10 h-10 flex items-center justify-center mr-3 rounded-full bg-purple-500/20 text-purple-400">
