@@ -1129,20 +1129,6 @@ export default function Autopilot() {
                   </div>
                 ))}
 
-                <div className="mt-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Preview API Request</h4>
-                  <pre className="text-xs text-gray-300 overflow-auto">
-{JSON.stringify({
-  description: selectedAction === 'inventory' 
-    ? `Update inventory of ${formData.product_name} by ${formData.quantity_adjustment > 0 ? 'adding' : 'removing'} ${Math.abs(Number(formData.quantity_adjustment))} units` 
-    : selectedAction === 'discount' 
-      ? `Apply a ${formData.discount_percentage}% discount to ${formData.product_name}` 
-      : '',
-  initialParameters: formData
-}, null, 2)}
-                  </pre>
-                </div>
-
                 <button
                   type="submit"
                   disabled={isSubmitting}
