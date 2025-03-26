@@ -8,6 +8,7 @@ export interface User {
   contact_email: string;
   shopify_user_id: number;
   store: string | null;
+  advancedIntegrationsProjectId?: string;
 }
 
 export interface ConnectionStatus {
