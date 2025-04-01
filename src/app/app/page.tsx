@@ -204,13 +204,14 @@ export default function App() {
     <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Title Section */}
-        <div className="flex flex-col gap-1 mb-8">
-          <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
+        <div className="mb-12">
+          <h1 className="text-[35px] text-[#8B5CF6] font-normal m-0">
             Action Hub
           </h1>
-          <p className="text-white text-[25px] font-normal m-0">
+          <p className="text-white text-[25px] font-normal m-0 mb-10">
             Boost your store's performance.
           </p>
+          <hr className="border-t border-white mb-10" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
@@ -275,7 +276,7 @@ export default function App() {
         </div>
 
         {/* Recommendations Section */}
-        <div className="mt-4 lg:mt-6">
+        <div className="mt-10 lg:mt-12">
           <div className="mb-4">
             <h2 className="text-[32px] text-white font-normal">Task Management</h2>
             <p className="text-white text-lg">View and manage your store tasks</p>
@@ -356,19 +357,19 @@ export default function App() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#141718] p-4 rounded-2xl overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-700">
-                    <thead>
+                <div className="bg-[#141718] p-4 rounded-2xl overflow-x-auto scrollbar-hide">
+                  <table className="min-w-full">
+                    <thead className="border-b border-white">
                       <tr>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Task</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Owner</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Timeline</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Initiated</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Risk Level</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Systems</th>
-                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time Saved</th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider"></th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Task</th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Owner</th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Status</th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Timeline</th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Initiated</th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Risk Level</th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Systems</th>
+                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Time Saved</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-700">
