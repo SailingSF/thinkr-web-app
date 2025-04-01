@@ -277,8 +277,8 @@ export default function App() {
         {/* Recommendations Section */}
         <div className="mt-8 lg:mt-12">
           <div className="mb-8">
-            <h2 className="text-[32px] text-white font-normal">Email Recommendations</h2>
-            <p className="text-[#8C74FF] text-lg">View your personalized store recommendations</p>
+            <h2 className="text-[32px] text-white font-normal">Task Management</h2>
+            <p className="text-[#8C74FF] text-lg">View and manage your store tasks</p>
           </div>
 
           {loadingRecommendations ? (
@@ -289,15 +289,15 @@ export default function App() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Loading recommendations...
+                  Loading tasks...
                 </div>
               </div>
             </div>
           ) : !recommendations || recommendations.length === 0 ? (
             <div className="bg-[#2C2C2E] p-6 rounded-2xl">
               <div className="text-center py-8">
-                <p className="text-gray-400 mb-2">No recommendations available yet.</p>
-                <p className="text-sm text-gray-500">Check back later for personalized recommendations for your store.</p>
+                <p className="text-gray-400 mb-2">No tasks available yet.</p>
+                <p className="text-sm text-gray-500">Check back later for personalized tasks for your store.</p>
               </div>
             </div>
           ) : (
@@ -308,7 +308,7 @@ export default function App() {
                     <div>
                       <h3 className="text-2xl text-white mb-2">{selectedRecommendation.subject}</h3>
                       <p className="text-gray-400 text-sm">
-                        {new Date(selectedRecommendation.created_at).toLocaleDateString()}
+                        {new Date(selectedRecommendation.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                       </p>
                     </div>
                     <button
@@ -356,36 +356,84 @@ export default function App() {
                   </div>
                 </div>
               ) : (
-                <div className="grid gap-4">
-                  {recommendations.map((rec) => (
-                    <div
-                      key={rec.id}
-                      className="bg-[#2C2C2E] p-6 rounded-2xl cursor-pointer hover:bg-[#3C3C3E] transition-colors group"
-                      onClick={() => fetchRecommendationDetail(rec.id)}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="text-white text-xl mb-2 group-hover:text-[#8B5CF6] transition-colors">{rec.subject}</h3>
-                          <p className="text-gray-400 text-sm flex items-center gap-2">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M8 4V8L10.5 10.5M15 8C15 11.866 11.866 15 8 15C4.13401 15 1 11.866 1 8C1 4.13401 4.13401 1 8 1C11.866 1 15 4.13401 15 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            {new Date(rec.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {rec.has_implementation_steps && (
-                            <span className="bg-[#8B5CF6] text-white text-xs px-3 py-1 rounded-full">
-                              Has Implementation Steps
-                            </span>
-                          )}
-                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400 group-hover:text-[#8B5CF6] transition-colors">
-                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="bg-[#2C2C2E] p-6 rounded-2xl overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-700">
+                    <thead>
+                      <tr>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Task</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Owner</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Timeline</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Initiated</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Risk Level</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Systems</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time Saved</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-700">
+                      {recommendations.map((rec) => {
+                        // Get the date objects for created_at and the day after
+                        const createdDate = new Date(rec.created_at);
+                        const nextDay = new Date(createdDate);
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        
+                        // Format the dates
+                        const initiatedDate = createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+                        const dayAfter = nextDay.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+                        
+                        return (
+                          <tr 
+                            key={rec.id} 
+                            className="hover:bg-[#3C3C3E] cursor-pointer transition-colors"
+                            onClick={() => fetchRecommendationDetail(rec.id)}
+                          >
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <button className="text-gray-400">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M8 4V8L10.5 10.5M15 8C15 11.866 11.866 15 8 15C4.13401 15 1 11.866 1 8C1 4.13401 4.13401 1 8 1C11.866 1 15 4.13401 15 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              </button>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-white">{rec.subject}</td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="group relative">
+                                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white">
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="currentColor"/>
+                                    <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="currentColor"/>
+                                  </svg>
+                                </div>
+                                <div className="absolute left-0 mt-2 w-24 rounded shadow-lg bg-gray-800 text-white text-xs py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                  Store Owner
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              {rec.has_implementation_steps ? (
+                                <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-500 text-white">
+                                  See Implementation
+                                </span>
+                              ) : (
+                                <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-500 text-white">
+                                  Pending
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{dayAfter}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{initiatedDate}</td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-700 text-white">
+                                Low
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">Shopify</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">2 hrs</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
