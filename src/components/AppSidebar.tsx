@@ -177,7 +177,7 @@ export default function AppSidebar() {
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed top-0 left-0 h-screen p-3">
         <div className="h-full w-[256px]">
-          <div className="w-full h-full bg-[#1E1F20] rounded-[20px] shadow-lg">
+          <div className="w-full h-full bg-[#1E1F20] rounded-[8px] shadow-lg">
             {sidebarContent}
           </div>
         </div>
