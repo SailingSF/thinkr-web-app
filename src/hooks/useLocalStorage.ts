@@ -9,6 +9,7 @@ export interface User {
   shopify_user_id: number;
   store: string | null;
   advancedIntegrationsProjectId?: string;
+  peaka_project_id?: string;
 }
 
 export interface ConnectionStatus {
