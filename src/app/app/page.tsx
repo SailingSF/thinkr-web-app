@@ -277,9 +277,8 @@ export default function App() {
 
         {/* Recommendations Section */}
         <div className="mt-10 lg:mt-12">
-          <div className="mb-4">
-            <h2 className="text-[32px] text-white font-normal">Task Management</h2>
-            <p className="text-white text-lg">View and manage your store tasks</p>
+          <div className="mb-0">
+            <h2 className="text-[25px] text-white font-normal mb-2">Task Management</h2>
           </div>
 
           {loadingRecommendations ? (
@@ -363,16 +362,16 @@ export default function App() {
                       <tr>
                         <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider"></th>
                         <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Task</th>
-                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Owner</th>
-                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Status</th>
-                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Timeline</th>
-                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Initiated</th>
-                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Risk Level</th>
-                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Systems</th>
-                        <th scope="col" className="px-3 py-4 text-left text-xs font-medium text-white tracking-wider">Time Saved</th>
+                        <th scope="col" className="px-3 py-4 text-center text-xs font-medium text-white tracking-wider">Owner</th>
+                        <th scope="col" className="px-3 py-4 text-center text-xs font-medium text-white tracking-wider">Status</th>
+                        <th scope="col" className="px-3 py-4 text-center text-xs font-medium text-white tracking-wider">Timeline</th>
+                        <th scope="col" className="px-3 py-4 text-center text-xs font-medium text-white tracking-wider">Initiated</th>
+                        <th scope="col" className="px-3 py-4 text-center text-xs font-medium text-white tracking-wider">Risk Level</th>
+                        <th scope="col" className="px-3 py-4 text-center text-xs font-medium text-white tracking-wider">Systems</th>
+                        <th scope="col" className="px-3 py-4 text-center text-xs font-medium text-white tracking-wider">Time Saved</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-700">
+                    <tbody className="divide-y-0">
                       {recommendations.map((rec) => {
                         // Get the date objects for created_at and the day after
                         const createdDate = new Date(rec.created_at);
@@ -389,47 +388,49 @@ export default function App() {
                             className="hover:bg-[#3C3C3E] cursor-pointer transition-colors"
                             onClick={() => fetchRecommendationDetail(rec.id)}
                           >
-                            <td className="px-3 py-3 whitespace-nowrap">
+                            <td className="px-3 py-2 whitespace-nowrap">
                               <button className="text-gray-400">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                   <path d="M8 4V12M4 8H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                               </button>
                             </td>
-                            <td className="px-3 py-3 whitespace-nowrap text-sm text-white">{rec.subject}</td>
-                            <td className="px-3 py-3 whitespace-nowrap">
-                              <div className="group relative">
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-white">{rec.subject}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-center">
+                              <div className="group relative flex justify-center">
                                 <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white">
                                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="currentColor"/>
                                     <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="currentColor"/>
                                   </svg>
                                 </div>
-                                <div className="absolute left-0 mt-2 w-auto px-3 py-1 rounded shadow-lg bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
+                                <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-auto px-3 py-1 rounded shadow-lg bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
                                   {user?.first_name || "Store Owner"}
                                 </div>
                               </div>
                             </td>
-                            <td className="px-3 py-3 whitespace-nowrap">
+                            <td className="px-3 py-2 whitespace-nowrap text-center">
                               {rec.has_implementation_steps ? (
-                                <span className="w-32 text-center px-3 py-1 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-lg bg-[#10AA56] text-white">
-                                  See Implementation
+                                <span className="w-32 text-center px-3 py-1 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-md bg-[#10AA56] text-white">
+                                  Implementation
                                 </span>
                               ) : (
-                                <span className="w-32 text-center px-3 py-1 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-lg bg-[#FDAB3D] text-white">
+                                <span className="w-32 text-center px-3 py-1 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-md bg-[#FDAB3D] text-white">
                                   Pending
                                 </span>
                               )}
                             </td>
-                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-300">{dayAfter}</td>
-                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-300">{initiatedDate}</td>
-                            <td className="px-3 py-3 whitespace-nowrap">
-                              <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-700 text-white">
-                                Low
-                              </span>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300 text-center">{dayAfter}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300 text-center">{initiatedDate}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-center">
+                              <div className="flex justify-center">
+                                <span className="w-16 text-center px-3 py-1 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-md bg-blue-700 text-white">
+                                  Low
+                                </span>
+                              </div>
                             </td>
-                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-300">Shopify</td>
-                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-300">2 hrs</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300 text-center">Shopify</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300 text-center">2 hrs</td>
                           </tr>
                         );
                       })}
