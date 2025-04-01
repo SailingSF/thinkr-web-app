@@ -208,7 +208,7 @@ export default function App() {
           <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
             Action Hub
           </h1>
-          <p className="text-[#8C74FF] text-[25px] font-normal m-0">
+          <p className="text-white text-[25px] font-normal m-0">
             Boost your store's performance.
           </p>
         </div>
@@ -275,16 +275,16 @@ export default function App() {
         </div>
 
         {/* Recommendations Section */}
-        <div className="mt-8 lg:mt-12">
-          <div className="mb-8">
+        <div className="mt-4 lg:mt-6">
+          <div className="mb-4">
             <h2 className="text-[32px] text-white font-normal">Task Management</h2>
-            <p className="text-[#8C74FF] text-lg">View and manage your store tasks</p>
+            <p className="text-white text-lg">View and manage your store tasks</p>
           </div>
 
           {loadingRecommendations ? (
-            <div className="bg-[#2C2C2E] p-6 rounded-2xl">
-              <div className="flex justify-center items-center h-32">
-                <div className="text-gray-400 flex items-center gap-3">
+            <div className="bg-[#141718] p-4 rounded-2xl">
+              <div className="flex justify-center items-center h-24">
+                <div className="text-gray-400 flex items-center gap-2">
                   <svg className="animate-spin h-5 w-5 text-[#8B5CF6]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -294,19 +294,19 @@ export default function App() {
               </div>
             </div>
           ) : !recommendations || recommendations.length === 0 ? (
-            <div className="bg-[#2C2C2E] p-6 rounded-2xl">
-              <div className="text-center py-8">
-                <p className="text-gray-400 mb-2">No tasks available yet.</p>
+            <div className="bg-[#141718] p-4 rounded-2xl">
+              <div className="text-center py-6">
+                <p className="text-gray-400 mb-1">No tasks available yet.</p>
                 <p className="text-sm text-gray-500">Check back later for personalized tasks for your store.</p>
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {selectedRecommendation ? (
-                <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-2xl">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="bg-[#141718] p-4 lg:p-5 rounded-2xl">
+                  <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-2xl text-white mb-2">{selectedRecommendation.subject}</h3>
+                      <h3 className="text-2xl text-white mb-1">{selectedRecommendation.subject}</h3>
                       <p className="text-gray-400 text-sm">
                         {new Date(selectedRecommendation.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                       </p>
@@ -321,28 +321,28 @@ export default function App() {
                       Back to list
                     </button>
                   </div>
-                  <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-xl">
+                  <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-xl">
                       <div className="prose prose-lg prose-light max-w-none"
                         dangerouslySetInnerHTML={{ __html: selectedRecommendation.content }}
                       />
                     </div>
                     {selectedRecommendation.implementation_emails.length > 0 && (
-                      <div className="mt-8">
-                        <h4 className="text-xl text-white mb-4 flex items-center gap-2">
+                      <div className="mt-4">
+                        <h4 className="text-xl text-white mb-3 flex items-center gap-2">
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                           Implementation Steps
                         </h4>
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           {selectedRecommendation.implementation_emails.map((email, index) => (
-                            <div key={index} className="bg-white p-6 rounded-xl">
-                              <h5 className="text-[#8B5CF6] text-lg mb-4 font-medium">{email.subject}</h5>
+                            <div key={index} className="bg-white p-4 rounded-xl">
+                              <h5 className="text-[#8B5CF6] text-lg mb-3 font-medium">{email.subject}</h5>
                               <div className="prose prose-lg prose-light max-w-none"
                                 dangerouslySetInnerHTML={{ __html: email.content }}
                               />
-                              <div className="mt-4 text-sm text-gray-500 flex items-center gap-2">
+                              <div className="mt-3 text-sm text-gray-500 flex items-center gap-2">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                   <path d="M8 4V8L10.5 10.5M15 8C15 11.866 11.866 15 8 15C4.13401 15 1 11.866 1 8C1 4.13401 4.13401 1 8 1C11.866 1 15 4.13401 15 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
@@ -356,19 +356,19 @@ export default function App() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#2C2C2E] p-6 rounded-2xl overflow-x-auto">
+                <div className="bg-[#141718] p-4 rounded-2xl overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-700">
                     <thead>
                       <tr>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Task</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Owner</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Timeline</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Initiated</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Risk Level</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Systems</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time Saved</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Task</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Owner</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Timeline</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Initiated</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Risk Level</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Systems</th>
+                        <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time Saved</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-700">
@@ -388,15 +388,15 @@ export default function App() {
                             className="hover:bg-[#3C3C3E] cursor-pointer transition-colors"
                             onClick={() => fetchRecommendationDetail(rec.id)}
                           >
-                            <td className="px-4 py-4 whitespace-nowrap">
+                            <td className="px-3 py-3 whitespace-nowrap">
                               <button className="text-gray-400">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                   <path d="M8 4V12M4 8H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                               </button>
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-white">{rec.subject}</td>
-                            <td className="px-4 py-4 whitespace-nowrap">
+                            <td className="px-3 py-3 whitespace-nowrap text-sm text-white">{rec.subject}</td>
+                            <td className="px-3 py-3 whitespace-nowrap">
                               <div className="group relative">
                                 <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white">
                                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -409,7 +409,7 @@ export default function App() {
                                 </div>
                               </div>
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap">
+                            <td className="px-3 py-3 whitespace-nowrap">
                               {rec.has_implementation_steps ? (
                                 <span className="w-32 text-center px-3 py-1 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-lg bg-[#10AA56] text-white">
                                   See Implementation
@@ -420,15 +420,15 @@ export default function App() {
                                 </span>
                               )}
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{dayAfter}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">{initiatedDate}</td>
-                            <td className="px-4 py-4 whitespace-nowrap">
+                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-300">{dayAfter}</td>
+                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-300">{initiatedDate}</td>
+                            <td className="px-3 py-3 whitespace-nowrap">
                               <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-700 text-white">
                                 Low
                               </span>
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">Shopify</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">2 hrs</td>
+                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-300">Shopify</td>
+                            <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-300">2 hrs</td>
                           </tr>
                         );
                       })}
