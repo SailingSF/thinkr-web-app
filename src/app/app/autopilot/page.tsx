@@ -191,6 +191,8 @@ export default function Autopilot() {
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [executingAction, setExecutingAction] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredActions, setFilteredActions] = useState<ActionType[]>(ACTION_TYPES);
 
   // Get the selected action type details
   const selectedActionType = ACTION_TYPES.find(action => action.id === selectedAction);
@@ -935,6 +937,14 @@ export default function Autopilot() {
     setError(null); // Clear any previous errors
   };
 
+  // Filter actions based on search query
+  useEffect(() => {
+    const filtered = ACTION_TYPES.filter(action =>
+      action.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredActions(filtered);
+  }, [searchQuery]);
+
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
       <div className="container mx-auto px-4 lg:px-8">
@@ -1001,9 +1011,25 @@ export default function Autopilot() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 className="text-xl font-medium text-white mb-6">Select an action for your Shopify store</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-medium text-white">Find automations</h2>
+                  <div className="relative flex-1 max-w-md ml-4">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search automations..."
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-lg bg-[#2c2d32] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {ACTION_TYPES.map((action) => (
+                  {filteredActions.map((action) => (
                     <motion.div
                       key={action.id}
                       whileHover={{ scale: 1.01 }}
