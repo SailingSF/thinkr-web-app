@@ -12,7 +12,7 @@ export default function ShopifyConnectButton({ onClick, isLoading, className = '
     <button
       onClick={onClick}
       disabled={isLoading}
-      className={`w-full py-4 bg-[#5E8E3E] hover:bg-[#4A7131] rounded-lg transition-colors text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 ${className}`}
+      className={`w-full py-4 bg-[#5E8E3E] hover:bg-[#4A7131] rounded-md transition-colors text-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 ${className}`}
     >
       {isLoading ? (
         <>

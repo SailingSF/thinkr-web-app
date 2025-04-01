@@ -22,7 +22,7 @@ export default function AppSidebar() {
       name: 'Action Hub',
       href: '/app',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       ),
@@ -32,7 +32,7 @@ export default function AppSidebar() {
       name: 'Chat',
       href: '/app/chat',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       ),
@@ -42,7 +42,7 @@ export default function AppSidebar() {
       name: 'Scheduler',
       href: '/app/scheduler',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
@@ -52,7 +52,7 @@ export default function AppSidebar() {
       name: 'Deep Research',
       href: '/app/deep_research',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       ),
@@ -62,7 +62,7 @@ export default function AppSidebar() {
       name: 'Integrations',
       href: '/app/integrations',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
         </svg>
       ),
@@ -72,7 +72,7 @@ export default function AppSidebar() {
       name: 'Autopilot',
       href: '/app/autopilot',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4L12 2M8 8h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2zM10 11h.01M14 11h.01" />
           <circle cx="10" cy="11" r="1" className="text-current" fill="currentColor" />
           <circle cx="14" cy="11" r="1" className="text-current" fill="currentColor" />
@@ -87,7 +87,7 @@ export default function AppSidebar() {
       name: 'Calendar',
       href: '#',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
@@ -97,49 +97,49 @@ export default function AppSidebar() {
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-6">
+      <div className="px-3 py-5">
         <Image
           src="/2 Thinkr logo white letter.png"
           alt="Thinkr Logo"
           width={240}
           height={80}
           priority
-          className="w-auto h-16"
+          className="w-auto h-12"
         />
       </div>
       
-      <nav className="flex-1 px-3">
+      <nav className="flex-1 px-2">
         <div className="space-y-1">
           {navigationItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center justify-between px-4 py-3 rounded-lg text-base font-normal transition-colors ${
+              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors ${
                 item.isActive
                   ? 'bg-[#7B6EF6] text-white'
                   : 'text-gray-300 hover:bg-[#232627] hover:text-white'
               }`}
             >
               <span>{item.name}</span>
-              <div className="w-5 h-5 opacity-60">
+              <div className="w-4 h-4 opacity-60">
                 {item.icon}
               </div>
             </Link>
           ))}
         </div>
 
-        <div className="my-6 border-t border-[#232627]" />
+        <div className="my-5 border-t border-[#232627]" />
 
         <div className="space-y-1">
           {comingSoonItems.map((item) => (
             <div
               key={item.name}
-              className="flex items-center justify-between px-4 py-3 rounded-lg text-base"
+              className="flex items-center justify-between px-3 py-2 rounded-lg text-sm"
             >
               <span className="text-gray-500">{item.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Coming Soon</span>
-                <div className="w-5 h-5 opacity-60 text-gray-600">
+                <span className="text-xs text-gray-600">Coming Soon</span>
+                <div className="w-4 h-4 opacity-60 text-gray-600">
                   {item.icon}
                 </div>
               </div>
@@ -148,18 +148,18 @@ export default function AppSidebar() {
         </div>
       </nav>
 
-      <div className="px-3 pb-4 mt-auto">
+      <div className="px-2 pb-3 mt-auto">
         <Link
           href="/app/profile"
-          className={`flex items-center justify-between px-4 py-3 rounded-lg text-base font-normal transition-colors ${
+          className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-normal transition-colors ${
             pathname === '/app/profile'
               ? 'bg-[#7B6EF6] text-white'
               : 'text-gray-300 hover:bg-[#232627] hover:text-white'
           }`}
         >
           <span>Profile</span>
-          <div className="w-5 h-5 opacity-60">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-4 h-4 opacity-60">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
@@ -176,7 +176,7 @@ export default function AppSidebar() {
     <>
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed top-0 left-0 h-screen p-3">
-        <div className="h-full w-[320px]">
+        <div className="h-full w-[256px]">
           <div className="w-full h-full bg-[#1E1F20] rounded-[20px] shadow-lg">
             {sidebarContent}
           </div>
@@ -189,7 +189,7 @@ export default function AppSidebar() {
         className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-[#232627] lg:hidden"
       >
         <svg
-          className="w-6 h-6 text-white"
+          className="w-5 h-5 text-white"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -220,7 +220,7 @@ export default function AppSidebar() {
       >
         <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
         <div
-          className={`absolute left-0 top-0 h-full w-[320px] bg-[#1E1F20] transform transition-transform duration-300 ${
+          className={`absolute left-0 top-0 h-full w-[256px] bg-[#1E1F20] transform transition-transform duration-300 ${
             isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >

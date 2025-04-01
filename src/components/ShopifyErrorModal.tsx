@@ -17,7 +17,7 @@ export default function ShopifyErrorModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#1A1B1E] rounded-xl max-w-md w-full mx-4 p-6">
+      <div className="bg-[#1A1B1E] rounded-lg max-w-md w-full mx-4 p-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <h2 className="text-xl text-white">Connection Incomplete</h2>
@@ -39,7 +39,7 @@ export default function ShopifyErrorModal({
           href="https://apps.shopify.com/thinkr"
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-full bg-[#10AA56] hover:bg-[#338452] text-black font-medium text-center py-3 rounded-md mb-8 transition-colors"
+          className="block w-full bg-[#10AA56] hover:bg-[#338452] text-black font-medium text-center py-3 rounded-sm mb-8 transition-colors"
         >
           Install Shopify App
         </a>
