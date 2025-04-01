@@ -129,7 +129,7 @@ const ACTION_TYPES: ActionType[] = [
     description: 'Set up time-based discounts for holidays and events',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008H16.5V15z" />
       </svg>
     ),
     comingSoon: true,
@@ -936,320 +936,310 @@ export default function Autopilot() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex flex-col p-4 lg:p-8 bg-[#141718] font-inter">
-      {/* Loading Overlay */}
-      {loadingMessage && <LoadingOverlay message={loadingMessage} />}
-      
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center mb-4">
-          <div className="w-10 h-10 mr-4 text-purple-400">
-            <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4L12 2M8 8h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2zM10 12h.01M14 12h.01"
-              />
-              <circle cx="10" cy="12" r="1" fill="currentColor" />
-              <circle cx="14" cy="12" r="1" fill="currentColor" />
-            </svg>
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
+      <div className="container mx-auto px-4 lg:px-8">
+        {/* Loading Overlay */}
+        {loadingMessage && <LoadingOverlay message={loadingMessage} />}
+        
+        {/* Header */}
+        <div className="mb-12">
+          <div className="flex items-center mb-4">
+            <h1 className="text-[35px] text-[#8B5CF6] font-normal m-0">
+              Autopilot
+            </h1>
           </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Shopify Store Autopilot
-          </h1>
+          <p className="text-white text-[25px] font-normal m-0 mb-10">
+            Automate everyday store tasks.
+          </p>
+          <hr className="border-t border-white mb-10" />
         </div>
-        <p className="text-gray-400 ml-14">
-          Automate common Shopify store tasks using AI. Select an action, configure the parameters, and let our AI agent handle the execution.
-        </p>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex flex-1 gap-6">
-        {/* Step Indicator - Only show if we're not in action selection */}
-        {currentStep !== 'select' && (
-          <div className="hidden lg:flex flex-col gap-4 w-64 bg-[#1c1d1f] rounded-xl p-4">
-            <h2 className="text-lg font-medium text-white mb-4">Progress</h2>
-            {['form', 'review', 'result'].map((step, index) => (
-              <div key={step} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 
-                  ${currentStep === step 
-                    ? 'bg-purple-500 text-white' 
-                    : index < ['form', 'review', 'result'].indexOf(currentStep) 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-[#2c2d32] text-gray-400'}`}>
-                  {index < ['form', 'review', 'result'].indexOf(currentStep) ? (
-                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    index + 1
-                  )}
+        {/* Main Content */}
+        <div className="flex flex-1 gap-6">
+          {/* Step Indicator - Only show if we're not in action selection */}
+          {currentStep !== 'select' && (
+            <div className="hidden lg:flex flex-col gap-4 w-64 bg-[#1c1d1f] rounded-xl p-4">
+              <h2 className="text-lg font-medium text-white mb-4">Progress</h2>
+              {['form', 'review', 'result'].map((step, index) => (
+                <div key={step} className="flex items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 
+                    ${currentStep === step 
+                      ? 'bg-purple-500 text-white' 
+                      : index < ['form', 'review', 'result'].indexOf(currentStep) 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-[#2c2d32] text-gray-400'}`}>
+                    {index < ['form', 'review', 'result'].indexOf(currentStep) ? (
+                      <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      index + 1
+                    )}
+                  </div>
+                  <span className={currentStep === step ? 'text-white' : 'text-gray-400'}>
+                    {step === 'form' && 'Configure'}
+                    {step === 'review' && 'Review'}
+                    {step === 'result' && 'Results'}
+                  </span>
                 </div>
-                <span className={currentStep === step ? 'text-white' : 'text-gray-400'}>
-                  {step === 'form' && 'Configure'}
-                  {step === 'review' && 'Review'}
-                  {step === 'result' && 'Results'}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Main Content Area - Full width on action selection, narrower with step indicator otherwise */}
-        <div className={`${currentStep === 'select' ? 'w-full' : 'flex-1'} bg-[#1c1d1f] rounded-xl p-6 overflow-auto`}>
-          {error && (
-            <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200">
-              {typeof error === 'string' ? <p>{error}</p> : error}
+              ))}
             </div>
           )}
 
-          {/* Step 1: Select Action */}
-          {currentStep === 'select' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <h2 className="text-xl font-medium text-white mb-6">Select an action for your Shopify store</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {ACTION_TYPES.map((action) => (
-                  <motion.div
-                    key={action.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`p-4 rounded-lg cursor-pointer border-2 transition-all relative
-                      ${selectedAction === action.id 
-                        ? 'border-purple-500 bg-purple-500/10' 
-                        : 'border-gray-700 bg-[#2c2d32] hover:border-purple-500/50'}`}
-                    onClick={() => handleActionSelect(action.id)}
-                  >
-                    <div className="flex items-center mb-3">
-                      <div className="w-10 h-10 flex items-center justify-center mr-3 rounded-full bg-purple-500/20 text-purple-400">
-                        {action.icon}
-                      </div>
-                      <h3 className="text-lg font-medium text-white">{action.label}</h3>
-                    </div>
-                    <p className="text-gray-400 text-sm">{action.description}</p>
-                  </motion.div>
-                ))}
+          {/* Main Content Area - Full width on action selection, narrower with step indicator otherwise */}
+          <div className={`${currentStep === 'select' ? 'w-full' : 'flex-1'} bg-[#1c1d1f] rounded-xl p-6 overflow-auto`}>
+            {error && (
+              <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200">
+                {typeof error === 'string' ? <p>{error}</p> : error}
               </div>
-            </motion.div>
-          )}
+            )}
 
-          {/* Step 2: Configure Action */}
-          {currentStep === 'form' && selectedActionType && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-medium text-white">Configure {selectedActionType.label}</h2>
-                <button
-                  onClick={() => setCurrentStep('select')}
-                  className="text-gray-400 hover:text-white text-sm flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                  </svg>
-                  Back
-                </button>
-              </div>
-              
-              {/* Action specific help text */}
-              <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
-                {selectedAction === 'inventory' && (
-                  <div className="space-y-2">
-                    <p>This action allows you to adjust the inventory quantity of a specific product.</p>
-                    <ul className="list-disc list-inside text-sm space-y-1">
-                      <li>Use positive numbers to add inventory (e.g., 10)</li>
-                      <li>Use negative numbers to remove inventory (e.g., -5)</li>
-                      <li>Reason for adjustment is required</li>
-                      <li>Variant ID is optional - if not provided, the action will affect the first variant</li>
-                    </ul>
-                  </div>
-                )}
-
-                {selectedAction === 'discount' && (
-                  <div className="space-y-2">
-                    <p>This action applies a percentage discount to a product and sets compare-at prices.</p>
-                    <ul className="list-disc list-inside text-sm space-y-1">
-                      <li>Enter the percentage value only (e.g., 20 for 20% discount)</li>
-                      <li>Round To controls price rounding (0.99 gives prices like $19.99)</li>
-                      <li>The original price will be shown as a compare-at price</li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {selectedActionType.fields.map((field) => (
-                  <div key={field.name} className="space-y-2">
-                    <label htmlFor={field.name} className="block text-sm font-medium text-gray-300">
-                      {field.label} {field.required && <span className="text-red-400">*</span>}
-                    </label>
-                    
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        id={field.name}
-                        name={field.name}
-                        value={formData[field.name] || ''}
-                        onChange={handleInputChange}
-                        placeholder={field.placeholder}
-                        required={field.required}
-                        className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        rows={4}
-                      />
-                    ) : field.type === 'select' ? (
-                      <select
-                        id={field.name}
-                        name={field.name}
-                        value={formData[field.name] || ''}
-                        onChange={handleInputChange}
-                        required={field.required}
-                        className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      >
-                        <option value="">Select {field.label}</option>
-                        {field.options?.map((option: string) => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        id={field.name}
-                        name={field.name}
-                        type={field.type}
-                        value={formData[field.name] || ''}
-                        onChange={handleInputChange}
-                        placeholder={field.placeholder}
-                        required={field.required}
-                        className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      />
-                    )}
-                  </div>
-                ))}
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:bg-purple-700 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit'}
-                </button>
-              </form>
-            </motion.div>
-          )}
-
-          {/* Step 3: Review Proposal */}
-          {currentStep === 'review' && proposal && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-medium text-white">Review Proposal</h2>
-                <button
-                  onClick={() => setCurrentStep('form')}
-                  className="text-gray-400 hover:text-white text-sm flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                  </svg>
-                  Back
-                </button>
-              </div>
-
-              <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
-                <h3 className="text-lg font-medium mb-2">Proposal Details</h3>
-                <p className="text-sm">{proposal.description}</p>
-              </div>
-
-              <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                <h4 className="text-sm font-medium text-gray-400 mb-2">Proposal Parameters</h4>
-                <pre className="text-xs text-gray-300 overflow-auto">
-{JSON.stringify(proposal.parameters, null, 2)}
-                </pre>
-              </div>
-
-              <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                <h4 className="text-sm font-medium text-gray-400 mb-2">Expected Outcome</h4>
-                <p className="text-xs text-gray-300">{proposal.expected_outcome}</p>
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  onClick={() => handleProposalAction('approve')}
-                  disabled={isSubmitting}
-                  className="flex-1 py-2 px-4 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors disabled:bg-green-700 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Approving...' : 'Approve'}
-                </button>
-                <button
-                  onClick={() => handleProposalAction('refine')}
-                  disabled={isSubmitting}
-                  className="flex-1 py-2 px-4 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition-colors disabled:bg-yellow-700 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Refining...' : 'Refine'}
-                </button>
-                <button
-                  onClick={() => handleProposalAction('reject')}
-                  disabled={isSubmitting}
-                  className="flex-1 py-2 px-4 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:bg-red-700 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Rejecting...' : 'Reject'}
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 4: Show Result */}
-          {currentStep === 'result' && result && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-medium text-white">Action Result</h2>
-                <button
-                  onClick={() => setCurrentStep('select')}
-                  className="text-gray-400 hover:text-white text-sm flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                  </svg>
-                  Back
-                </button>
-              </div>
-
-              <div className="mb-6 p-4 bg-green-900/20 border border-green-400/30 rounded-lg text-gray-300">
-                <h3 className="text-lg font-medium mb-2">Action Completed Successfully</h3>
-                <p className="text-sm">{result.summary}</p>
-                {result.message && (
-                  <p className="text-sm mt-2 text-green-300">{result.message}</p>
-                )}
-              </div>
-
-              <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                <h4 className="text-sm font-medium text-gray-400 mb-2">Result Details</h4>
-                {result.details ? (
-                  <pre className="text-xs text-gray-300 overflow-auto">
-{JSON.stringify(result.details, null, 2)}
-                  </pre>
-                ) : (
-                  <p className="text-xs text-gray-400">No additional details available</p>
-                )}
-              </div>
-
-              <button
-                onClick={handleReset}
-                className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+            {/* Step 1: Select Action */}
+            {currentStep === 'select' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                Start Over
-              </button>
-            </motion.div>
-          )}
+                <h2 className="text-xl font-medium text-white mb-6">Select an action for your Shopify store</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {ACTION_TYPES.map((action) => (
+                    <motion.div
+                      key={action.id}
+                      whileHover={{ scale: 1.01 }}
+                      className={`py-8 px-6 bg-[#303030] rounded-lg cursor-pointer relative min-h-[180px] ${
+                        selectedAction === action.id ? 'ring-1 ring-purple-500' : ''
+                      }`}
+                      onClick={() => handleActionSelect(action.id)}
+                    >
+                      <h3 className="font-semibold text-base text-white mb-4" style={{ fontFamily: 'var(--font-family)' }}>{action.label}</h3>
+                      <p className="font-normal text-[13px] text-[#8d8a8b]" style={{ fontFamily: 'var(--font-family)' }}>{action.description}</p>
+                      {action.comingSoon && (
+                        <div className="absolute bottom-3 left-6">
+                          <span className="text-xs text-gray-400">Coming Soon</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Configure Action */}
+            {currentStep === 'form' && selectedActionType && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-medium text-white">Configure {selectedActionType.label}</h2>
+                  <button
+                    onClick={() => setCurrentStep('select')}
+                    className="text-gray-400 hover:text-white text-sm flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                    Back
+                  </button>
+                </div>
+                
+                {/* Action specific help text */}
+                <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
+                  {selectedAction === 'inventory' && (
+                    <div className="space-y-2">
+                      <p>This action allows you to adjust the inventory quantity of a specific product.</p>
+                      <ul className="list-disc list-inside text-sm space-y-1">
+                        <li>Use positive numbers to add inventory (e.g., 10)</li>
+                        <li>Use negative numbers to remove inventory (e.g., -5)</li>
+                        <li>Reason for adjustment is required</li>
+                        <li>Variant ID is optional - if not provided, the action will affect the first variant</li>
+                      </ul>
+                    </div>
+                  )}
+
+                  {selectedAction === 'discount' && (
+                    <div className="space-y-2">
+                      <p>This action applies a percentage discount to a product and sets compare-at prices.</p>
+                      <ul className="list-disc list-inside text-sm space-y-1">
+                        <li>Enter the percentage value only (e.g., 20 for 20% discount)</li>
+                        <li>Round To controls price rounding (0.99 gives prices like $19.99)</li>
+                        <li>The original price will be shown as a compare-at price</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {selectedActionType.fields.map((field) => (
+                    <div key={field.name} className="space-y-2">
+                      <label htmlFor={field.name} className="block text-sm font-medium text-gray-300">
+                        {field.label} {field.required && <span className="text-red-400">*</span>}
+                      </label>
+                      
+                      {field.type === 'textarea' ? (
+                        <textarea
+                          id={field.name}
+                          name={field.name}
+                          value={formData[field.name] || ''}
+                          onChange={handleInputChange}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          rows={4}
+                        />
+                      ) : field.type === 'select' ? (
+                        <select
+                          id={field.name}
+                          name={field.name}
+                          value={formData[field.name] || ''}
+                          onChange={handleInputChange}
+                          required={field.required}
+                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                          <option value="">Select {field.label}</option>
+                          {field.options?.map((option: string) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          id={field.name}
+                          name={field.name}
+                          type={field.type}
+                          value={formData[field.name] || ''}
+                          onChange={handleInputChange}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        />
+                      )}
+                    </div>
+                  ))}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:bg-purple-700 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit'}
+                  </button>
+                </form>
+              </motion.div>
+            )}
+
+            {/* Step 3: Review Proposal */}
+            {currentStep === 'review' && proposal && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-medium text-white">Review Proposal</h2>
+                  <button
+                    onClick={() => setCurrentStep('form')}
+                    className="text-gray-400 hover:text-white text-sm flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                    Back
+                  </button>
+                </div>
+
+                <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
+                  <h3 className="text-lg font-medium mb-2">Proposal Details</h3>
+                  <p className="text-sm">{proposal.description}</p>
+                </div>
+
+                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Proposal Parameters</h4>
+                  <pre className="text-xs text-gray-300 overflow-auto">
+{JSON.stringify(proposal.parameters, null, 2)}
+                  </pre>
+                </div>
+
+                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Expected Outcome</h4>
+                  <p className="text-xs text-gray-300">{proposal.expected_outcome}</p>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => handleProposalAction('approve')}
+                    disabled={isSubmitting}
+                    className="flex-1 py-2 px-4 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors disabled:bg-green-700 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Approving...' : 'Approve'}
+                  </button>
+                  <button
+                    onClick={() => handleProposalAction('refine')}
+                    disabled={isSubmitting}
+                    className="flex-1 py-2 px-4 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition-colors disabled:bg-yellow-700 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Refining...' : 'Refine'}
+                  </button>
+                  <button
+                    onClick={() => handleProposalAction('reject')}
+                    disabled={isSubmitting}
+                    className="flex-1 py-2 px-4 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:bg-red-700 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Rejecting...' : 'Reject'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Show Result */}
+            {currentStep === 'result' && result && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-medium text-white">Action Result</h2>
+                  <button
+                    onClick={() => setCurrentStep('select')}
+                    className="text-gray-400 hover:text-white text-sm flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                    </svg>
+                    Back
+                  </button>
+                </div>
+
+                <div className="mb-6 p-4 bg-green-900/20 border border-green-400/30 rounded-lg text-gray-300">
+                  <h3 className="text-lg font-medium mb-2">Action Completed Successfully</h3>
+                  <p className="text-sm">{result.summary}</p>
+                  {result.message && (
+                    <p className="text-sm mt-2 text-green-300">{result.message}</p>
+                  )}
+                </div>
+
+                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Result Details</h4>
+                  {result.details ? (
+                    <pre className="text-xs text-gray-300 overflow-auto">
+{JSON.stringify(result.details, null, 2)}
+                    </pre>
+                  ) : (
+                    <p className="text-xs text-gray-400">No additional details available</p>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleReset}
+                  className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+                >
+                  Start Over
+                </button>
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
     </div>
