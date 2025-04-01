@@ -30,13 +30,12 @@ export function RegisterForm() {
     const hasMinLength = value.length >= 8;
     const hasNumber = /\d/.test(value);
     const hasLetter = /[a-zA-Z]/.test(value);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
 
     if (!hasMinLength) {
       return 'Password must be at least 8 characters long';
     }
-    if (!hasNumber || !hasLetter || !hasSpecialChar) {
-      return 'Password must contain letters, numbers, and special characters';
+    if (!hasNumber || !hasLetter) {
+      return 'Password must contain letters and numbers';
     }
     return '';
   };
@@ -177,8 +176,8 @@ export function RegisterForm() {
                 <li className={password.length >= 8 ? 'text-[#22C55E]' : ''}>
                   At least 8 characters long
                 </li>
-                <li className={/[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password) ? 'text-[#22C55E]' : ''}>
-                  Contains letters, numbers, and special characters
+                <li className={/[a-zA-Z]/.test(password) && /\d/.test(password) ? 'text-[#22C55E]' : ''}>
+                  Contains letters and numbers
                 </li>
               </ul>
             </div>

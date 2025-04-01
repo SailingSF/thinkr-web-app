@@ -229,6 +229,18 @@ export default function Integrations() {
             </div>
           </div>
         </div>
+
+        {/* Advanced Integrations Button */}
+        <div className="mt-8 flex justify-center">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push('/app/integrations/advanced')}
+            className="px-6 py-3 bg-[#8C74FF] text-white font-medium rounded-lg shadow-lg hover:bg-[#7B63EE] transition-colors"
+          >
+            Advanced Integrations
+          </motion.button>
+        </div>
       </div>
 
       <ShopifyErrorModal
