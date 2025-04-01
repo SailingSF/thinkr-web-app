@@ -404,18 +404,18 @@ export default function App() {
                                     <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="currentColor"/>
                                   </svg>
                                 </div>
-                                <div className="absolute left-0 mt-2 w-24 rounded shadow-lg bg-gray-800 text-white text-xs py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                  Store Owner
+                                <div className="absolute left-0 mt-2 w-auto px-3 py-1 rounded shadow-lg bg-gray-800 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
+                                  {user?.first_name || "Store Owner"}
                                 </div>
                               </div>
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap">
                               {rec.has_implementation_steps ? (
-                                <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-500 text-white">
+                                <span className="w-32 text-center px-3 py-1 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-lg bg-[#10AA56] text-white">
                                   See Implementation
                                 </span>
                               ) : (
-                                <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-500 text-white">
+                                <span className="w-32 text-center px-3 py-1 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-lg bg-[#FDAB3D] text-white">
                                   Pending
                                 </span>
                               )}
