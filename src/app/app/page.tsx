@@ -218,7 +218,7 @@ export default function App() {
           <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-2xl">
             <div className="mb-6 lg:mb-8">
               <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
-              <h3 className="text-[32px] font-inter font-normal text-white">Connect your Store</h3>
+              <h3 className="text-[32px] font-inter font-normal text-white">Connect to your Shopify Store</h3>
             </div>
 
             {connectionStatus?.is_connected ? (
@@ -235,28 +235,13 @@ export default function App() {
               </div>
             ) : (
               <div className="space-y-4 lg:space-y-6">
-                <div className="p-4 lg:p-6 bg-[#1C1C1E] rounded-xl">
-                  <h4 className="font-medium text-[#8B5CF6] mb-3 lg:mb-4">Before connecting:</h4>
-                  <ul className="space-y-2 lg:space-y-3 text-sm lg:text-base text-gray-300">
-                    <li className="flex items-start gap-3">
-                      <span className="text-[#8B5CF6]">•</span>
-                      Install our Shopify app
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-[#8B5CF6]">•</span>
-                      Ensure you have admin access
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-[#8B5CF6]">•</span>
-                      Use email: {user?.email}
-                    </li>
-                  </ul>
-                </div>
-
                 <ShopifyConnectButton
                   onClick={startOAuthFlow}
                   isLoading={isConnecting}
                 />
+                <p className="text-xs lg:text-sm text-gray-400 text-left">
+                  thinkr will connect automatically if you already installed the app.
+                </p>
               </div>
             )}
           </div>
@@ -269,10 +254,6 @@ export default function App() {
             </div>
 
             <div className="space-y-4 lg:space-y-6">
-              <p className="text-sm lg:text-base text-gray-300">
-                Configure automated email reports and notifications for your store analytics.
-              </p>
-
               <Link
                 href="/app/scheduler"
                 className={`inline-block w-full px-4 lg:px-6 py-3 lg:py-4 text-center text-white font-medium rounded-xl transition-colors ${
