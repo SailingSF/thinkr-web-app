@@ -1082,10 +1082,10 @@ export default function Autopilot() {
                           action.category === 'Marketing' ? 'bg-[#f59e0b]' :
                           action.category === 'Customer Service' ? 'bg-[#10b981]' :
                           'bg-[#8763E580]'
-                        } text-white text-[13px] px-3 py-1 rounded`}>
+                        } text-white text-[13px] px-3 py-1 rounded min-w-[100px] max-w-[120px] min-h-[28px] flex items-center justify-center text-center`}>
                           {action.category}
                         </div>
-                        <span className="text-gray-400 text-[13px]">
+                        <span className="text-gray-400 text-[13px] ml-2">
                           {/* You can add actual adoption rates here if available */}
                           {Math.floor(Math.random() * (95 - 75) + 75)}% adoption
                         </span>
