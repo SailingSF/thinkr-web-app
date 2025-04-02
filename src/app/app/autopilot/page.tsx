@@ -1179,6 +1179,7 @@ export default function Autopilot() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
+                className="w-full"
               >
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-medium text-white">Configure {selectedActionType.label}</h2>
@@ -1193,7 +1194,7 @@ export default function Autopilot() {
                   </button>
                 </div>
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6 w-1/2">
                   {selectedActionType.fields.map((field) => (
                     <div key={field.name} className="space-y-2">
                       <label htmlFor={field.name} className="block text-sm font-medium text-white">
@@ -1208,7 +1209,7 @@ export default function Autopilot() {
                           onChange={handleInputChange}
                           placeholder={field.placeholder}
                           required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-[#8D8A8B] placeholder-[#8D8A8B] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-white placeholder-[#8D8A8B] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                           rows={4}
                         />
                       ) : field.type === 'select' ? (
@@ -1218,7 +1219,7 @@ export default function Autopilot() {
                           value={formData[field.name] || ''}
                           onChange={handleInputChange}
                           required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-[#8D8A8B] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-white focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                         >
                           <option value="">Select {field.label}</option>
                           {field.options?.map((option: string) => (
@@ -1234,7 +1235,7 @@ export default function Autopilot() {
                           onChange={handleInputChange}
                           placeholder={field.placeholder}
                           required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-[#8D8A8B] placeholder-[#8D8A8B] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-white placeholder-[#8D8A8B] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                         />
                       )}
                     </div>
@@ -1267,6 +1268,7 @@ export default function Autopilot() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
+                className="w-full"
               >
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-medium text-white">Review Proposal</h2>
@@ -1281,45 +1283,44 @@ export default function Autopilot() {
                   </button>
                 </div>
 
-                <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
-                  <h3 className="text-lg font-medium mb-2">Proposal Details</h3>
-                  <p className="text-sm">{proposal.description}</p>
-                </div>
+                <div className="w-1/2">
+                  <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-[#FFFFFF]">
+                    <h3 className="text-lg font-medium mb-2">Proposal Details</h3>
+                    <p className="text-sm mb-4">{proposal.description}</p>
+                    <div className="h-[1px] w-full bg-purple-400/20 my-4"></div>
+                    <p className="text-sm text-[#FFFFFF]">{proposal.expected_outcome}</p>
+                  </div>
 
-                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Proposal Parameters</h4>
-                  <pre className="text-xs text-gray-300 overflow-auto">
+                  <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-400 mb-2">Proposal Parameters</h4>
+                    <pre className="text-xs text-gray-300 overflow-auto">
 {JSON.stringify(proposal.parameters, null, 2)}
-                  </pre>
-                </div>
+                    </pre>
+                  </div>
 
-                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Expected Outcome</h4>
-                  <p className="text-xs text-gray-300">{proposal.expected_outcome}</p>
-                </div>
-
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => handleProposalAction('approve')}
-                    disabled={isSubmitting}
-                    className="flex-1 py-2 px-4 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors disabled:bg-green-700 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Approving...' : 'Approve'}
-                  </button>
-                  <button
-                    onClick={() => handleProposalAction('refine')}
-                    disabled={isSubmitting}
-                    className="flex-1 py-2 px-4 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition-colors disabled:bg-yellow-700 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Refining...' : 'Refine'}
-                  </button>
-                  <button
-                    onClick={() => handleProposalAction('reject')}
-                    disabled={isSubmitting}
-                    className="flex-1 py-2 px-4 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:bg-red-700 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Rejecting...' : 'Reject'}
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleProposalAction('approve')}
+                      disabled={isSubmitting}
+                      className="w-full py-2 px-4 rounded-lg bg-[#338452] text-[#FFFFFF] border border-[#10AA56] hover:bg-[#338452]/90 transition-colors disabled:bg-[#338452]/70 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button
+                      onClick={() => handleProposalAction('refine')}
+                      disabled={isSubmitting}
+                      className="w-full py-2 px-4 rounded-lg bg-[#AD8D19] text-white border border-[#FDAB3D] hover:bg-[#AD8D19]/90 transition-colors disabled:bg-[#AD8D19]/70 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? 'Refining...' : 'Revise'}
+                    </button>
+                    <button
+                      onClick={() => handleProposalAction('reject')}
+                      disabled={isSubmitting}
+                      className="col-span-2 w-full py-2 px-4 rounded-lg bg-[#581919] text-white border border-[#DF2F4A] hover:bg-[#581919]/90 transition-colors disabled:bg-[#581919]/70 disabled:cursor-not-allowed mt-2"
+                    >
+                      {isSubmitting ? 'Rejecting...' : 'Reject'}
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -1330,6 +1331,7 @@ export default function Autopilot() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
+                className="w-full"
               >
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-medium text-white">Action Result</h2>
@@ -1344,31 +1346,34 @@ export default function Autopilot() {
                   </button>
                 </div>
 
-                <div className="mb-6 p-4 bg-green-900/20 border border-green-400/30 rounded-lg text-gray-300">
-                  <h3 className="text-lg font-medium mb-2">Action Completed Successfully</h3>
-                  <p className="text-sm">{result.summary}</p>
-                  {result.message && (
-                    <p className="text-sm mt-2 text-green-300">{result.message}</p>
-                  )}
-                </div>
+                <div className="w-1/2">
+                  <div className="mb-6 p-4 bg-green-900/20 border border-green-400/30 rounded-lg text-gray-300">
+                    <h3 className="text-lg font-medium mb-2">Action Completed Successfully</h3>
+                    <p className="text-sm">{result.summary}</p>
+                    <p className="text-sm mt-2 text-green-400">Congratulations, you just saved 20 minutes</p>
+                    {result.message && (
+                      <p className="text-sm mt-2 text-green-300">{result.message}</p>
+                    )}
+                  </div>
 
-                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Result Details</h4>
-                  {result.details ? (
-                    <pre className="text-xs text-gray-300 overflow-auto">
+                  <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
+                    <h4 className="text-sm font-medium text-gray-400 mb-2">Result Details</h4>
+                    {result.details ? (
+                      <pre className="text-xs text-gray-300 overflow-auto">
 {JSON.stringify(result.details, null, 2)}
-                    </pre>
-                  ) : (
-                    <p className="text-xs text-gray-400">No additional details available</p>
-                  )}
-                </div>
+                      </pre>
+                    ) : (
+                      <p className="text-xs text-gray-400">No additional details available</p>
+                    )}
+                  </div>
 
-                <button
-                  onClick={handleReset}
-                  className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
-                >
-                  Start Over
-                </button>
+                  <button
+                    onClick={handleReset}
+                    className="w-full py-2 px-4 rounded-lg bg-[#8C74FF] text-white hover:bg-[#8C74FF]/90 transition-colors"
+                  >
+                    Start Over
+                  </button>
+                </div>
               </motion.div>
             )}
           </div>
