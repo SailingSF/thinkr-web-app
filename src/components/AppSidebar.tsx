@@ -82,19 +82,6 @@ export default function AppSidebar() {
     },
   ];
 
-  const comingSoonItems = [
-    {
-      name: 'Calendar',
-      href: '#',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      ),
-      comingSoon: true,
-    },
-  ];
-
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="px-3 py-5">
@@ -104,7 +91,7 @@ export default function AppSidebar() {
           width={240}
           height={80}
           priority
-          className="w-auto h-12"
+          className="w-auto h-[60px]"
         />
       </div>
       
@@ -125,25 +112,6 @@ export default function AppSidebar() {
                 {item.icon}
               </div>
             </Link>
-          ))}
-        </div>
-
-        <div className="my-5 border-t border-[#232627]" />
-
-        <div className="space-y-1">
-          {comingSoonItems.map((item) => (
-            <div
-              key={item.name}
-              className="flex items-center justify-between px-3 py-2 rounded-lg text-sm"
-            >
-              <span className="text-gray-500">{item.name}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600">Coming Soon</span>
-                <div className="w-4 h-4 opacity-60 text-gray-600">
-                  {item.icon}
-                </div>
-              </div>
-            </div>
           ))}
         </div>
       </nav>

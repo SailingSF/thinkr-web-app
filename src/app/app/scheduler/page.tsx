@@ -560,9 +560,6 @@ export default function Scheduler() {
                 </h1>
                 <p className="text-[22px] text-white font-normal">
                   Schedule automated analysis for your store.
-                  <span className="text-sm text-[#7B7B7B] block mt-2">
-                    All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
-                  </span>
                 </p>
               </div>
               <button
@@ -573,6 +570,9 @@ export default function Scheduler() {
               </button>
             </div>
             <hr className="border-t border-white mb-4" />
+            <span className="text-sm text-[#7B7B7B] block mb-4">
+              All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+            </span>
           </div>
 
           {error && (
