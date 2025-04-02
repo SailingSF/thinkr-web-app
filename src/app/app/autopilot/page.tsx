@@ -1091,24 +1091,20 @@ export default function Autopilot() {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
                 {filteredActions.map((action) => (
-                  <div key={action.id} className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[308px]">
+                  <div 
+                    key={action.id} 
+                    className={`bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[237px] ${!action.comingSoon ? 'cursor-pointer hover:bg-[#2C2D32] transition-colors' : ''}`}
+                    onClick={() => !action.comingSoon ? handleActionSelect(action.id) : undefined}
+                  >
                     <h3 className="text-[18px] font-medium text-white mb-2">{action.label}</h3>
                     <p className="text-gray-400 text-[13.9px] mb-4">{action.description}</p>
                     <div className="mt-auto">
-                      {!action.comingSoon && (
-                        <button
-                          onClick={() => handleActionSelect(action.id)}
-                          className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium mb-4"
-                        >
-                          Configure in Autopilot
-                        </button>
-                      )}
                       {action.comingSoon && (
                         <a
                           href="https://apps.shopify.com/thinkr"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-center text-[#475569] text-[11px] px-4 py-[10px] mb-4 block hover:text-[#475569]/80 transition-colors font-medium"
+                          className="text-center text-[#475569] text-[12.1px] px-4 py-[10px] mb-4 block hover:text-[#475569]/80 transition-colors font-medium"
                         >
                           Upgrade to Pro
                         </a>
