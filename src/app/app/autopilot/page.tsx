@@ -22,6 +22,7 @@ type ActionType = {
   id: string;
   label: string;
   description: string;
+  category: string;
   icon: React.ReactNode;
   fields: FieldType[];
   comingSoon?: boolean;
@@ -45,6 +46,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'inventory',
     label: 'Update Inventory Quantity',
     description: 'Increase or decrease inventory levels for products',
+    category: 'Inventory',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -61,6 +63,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'discount',
     label: 'Apply Percentage Discount',
     description: 'Reduce product prices by a percentage',
+    category: 'Marketing',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -78,6 +81,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'bulk_tag',
     label: 'Bulk Add Product Tags',
     description: 'Add tags to multiple products at once',
+    category: 'Marketing',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
@@ -91,6 +95,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'auto_seo',
     label: 'Auto-Optimize SEO',
     description: 'Generate optimized titles, descriptions, and alt texts',
+    category: 'Marketing',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -103,6 +108,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'abandon_cart',
     label: 'Customize Abandoned Cart Emails',
     description: 'Create personalized abandoned cart recovery emails',
+    category: 'Customer Service',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
@@ -115,6 +121,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'product_bundles',
     label: 'Create Product Bundles',
     description: 'Bundle products together with special pricing',
+    category: 'Inventory',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
@@ -127,6 +134,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'seasonal_promo',
     label: 'Schedule Seasonal Promotions',
     description: 'Set up time-based discounts for holidays and events',
+    category: 'Marketing',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008H16.5V15z" />
@@ -139,6 +147,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'auto_social',
     label: 'Auto-Generate Social Media Posts',
     description: 'Create social media content for your products',
+    category: 'Marketing',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
@@ -151,6 +160,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'customer_segment',
     label: 'Create Customer Segments',
     description: 'Group customers based on buying behavior',
+    category: 'Customer Service',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
@@ -163,6 +173,7 @@ const ACTION_TYPES: ActionType[] = [
     id: 'cross_sell',
     label: 'Setup Cross-Sell Recommendations',
     description: 'Create intelligent product recommendations',
+    category: 'Customer Service',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
@@ -193,7 +204,7 @@ export default function Autopilot() {
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredActions, setFilteredActions] = useState<ActionType[]>(ACTION_TYPES);
-  const [selectedCategory, setSelectedCategory] = useState('Most Popular');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSort, setSelectedSort] = useState('Most Popular');
 
   // Get the selected action type details
@@ -941,11 +952,29 @@ export default function Autopilot() {
 
   // Filter actions based on search query
   useEffect(() => {
-    const filtered = ACTION_TYPES.filter(action =>
-      action.label.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    let filtered = ACTION_TYPES;
+
+    // Filter by search query if present
+    if (searchQuery) {
+      filtered = filtered.filter(action =>
+        action.label.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filter by category if one is selected (and it's not "All" or "Most Popular")
+    if (selectedCategory && selectedCategory !== 'All' && selectedCategory !== 'Most Popular') {
+      filtered = filtered.filter(action => action.category === selectedCategory);
+    }
+
+    // Apply sorting
+    if (selectedSort === 'Recently Added') {
+      // For this example, we'll just reverse the array to simulate "recently added"
+      filtered = [...filtered].reverse();
+    }
+    // For "Most Popular" sorting, we'll keep the default order which is assumed to be by popularity
+
     setFilteredActions(filtered);
-  }, [searchQuery]);
+  }, [searchQuery, selectedCategory, selectedSort]);
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
@@ -993,6 +1022,12 @@ export default function Autopilot() {
                 <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">CATEGORIES</h2>
                 <div className="flex flex-col gap-2">
                   <div 
+                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'All' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                    onClick={() => setSelectedCategory('All')}
+                  >
+                    <span className="text-white text-[14px]">All</span>
+                  </div>
+                  <div 
                     className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Inventory' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
                     onClick={() => setSelectedCategory('Inventory')}
                   >
@@ -1037,105 +1072,40 @@ export default function Autopilot() {
                 transition={{ duration: 0.3 }}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
-                {/* Restock Alert Trigger Card */}
-                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
-                  <h3 className="text-[18px] font-medium text-white mb-2">Restock Alert Trigger</h3>
-                  <p className="text-gray-400 text-[14px] mb-auto">
-                    Automatically notify suppliers when inventory falls below threshold
-                  </p>
-                  <div className="mt-auto flex items-center justify-between">
-                    <div className="bg-[#8763E580] text-white text-[13px] px-3 py-1 rounded">
-                      Inventory
-                    </div>
-                    <span className="text-gray-400 text-[13px]">95% adoption</span>
-                  </div>
-                </div>
-
-                {/* Update Inventory Quantity Card */}
-                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
-                  <h3 className="text-[18px] font-medium text-white mb-2">Update Inventory Quantity</h3>
-                  <p className="text-gray-400 text-[14px] mb-4">
-                    Increase or decrease inventory levels for products with detailed logging
-                  </p>
-                  <div className="mt-auto">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="bg-[#8763E580] text-white text-[13px] px-3 py-1 rounded">
-                        Inventory
+                {filteredActions.map((action) => (
+                  <div key={action.id} className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
+                    <h3 className="text-[18px] font-medium text-white mb-2">{action.label}</h3>
+                    <p className="text-gray-400 text-[14px] mb-4">{action.description}</p>
+                    <div className="mt-auto">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`${
+                          action.category === 'Marketing' ? 'bg-[#f59e0b]' :
+                          action.category === 'Customer Service' ? 'bg-[#10b981]' :
+                          'bg-[#8763E580]'
+                        } text-white text-[13px] px-3 py-1 rounded`}>
+                          {action.category}
+                        </div>
+                        <span className="text-gray-400 text-[13px]">
+                          {/* You can add actual adoption rates here if available */}
+                          {Math.floor(Math.random() * (95 - 75) + 75)}% adoption
+                        </span>
                       </div>
-                      <span className="text-gray-400 text-[13px]">92% adoption</span>
+                      {!action.comingSoon && (
+                        <button
+                          onClick={() => handleActionSelect(action.id)}
+                          className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium"
+                        >
+                          Configure in Autopilot
+                        </button>
+                      )}
+                      {action.comingSoon && (
+                        <div className="text-center text-amber-400 text-[13px] px-4 py-[10px]">
+                          Coming Soon
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={() => handleActionSelect('inventory')}
-                      className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium"
-                    >
-                      Configure in Autopilot
-                    </button>
                   </div>
-                </div>
-
-                {/* Configure Apply Percentage Discount Card */}
-                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
-                  <h3 className="text-[18px] font-medium text-white mb-2">Configure Apply Percentage Discount</h3>
-                  <p className="text-gray-400 text-[14px] mb-4">
-                    Reduce product prices by a percentage and set compare-at prices for better conversions
-                  </p>
-                  <div className="mt-auto">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="bg-[#f59e0b] text-white text-[13px] px-3 py-1 rounded">
-                        Marketing
-                      </div>
-                      <span className="text-gray-400 text-[13px]">88% adoption</span>
-                    </div>
-                    <button
-                      onClick={() => handleActionSelect('discount')}
-                      className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium"
-                    >
-                      Configure in Autopilot
-                    </button>
-                  </div>
-                </div>
-
-                {/* Inventory Age Tracker Card */}
-                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
-                  <h3 className="text-[18px] font-medium text-white mb-2">Inventory Age Tracker</h3>
-                  <p className="text-gray-400 text-[14px] mb-auto">
-                    Automatically flag products that have been in stock for extended periods and suggest discount strategies based on aging thresholds
-                  </p>
-                  <div className="mt-auto flex items-center justify-between">
-                    <div className="bg-[#8763E580] text-white text-[13px] px-3 py-1 rounded">
-                      Inventory
-                    </div>
-                    <span className="text-gray-400 text-[13px]">87% adoption</span>
-                  </div>
-                </div>
-
-                {/* Return Request Processor Card */}
-                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
-                  <h3 className="text-[18px] font-medium text-white mb-2">Return Request Processor</h3>
-                  <p className="text-gray-400 text-[14px] mb-auto">
-                    Generate return labels and update inventory when returns initiated
-                  </p>
-                  <div className="mt-auto flex items-center justify-between">
-                    <div className="bg-[#10b981] text-white text-[13px] px-3 py-1 rounded">
-                      Customer Service
-                    </div>
-                    <span className="text-gray-400 text-[13px]">82% adoption</span>
-                  </div>
-                </div>
-
-                {/* Bundle Stock Management Card */}
-                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
-                  <h3 className="text-[18px] font-medium text-white mb-2">Bundle Stock Management</h3>
-                  <p className="text-gray-400 text-[14px] mb-auto">
-                    Synchronize inventory levels across bundled products
-                  </p>
-                  <div className="mt-auto flex items-center justify-between">
-                    <div className="bg-[#8763E580] text-white text-[13px] px-3 py-1 rounded">
-                      Inventory
-                    </div>
-                    <span className="text-gray-400 text-[13px]">76% adoption</span>
-                  </div>
-                </div>
+                ))}
               </motion.div>
             )}
 
