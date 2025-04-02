@@ -195,61 +195,75 @@ export default function ActionsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-          Shop Action Execution
-        </h1>
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-4 lg:py-6 font-inter">
+      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+        <div className="container mx-auto px-4 lg:px-8">
+          {/* Title Section */}
+          <div className="mb-8">
+            <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
+              Shop Action
+            </h1>
+            <p className="text-[22px] text-white font-normal mb-6">
+              Monitor your shop action execution status.
+            </p>
+            <hr className="border-t border-white mb-8" />
+          </div>
 
-        <div className="space-y-4">
-          {status === 'processing' && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="font-medium">Processing Action</span>
-              </div>
-              <p className="text-gray-600 dark:text-gray-300">
-                {message || 'Your action is being processed. This may take a few moments...'}
-              </p>
-            </div>
-          )}
+          {/* Main Content */}
+          <div className="max-w-2xl">
+            <div className="bg-[#1E1F20] rounded-2xl p-8 shadow-lg">
+              <div className="space-y-4">
+                {status === 'processing' && (
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2 text-[#7B6EF6]">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span className="font-medium">Processing Action</span>
+                    </div>
+                    <p className="text-gray-300">
+                      {message || 'Your action is being processed. This may take a few moments...'}
+                    </p>
+                  </div>
+                )}
 
-          {status === 'completed' && (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                <span className="font-medium text-green-600 dark:text-green-400">
-                  Action Completed Successfully
-                </span>
-              </div>
-              {result && (
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
-                    {result.message || JSON.stringify(result, null, 2)}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+                {status === 'completed' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <span className="font-medium text-green-500">
+                        Action Completed Successfully
+                      </span>
+                    </div>
+                    {result && (
+                      <div className="bg-[#232627] rounded-lg p-4">
+                        <p className="text-gray-300 whitespace-pre-wrap">
+                          {result.message || JSON.stringify(result, null, 2)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-          {status === 'error' && (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
-                <XCircle className="h-5 w-5" />
-                <span className="font-medium">Error</span>
+                {status === 'error' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-red-500">
+                      <XCircle className="h-5 w-5" />
+                      <span className="font-medium">Error</span>
+                    </div>
+                    <div className="text-red-500">
+                      {error}
+                    </div>
+                    {result && result.message && (
+                      <div className="bg-[#232627] rounded-lg p-4">
+                        <p className="text-gray-300 whitespace-pre-wrap">
+                          {result.message}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="text-red-600 dark:text-red-400">
-                {error}
-              </div>
-              {result && result.message && (
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
-                    {result.message}
-                  </p>
-                </div>
-              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

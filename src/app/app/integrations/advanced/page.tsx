@@ -337,53 +337,69 @@ export default function AdvancedIntegrations() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#141718] flex flex-col">
-      <div className="container mx-auto px-sm sm:px-md lg:px-lg py-4">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl text-[#FFFFFF] font-normal">Advanced Integrations</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={handleRetry}
-              className="px-4 py-2 bg-[#8C74FF] text-white font-medium rounded-lg hover:bg-[#7B63EE] transition-colors disabled:opacity-50"
-              disabled={initializationInProgress.current}
-            >
-              {initializationInProgress.current ? 'Loading...' : 'Refresh'}
-            </button>
-            <button
-              onClick={() => router.back()}
-              className="px-4 py-2 bg-[#343536] text-white font-medium rounded-lg hover:bg-[#424344] transition-colors"
-            >
-              Back
-            </button>
+      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+        <div className="py-4 lg:py-6">
+          <div className="container mx-auto px-4 lg:px-8">
+            {/* Title Section */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
+                    Advanced Integrations
+                  </h1>
+                  <p className="text-[22px] text-white font-normal">
+                    Configure and manage advanced data integrations.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleRetry}
+                    className="px-4 py-2 bg-[#8B5CF6] text-white font-medium rounded-lg hover:bg-[#7B63EE] transition-colors disabled:opacity-50"
+                    disabled={initializationInProgress.current}
+                  >
+                    {initializationInProgress.current ? 'Loading...' : 'Refresh'}
+                  </button>
+                  <button
+                    onClick={() => router.back()}
+                    className="px-4 py-2 bg-[#343536] text-white font-medium rounded-lg hover:bg-[#424344] transition-colors"
+                  >
+                    Back
+                  </button>
+                </div>
+              </div>
+              <hr className="border-t border-white mb-8" />
+            </div>
+
+            {/* Main Content */}
+            {sessionURL ? (
+              <div className="flex-grow w-full h-[calc(100vh-130px)]">
+                <iframe
+                  src={sessionURL}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                  allowFullScreen
+                  referrerPolicy="no-referrer"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals"
+                  onError={(e) => {
+                    console.error('iframe error:', e);
+                    setError('Failed to load the embedded integration window. Please try refreshing.');
+                    setSessionURL(null);
+                    isInitialized.current = false;
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="flex-grow flex items-center justify-center">
+                <div className="text-xl text-[#FF6B6B]">
+                  {initializationInProgress.current 
+                    ? 'Setting up your advanced integrations...' 
+                    : 'No session URL available. Please try refreshing.'}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      
-      {sessionURL ? (
-        <div className="flex-grow w-full h-[calc(100vh-130px)]">
-          <iframe
-            src={sessionURL}
-            className="w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-            allowFullScreen
-            referrerPolicy="no-referrer"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals"
-            onError={(e) => {
-              console.error('iframe error:', e);
-              setError('Failed to load the embedded integration window. Please try refreshing.');
-              setSessionURL(null);
-              isInitialized.current = false;
-            }}
-          />
-        </div>
-      ) : (
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-xl text-[#FF6B6B]">
-            {initializationInProgress.current 
-              ? 'Setting up your advanced integrations...' 
-              : 'No session URL available. Please try refreshing.'}
-          </div>
-        </div>
-      )}
     </div>
   );
 } 

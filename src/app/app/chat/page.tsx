@@ -189,102 +189,113 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-none p-8 pb-4">
-        <h1 className="text-2xl font-semibold text-white">Chat Assistant</h1>
-        <p className="text-gray-400 mt-1">Discuss your Shopify store data and get AI assistance.</p>
-      </div>
-
-      <div className="flex flex-1 gap-6 px-8 pb-8 h-[calc(100vh-12rem)] overflow-hidden">
-        {/* Thread List */}
-        <div className="w-72 flex flex-col bg-[#1E1F20] rounded-2xl overflow-hidden">
-          <div className="p-4 border-b border-[#232627]">
-            <button
-              onClick={() => setCurrentThreadId(undefined)}
-              className="w-full py-2.5 px-4 rounded-lg bg-[#7B6EF6] hover:bg-[#7B6EF6]/90 text-white font-medium transition-colors"
-            >
-              New Chat
-            </button>
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-4 lg:py-6 font-inter">
+      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+        <div className="container mx-auto px-4 lg:px-8">
+          {/* Title Section */}
+          <div className="mb-8">
+            <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
+              Chat Assistant
+            </h1>
+            <p className="text-[22px] text-white font-normal mb-6">
+              Discuss your Shopify store data and get AI assistance.
+            </p>
+            <hr className="border-t border-white mb-8" />
           </div>
-          <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
-            {threads.map((thread) => (
-              <button
-                key={thread.thread_id}
-                className={`w-full text-left p-4 border-b border-[#232627] transition-colors ${
-                  currentThreadId === thread.thread_id 
-                    ? 'bg-[#232627] text-white' 
-                    : 'text-gray-400 hover:bg-[#232627] hover:text-white'
-                }`}
-                onClick={() => setCurrentThreadId(thread.thread_id)}
-              >
-                <div className="font-medium truncate">
-                  {thread.last_message || 'New Thread'}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {new Date(thread.updated_at).toLocaleDateString()}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-[#1E1F20] rounded-2xl overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
-            {error && (
-              <div className="mb-4 p-3 bg-red-900/20 border border-red-900/50 rounded-lg text-red-400 text-sm flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" />
-                {error}
+          {/* Main Content */}
+          <div className="flex flex-1 gap-6 h-[calc(100vh-14rem)] overflow-hidden">
+            {/* Thread List */}
+            <div className="w-72 flex flex-col bg-[#1E1F20] rounded-2xl overflow-hidden">
+              <div className="p-4 border-b border-[#232627]">
+                <button
+                  onClick={() => setCurrentThreadId(undefined)}
+                  className="w-full py-2.5 px-4 rounded-lg bg-[#7B6EF6] hover:bg-[#7B6EF6]/90 text-white font-medium transition-colors"
+                >
+                  New Chat
+                </button>
               </div>
-            )}
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`mb-6 flex ${
-                  msg.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div className={`max-w-[80%] ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                  <div
-                    className={`inline-block p-3 rounded-lg ${
-                      msg.role === 'user'
-                        ? 'bg-[#7B6EF6] text-white'
-                        : 'bg-[#232627] text-gray-200'
-                    } prose prose-invert max-w-none`}
+              <div className="flex-1 overflow-y-auto">
+                {threads.map((thread) => (
+                  <button
+                    key={thread.thread_id}
+                    className={`w-full text-left p-4 border-b border-[#232627] transition-colors ${
+                      currentThreadId === thread.thread_id 
+                        ? 'bg-[#232627] text-white' 
+                        : 'text-gray-400 hover:bg-[#232627] hover:text-white'
+                    }`}
+                    onClick={() => setCurrentThreadId(thread.thread_id)}
                   >
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {new Date(msg.created_at).toLocaleTimeString()}
-                  </div>
-                </div>
+                    <div className="font-medium truncate">
+                      {thread.last_message || 'New Thread'}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {new Date(thread.updated_at).toLocaleDateString()}
+                    </div>
+                  </button>
+                ))}
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
+            </div>
 
-          <div className="flex-none p-4 border-t border-[#232627]">
-            <form onSubmit={handleSubmit} className="flex gap-3">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your message..."
-                disabled={isLoading}
-                className="flex-1 bg-[#232627] text-white placeholder-gray-500 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#7B6EF6]"
-              />
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-6 py-2.5 rounded-lg bg-[#7B6EF6] hover:bg-[#7B6EF6]/90 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  'Send'
+            {/* Chat Area */}
+            <div className="flex-1 flex flex-col bg-[#1E1F20] rounded-2xl overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+                {error && (
+                  <div className="mb-4 p-3 bg-red-900/20 border border-red-900/50 rounded-lg text-red-400 text-sm flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    {error}
+                  </div>
                 )}
-              </button>
-            </form>
+                {messages.map((msg, index) => (
+                  <div
+                    key={index}
+                    className={`mb-6 flex ${
+                      msg.role === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    <div className={`max-w-[80%] ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      <div
+                        className={`inline-block p-3 rounded-lg ${
+                          msg.role === 'user'
+                            ? 'bg-[#7B6EF6] text-white'
+                            : 'bg-[#232627] text-gray-200'
+                        } prose prose-invert max-w-none`}
+                      >
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(msg.created_at).toLocaleTimeString()}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div className="p-4 border-t border-[#232627]">
+                <form onSubmit={handleSubmit} className="flex gap-3">
+                  <input
+                    type="text"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    disabled={isLoading}
+                    className="flex-1 bg-[#232627] text-white placeholder-gray-500 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#7B6EF6]"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="px-6 py-2.5 rounded-lg bg-[#7B6EF6] hover:bg-[#7B6EF6]/90 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      'Send'
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       </div>

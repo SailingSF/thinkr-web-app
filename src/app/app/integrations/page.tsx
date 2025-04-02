@@ -123,16 +123,17 @@ export default function Integrations() {
   return (
     <div className="h-full bg-[#141718] font-inter">
       <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
-        <div className="py-8 lg:py-12">
+        <div className="py-4 lg:py-6">
           <div className="container mx-auto px-4 lg:px-8">
             {/* Title Section */}
-            <div className="flex flex-col gap-1 mb-8">
-              <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
-                Connected integrations
+            <div className="mb-8">
+              <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
+                Connected Integrations
               </h1>
-              <p className="text-[25px] text-[#8C74FF] font-normal m-0">
+              <p className="text-[22px] text-white font-normal mb-6">
                 Manage your connected data sources.
               </p>
+              <hr className="border-t border-white mb-8" />
             </div>
 
             {/* Shopify Connection Card */}
