@@ -40,6 +40,46 @@ const LoadingOverlay = ({ message }: { message: string }) => (
   </div>
 );
 
+// Add StepIndicator component after LoadingOverlay component
+const StepIndicator = ({ currentStep }: { currentStep: 'select' | 'form' | 'review' | 'result' }) => {
+  const steps = [
+    { id: 'select', label: 'Set Up', description: 'Choose an automation to set up' },
+    { id: 'form', label: 'Check', description: 'Set up the automation parameters' },
+    { id: 'review', label: 'Approve', description: 'Review and approve the changes' }
+  ];
+
+  return (
+    <div className="bg-[#1E1F20] rounded-lg p-6">
+      <div className="space-y-6">
+        {steps.map((step, index) => {
+          const isActive = currentStep === step.id;
+          const isPast = steps.findIndex(s => s.id === currentStep) > index;
+          
+          return (
+            <div key={step.id} className="flex items-start gap-3">
+              <div className={`flex items-center justify-center w-6 h-6 rounded-full border ${
+                isActive ? 'border-white bg-transparent text-white' :
+                isPast ? 'border-white bg-white text-black' :
+                'border-gray-600 bg-transparent text-gray-600'
+              }`}>
+                <span className="text-xs leading-none">{index + 1}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className={`text-[15px] ${
+                  isActive ? 'text-white' :
+                  isPast ? 'text-white' :
+                  'text-gray-600'
+                }`}>{step.label}</span>
+                <span className="text-[13px] text-gray-500">{step.description}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 // Action types
 const ACTION_TYPES: ActionType[] = [
   {
@@ -997,81 +1037,85 @@ export default function Autopilot() {
         <div className="flex gap-6">
           {/* Sidebar */}
           <div className="w-64 flex-shrink-0">
-            <div className="bg-[#1E1F20] rounded-lg p-6">
-              {/* Search Bar */}
-              <div className="mb-8">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search automations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-2 pl-10 rounded-lg bg-[#2C2D32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                    </svg>
+            {currentStep === 'select' ? (
+              <div className="bg-[#1E1F20] rounded-lg p-6">
+                {/* Search Bar */}
+                <div className="mb-8">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search automations..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full px-4 py-2 pl-10 rounded-lg bg-[#2C2D32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Sort By Section */}
-              <div className="mb-8">
-                <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">SORTED BY</h2>
-                <div className="flex flex-col gap-2">
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Most Popular' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedSort('Most Popular')}
-                  >
-                    <span className="text-white text-[14px]">Most Popular</span>
-                  </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Recently Added' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedSort('Recently Added')}
-                  >
-                    <span className="text-white text-[14px]">Recently Added</span>
+                {/* Sort By Section */}
+                <div className="mb-8">
+                  <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">SORTED BY</h2>
+                  <div className="flex flex-col gap-2">
+                    <div 
+                      className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Most Popular' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                      onClick={() => setSelectedSort('Most Popular')}
+                    >
+                      <span className="text-white text-[14px]">Most Popular</span>
+                    </div>
+                    <div 
+                      className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Recently Added' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                      onClick={() => setSelectedSort('Recently Added')}
+                    >
+                      <span className="text-white text-[14px]">Recently Added</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Categories Section */}
-              <div>
-                <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">CATEGORIES</h2>
-                <div className="flex flex-col gap-2">
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'All' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('All')}
-                  >
-                    <span className="text-white text-[14px]">All</span>
-                  </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Inventory' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('Inventory')}
-                  >
-                    <span className="text-white text-[14px]">Inventory</span>
-                  </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Marketing' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('Marketing')}
-                  >
-                    <span className="text-white text-[14px]">Marketing</span>
-                  </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Finance' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('Finance')}
-                  >
-                    <span className="text-white text-[14px]">Finance</span>
-                  </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Customer Service' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('Customer Service')}
-                  >
-                    <span className="text-white text-[14px]">Customer Service</span>
+                {/* Categories Section */}
+                <div>
+                  <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">CATEGORIES</h2>
+                  <div className="flex flex-col gap-2">
+                    <div 
+                      className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'All' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                      onClick={() => setSelectedCategory('All')}
+                    >
+                      <span className="text-white text-[14px]">All</span>
+                    </div>
+                    <div 
+                      className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Inventory' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                      onClick={() => setSelectedCategory('Inventory')}
+                    >
+                      <span className="text-white text-[14px]">Inventory</span>
+                    </div>
+                    <div 
+                      className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Marketing' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                      onClick={() => setSelectedCategory('Marketing')}
+                    >
+                      <span className="text-white text-[14px]">Marketing</span>
+                    </div>
+                    <div 
+                      className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Finance' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                      onClick={() => setSelectedCategory('Finance')}
+                    >
+                      <span className="text-white text-[14px]">Finance</span>
+                    </div>
+                    <div 
+                      className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Customer Service' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                      onClick={() => setSelectedCategory('Customer Service')}
+                    >
+                      <span className="text-white text-[14px]">Customer Service</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <StepIndicator currentStep={currentStep} />
+            )}
           </div>
 
           {/* Main Content Area */}
