@@ -1193,36 +1193,10 @@ export default function Autopilot() {
                   </button>
                 </div>
                 
-                {/* Action specific help text */}
-                <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
-                  {selectedAction === 'inventory' && (
-                    <div className="space-y-2">
-                      <p>This action allows you to adjust the inventory quantity of a specific product.</p>
-                      <ul className="list-disc list-inside text-sm space-y-1">
-                        <li>Use positive numbers to add inventory (e.g., 10)</li>
-                        <li>Use negative numbers to remove inventory (e.g., -5)</li>
-                        <li>Reason for adjustment is required</li>
-                        <li>Variant ID is optional - if not provided, the action will affect the first variant</li>
-                      </ul>
-                    </div>
-                  )}
-
-                  {selectedAction === 'discount' && (
-                    <div className="space-y-2">
-                      <p>This action applies a percentage discount to a product and sets compare-at prices.</p>
-                      <ul className="list-disc list-inside text-sm space-y-1">
-                        <li>Enter the percentage value only (e.g., 20 for 20% discount)</li>
-                        <li>Round To controls price rounding (0.99 gives prices like $19.99)</li>
-                        <li>The original price will be shown as a compare-at price</li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {selectedActionType.fields.map((field) => (
                     <div key={field.name} className="space-y-2">
-                      <label htmlFor={field.name} className="block text-sm font-medium text-gray-300">
+                      <label htmlFor={field.name} className="block text-sm font-medium text-white">
                         {field.label} {field.required && <span className="text-red-400">*</span>}
                       </label>
                       
@@ -1234,7 +1208,7 @@ export default function Autopilot() {
                           onChange={handleInputChange}
                           placeholder={field.placeholder}
                           required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-[#8D8A8B] placeholder-[#8D8A8B] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                           rows={4}
                         />
                       ) : field.type === 'select' ? (
@@ -1244,7 +1218,7 @@ export default function Autopilot() {
                           value={formData[field.name] || ''}
                           onChange={handleInputChange}
                           required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-[#8D8A8B] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                         >
                           <option value="">Select {field.label}</option>
                           {field.options?.map((option: string) => (
@@ -1260,7 +1234,7 @@ export default function Autopilot() {
                           onChange={handleInputChange}
                           placeholder={field.placeholder}
                           required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          className="w-full px-4 py-2 rounded-lg bg-[#141718] border border-[#8D8A8B] text-[#8D8A8B] placeholder-[#8D8A8B] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                         />
                       )}
                     </div>
@@ -1269,10 +1243,20 @@ export default function Autopilot() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:bg-purple-700 disabled:cursor-not-allowed"
+                    className="w-full py-2 px-4 rounded-lg bg-[#7B6EF6] text-white hover:bg-[#7B6EF6]/90 transition-colors disabled:bg-[#7B6EF6]/70 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit'}
                   </button>
+
+                  <div className="mt-6 p-4 bg-[#2C2D32] rounded-lg border border-gray-700">
+                    <p className="text-white mb-3">This action allows you to adjust the inventory quantity of a specific product.</p>
+                    <ul className="space-y-2 text-gray-400 text-sm">
+                      <li>• Use positive numbers to add inventory (e.g., 10)</li>
+                      <li>• Use negative numbers to remove inventory (e.g., -5)</li>
+                      <li>• Reason for adjustment is required</li>
+                      <li>• Variant ID is optional - if not provided, the action will affect the first variant</li>
+                    </ul>
+                  </div>
                 </form>
               </motion.div>
             )}
