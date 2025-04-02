@@ -193,6 +193,8 @@ export default function Autopilot() {
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredActions, setFilteredActions] = useState<ActionType[]>(ACTION_TYPES);
+  const [selectedCategory, setSelectedCategory] = useState('Most Popular');
+  const [selectedSort, setSelectedSort] = useState('Most Popular');
 
   // Get the selected action type details
   const selectedActionType = ACTION_TYPES.find(action => action.id === selectedAction);
@@ -952,52 +954,74 @@ export default function Autopilot() {
         {loadingMessage && <LoadingOverlay message={loadingMessage} />}
         
         {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center mb-4">
+        <div className="mb-8">
+          <div className="flex items-center mb-2">
             <h1 className="text-[35px] text-[#8B5CF6] font-normal m-0">
               Autopilot
             </h1>
           </div>
-          <p className="text-white text-[25px] font-normal m-0 mb-10">
+          <p className="text-white text-[25px] font-normal m-0 mb-6">
             Automate everyday store tasks.
           </p>
-          <hr className="border-t border-white mb-10" />
         </div>
 
         {/* Main Content */}
-        <div className="flex flex-1 gap-6">
-          {/* Step Indicator - Only show if we're not in action selection */}
-          {currentStep !== 'select' && (
-            <div className="hidden lg:flex flex-col gap-4 w-64 bg-[#1c1d1f] rounded-xl p-4">
-              <h2 className="text-lg font-medium text-white mb-4">Progress</h2>
-              {['form', 'review', 'result'].map((step, index) => (
-                <div key={step} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 
-                    ${currentStep === step 
-                      ? 'bg-purple-500 text-white' 
-                      : index < ['form', 'review', 'result'].indexOf(currentStep) 
-                        ? 'bg-green-500 text-white' 
-                        : 'bg-[#2c2d32] text-gray-400'}`}>
-                    {index < ['form', 'review', 'result'].indexOf(currentStep) ? (
-                      <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    ) : (
-                      index + 1
-                    )}
-                  </div>
-                  <span className={currentStep === step ? 'text-white' : 'text-gray-400'}>
-                    {step === 'form' && 'Configure'}
-                    {step === 'review' && 'Review'}
-                    {step === 'result' && 'Results'}
-                  </span>
+        <div className="flex gap-6">
+          {/* Sidebar */}
+          <div className="w-64 flex-shrink-0">
+            {/* Sort By Section */}
+            <div className="mb-8">
+              <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">SORTED BY</h2>
+              <div className="flex flex-col gap-2">
+                <div 
+                  className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Most Popular' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
+                  onClick={() => setSelectedSort('Most Popular')}
+                >
+                  <span className="text-white text-[14px]">Most Popular</span>
                 </div>
-              ))}
+                <div 
+                  className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Recently Added' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
+                  onClick={() => setSelectedSort('Recently Added')}
+                >
+                  <span className="text-white text-[14px]">Recently Added</span>
+                </div>
+              </div>
             </div>
-          )}
 
-          {/* Main Content Area - Full width on action selection, narrower with step indicator otherwise */}
-          <div className={`${currentStep === 'select' ? 'w-full' : 'flex-1'} bg-[#1c1d1f] rounded-xl p-6 overflow-auto`}>
+            {/* Categories Section */}
+            <div>
+              <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">CATEGORIES</h2>
+              <div className="flex flex-col gap-2">
+                <div 
+                  className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Inventory' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
+                  onClick={() => setSelectedCategory('Inventory')}
+                >
+                  <span className="text-white text-[14px]">Inventory</span>
+                </div>
+                <div 
+                  className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Marketing' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
+                  onClick={() => setSelectedCategory('Marketing')}
+                >
+                  <span className="text-white text-[14px]">Marketing</span>
+                </div>
+                <div 
+                  className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Finance' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
+                  onClick={() => setSelectedCategory('Finance')}
+                >
+                  <span className="text-white text-[14px]">Finance</span>
+                </div>
+                <div 
+                  className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Customer Service' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
+                  onClick={() => setSelectedCategory('Customer Service')}
+                >
+                  <span className="text-white text-[14px]">Customer Service</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1">
             {error && (
               <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200">
                 {typeof error === 'string' ? <p>{error}</p> : error}
@@ -1010,43 +1034,106 @@ export default function Autopilot() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-medium text-white">Find automations</h2>
-                  <div className="relative flex-1 max-w-md ml-4">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                      </svg>
+                {/* Restock Alert Trigger Card */}
+                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                  <h3 className="text-[18px] font-medium text-white mb-2">Restock Alert Trigger</h3>
+                  <p className="text-gray-400 text-[14px] mb-auto">
+                    Automatically notify suppliers when inventory falls below threshold
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="bg-[#8763E580] text-white text-[13px] px-3 py-1 rounded">
+                      Inventory
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Search automations..."
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-lg bg-[#2c2d32] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                    <span className="text-gray-400 text-[13px]">95% adoption</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredActions.map((action) => (
-                    <motion.div
-                      key={action.id}
-                      whileHover={{ scale: 1.01 }}
-                      className={`py-8 px-6 bg-[#303030] rounded-lg cursor-pointer relative min-h-[180px] ${
-                        selectedAction === action.id ? 'ring-1 ring-purple-500' : ''
-                      }`}
-                      onClick={() => handleActionSelect(action.id)}
+
+                {/* Update Inventory Quantity Card */}
+                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                  <h3 className="text-[18px] font-medium text-white mb-2">Update Inventory Quantity</h3>
+                  <p className="text-gray-400 text-[14px] mb-4">
+                    Increase or decrease inventory levels for products with detailed logging
+                  </p>
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="bg-[#8763E580] text-white text-[13px] px-3 py-1 rounded">
+                        Inventory
+                      </div>
+                      <span className="text-gray-400 text-[13px]">92% adoption</span>
+                    </div>
+                    <button
+                      onClick={() => handleActionSelect('inventory')}
+                      className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium"
                     >
-                      <h3 className="font-semibold text-base text-white mb-4" style={{ fontFamily: 'var(--font-family)' }}>{action.label}</h3>
-                      <p className="font-normal text-[13px] text-[#8d8a8b]" style={{ fontFamily: 'var(--font-family)' }}>{action.description}</p>
-                      {action.comingSoon && (
-                        <div className="absolute bottom-3 left-6">
-                          <span className="text-xs text-gray-400">Coming Soon</span>
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
+                      Configure in Autopilot
+                    </button>
+                  </div>
+                </div>
+
+                {/* Configure Apply Percentage Discount Card */}
+                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                  <h3 className="text-[18px] font-medium text-white mb-2">Configure Apply Percentage Discount</h3>
+                  <p className="text-gray-400 text-[14px] mb-4">
+                    Reduce product prices by a percentage and set compare-at prices for better conversions
+                  </p>
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="bg-[#f59e0b] text-white text-[13px] px-3 py-1 rounded">
+                        Marketing
+                      </div>
+                      <span className="text-gray-400 text-[13px]">88% adoption</span>
+                    </div>
+                    <button
+                      onClick={() => handleActionSelect('discount')}
+                      className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium"
+                    >
+                      Configure in Autopilot
+                    </button>
+                  </div>
+                </div>
+
+                {/* Inventory Age Tracker Card */}
+                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                  <h3 className="text-[18px] font-medium text-white mb-2">Inventory Age Tracker</h3>
+                  <p className="text-gray-400 text-[14px] mb-auto">
+                    Automatically flag products that have been in stock for extended periods and suggest discount strategies based on aging thresholds
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="bg-[#8763E580] text-white text-[13px] px-3 py-1 rounded">
+                      Inventory
+                    </div>
+                    <span className="text-gray-400 text-[13px]">87% adoption</span>
+                  </div>
+                </div>
+
+                {/* Return Request Processor Card */}
+                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                  <h3 className="text-[18px] font-medium text-white mb-2">Return Request Processor</h3>
+                  <p className="text-gray-400 text-[14px] mb-auto">
+                    Generate return labels and update inventory when returns initiated
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="bg-[#10b981] text-white text-[13px] px-3 py-1 rounded">
+                      Customer Service
+                    </div>
+                    <span className="text-gray-400 text-[13px]">82% adoption</span>
+                  </div>
+                </div>
+
+                {/* Bundle Stock Management Card */}
+                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                  <h3 className="text-[18px] font-medium text-white mb-2">Bundle Stock Management</h3>
+                  <p className="text-gray-400 text-[14px] mb-auto">
+                    Synchronize inventory levels across bundled products
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="bg-[#8763E580] text-white text-[13px] px-3 py-1 rounded">
+                      Inventory
+                    </div>
+                    <span className="text-gray-400 text-[13px]">76% adoption</span>
+                  </div>
                 </div>
               </motion.div>
             )}
