@@ -977,352 +977,356 @@ export default function Autopilot() {
   }, [searchQuery, selectedCategory, selectedSort]);
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
-      <div className="container mx-auto px-4 lg:px-8">
-        {/* Loading Overlay */}
-        {loadingMessage && <LoadingOverlay message={loadingMessage} />}
-        
-        {/* Header */}
-        <div>
-          <h1 className="text-[40px] text-[#8B5CF6] font-normal mb-2">
-            Autopilot
-          </h1>
-          <p className="text-[22px] text-white font-normal mb-8">
-            Automate everyday store tasks.
-          </p>
-          <div className="h-[1px] w-full bg-white mb-8"></div>
-        </div>
+    <div className="h-full bg-[#141718] font-inter">
+      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+        <div className="py-8 lg:py-12">
+          <div className="container mx-auto px-4 lg:px-8">
+            {/* Loading Overlay */}
+            {loadingMessage && <LoadingOverlay message={loadingMessage} />}
+            
+            {/* Header */}
+            <div>
+              <h1 className="text-[40px] text-[#8B5CF6] font-normal mb-2">
+                Autopilot
+              </h1>
+              <p className="text-[22px] text-white font-normal mb-8">
+                Automate everyday store tasks.
+              </p>
+              <div className="h-[1px] w-full bg-white mb-8"></div>
+            </div>
 
-        {/* Main Content */}
-        <div className="flex gap-6">
-          {/* Sidebar */}
-          <div className="w-64 flex-shrink-0">
-            <div className="bg-[#1E1F20] rounded-lg p-6">
-              {/* Sort By Section */}
-              <div className="mb-8">
-                <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">SORTED BY</h2>
-                <div className="flex flex-col gap-2">
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Most Popular' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedSort('Most Popular')}
-                  >
-                    <span className="text-white text-[14px]">Most Popular</span>
+            {/* Main Content */}
+            <div className="flex gap-6">
+              {/* Sidebar */}
+              <div className="w-64 flex-shrink-0">
+                <div className="bg-[#1E1F20] rounded-lg p-6">
+                  {/* Sort By Section */}
+                  <div className="mb-8">
+                    <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">SORTED BY</h2>
+                    <div className="flex flex-col gap-2">
+                      <div 
+                        className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Most Popular' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                        onClick={() => setSelectedSort('Most Popular')}
+                      >
+                        <span className="text-white text-[14px]">Most Popular</span>
+                      </div>
+                      <div 
+                        className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Recently Added' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                        onClick={() => setSelectedSort('Recently Added')}
+                      >
+                        <span className="text-white text-[14px]">Recently Added</span>
+                      </div>
+                    </div>
                   </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Recently Added' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedSort('Recently Added')}
-                  >
-                    <span className="text-white text-[14px]">Recently Added</span>
+
+                  {/* Categories Section */}
+                  <div>
+                    <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">CATEGORIES</h2>
+                    <div className="flex flex-col gap-2">
+                      <div 
+                        className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'All' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                        onClick={() => setSelectedCategory('All')}
+                      >
+                        <span className="text-white text-[14px]">All</span>
+                      </div>
+                      <div 
+                        className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Inventory' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                        onClick={() => setSelectedCategory('Inventory')}
+                      >
+                        <span className="text-white text-[14px]">Inventory</span>
+                      </div>
+                      <div 
+                        className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Marketing' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                        onClick={() => setSelectedCategory('Marketing')}
+                      >
+                        <span className="text-white text-[14px]">Marketing</span>
+                      </div>
+                      <div 
+                        className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Finance' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                        onClick={() => setSelectedCategory('Finance')}
+                      >
+                        <span className="text-white text-[14px]">Finance</span>
+                      </div>
+                      <div 
+                        className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Customer Service' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                        onClick={() => setSelectedCategory('Customer Service')}
+                      >
+                        <span className="text-white text-[14px]">Customer Service</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Categories Section */}
-              <div>
-                <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">CATEGORIES</h2>
-                <div className="flex flex-col gap-2">
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'All' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('All')}
-                  >
-                    <span className="text-white text-[14px]">All</span>
+              {/* Main Content Area */}
+              <div className="flex-1">
+                {error && (
+                  <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200">
+                    {typeof error === 'string' ? <p>{error}</p> : error}
                   </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Inventory' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('Inventory')}
+                )}
+
+                {/* Step 1: Select Action */}
+                {currentStep === 'select' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                   >
-                    <span className="text-white text-[14px]">Inventory</span>
-                  </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Marketing' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('Marketing')}
+                    {filteredActions.map((action) => (
+                      <div key={action.id} className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
+                        <h3 className="text-[18px] font-medium text-white mb-2">{action.label}</h3>
+                        <p className="text-gray-400 text-[14px] mb-4">{action.description}</p>
+                        <div className="mt-auto">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className={`${
+                              action.category === 'Marketing' ? 'bg-[#f59e0b]' :
+                              action.category === 'Customer Service' ? 'bg-[#10b981]' :
+                              'bg-[#8763E580]'
+                            } text-white text-[13px] px-3 py-1 rounded min-w-[100px] max-w-[120px] min-h-[28px] flex items-center justify-center text-center`}>
+                              {action.category}
+                            </div>
+                            <span className="text-gray-400 text-[13px] ml-2">
+                              {/* You can add actual adoption rates here if available */}
+                              {Math.floor(Math.random() * (95 - 75) + 75)}% adoption
+                            </span>
+                          </div>
+                          {!action.comingSoon && (
+                            <button
+                              onClick={() => handleActionSelect(action.id)}
+                              className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium"
+                            >
+                              Configure in Autopilot
+                            </button>
+                          )}
+                          {action.comingSoon && (
+                            <div className="text-center text-amber-400 text-[13px] px-4 py-[10px]">
+                              Coming Soon
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+
+                {/* Step 2: Configure Action */}
+                {currentStep === 'form' && selectedActionType && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <span className="text-white text-[14px]">Marketing</span>
-                  </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Finance' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('Finance')}
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-medium text-white">Configure {selectedActionType.label}</h2>
+                      <button
+                        onClick={() => setCurrentStep('select')}
+                        className="text-gray-400 hover:text-white text-sm flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                        </svg>
+                        Back
+                      </button>
+                    </div>
+                    
+                    {/* Action specific help text */}
+                    <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
+                      {selectedAction === 'inventory' && (
+                        <div className="space-y-2">
+                          <p>This action allows you to adjust the inventory quantity of a specific product.</p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            <li>Use positive numbers to add inventory (e.g., 10)</li>
+                            <li>Use negative numbers to remove inventory (e.g., -5)</li>
+                            <li>Reason for adjustment is required</li>
+                            <li>Variant ID is optional - if not provided, the action will affect the first variant</li>
+                          </ul>
+                        </div>
+                      )}
+
+                      {selectedAction === 'discount' && (
+                        <div className="space-y-2">
+                          <p>This action applies a percentage discount to a product and sets compare-at prices.</p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            <li>Enter the percentage value only (e.g., 20 for 20% discount)</li>
+                            <li>Round To controls price rounding (0.99 gives prices like $19.99)</li>
+                            <li>The original price will be shown as a compare-at price</li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      {selectedActionType.fields.map((field) => (
+                        <div key={field.name} className="space-y-2">
+                          <label htmlFor={field.name} className="block text-sm font-medium text-gray-300">
+                            {field.label} {field.required && <span className="text-red-400">*</span>}
+                          </label>
+                          
+                          {field.type === 'textarea' ? (
+                            <textarea
+                              id={field.name}
+                              name={field.name}
+                              value={formData[field.name] || ''}
+                              onChange={handleInputChange}
+                              placeholder={field.placeholder}
+                              required={field.required}
+                              className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              rows={4}
+                            />
+                          ) : field.type === 'select' ? (
+                            <select
+                              id={field.name}
+                              name={field.name}
+                              value={formData[field.name] || ''}
+                              onChange={handleInputChange}
+                              required={field.required}
+                              className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                              <option value="">Select {field.label}</option>
+                              {field.options?.map((option: string) => (
+                                <option key={option} value={option}>{option}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              id={field.name}
+                              name={field.name}
+                              type={field.type}
+                              value={formData[field.name] || ''}
+                              onChange={handleInputChange}
+                              placeholder={field.placeholder}
+                              required={field.required}
+                              className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                          )}
+                        </div>
+                      ))}
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:bg-purple-700 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Submitting...' : 'Submit'}
+                      </button>
+                    </form>
+                  </motion.div>
+                )}
+
+                {/* Step 3: Review Proposal */}
+                {currentStep === 'review' && proposal && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <span className="text-white text-[14px]">Finance</span>
-                  </div>
-                  <div 
-                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Customer Service' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
-                    onClick={() => setSelectedCategory('Customer Service')}
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-medium text-white">Review Proposal</h2>
+                      <button
+                        onClick={() => setCurrentStep('form')}
+                        className="text-gray-400 hover:text-white text-sm flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                        </svg>
+                        Back
+                      </button>
+                    </div>
+
+                    <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
+                      <h3 className="text-lg font-medium mb-2">Proposal Details</h3>
+                      <p className="text-sm">{proposal.description}</p>
+                    </div>
+
+                    <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
+                      <h4 className="text-sm font-medium text-gray-400 mb-2">Proposal Parameters</h4>
+                      <pre className="text-xs text-gray-300 overflow-auto">
+{JSON.stringify(proposal.parameters, null, 2)}
+                      </pre>
+                    </div>
+
+                    <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
+                      <h4 className="text-sm font-medium text-gray-400 mb-2">Expected Outcome</h4>
+                      <p className="text-xs text-gray-300">{proposal.expected_outcome}</p>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => handleProposalAction('approve')}
+                        disabled={isSubmitting}
+                        className="flex-1 py-2 px-4 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors disabled:bg-green-700 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Approving...' : 'Approve'}
+                      </button>
+                      <button
+                        onClick={() => handleProposalAction('refine')}
+                        disabled={isSubmitting}
+                        className="flex-1 py-2 px-4 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition-colors disabled:bg-yellow-700 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Refining...' : 'Refine'}
+                      </button>
+                      <button
+                        onClick={() => handleProposalAction('reject')}
+                        disabled={isSubmitting}
+                        className="flex-1 py-2 px-4 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:bg-red-700 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Rejecting...' : 'Reject'}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 4: Show Result */}
+                {currentStep === 'result' && result && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <span className="text-white text-[14px]">Customer Service</span>
-                  </div>
-                </div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-medium text-white">Action Result</h2>
+                      <button
+                        onClick={() => setCurrentStep('select')}
+                        className="text-gray-400 hover:text-white text-sm flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                        </svg>
+                        Back
+                      </button>
+                    </div>
+
+                    <div className="mb-6 p-4 bg-green-900/20 border border-green-400/30 rounded-lg text-gray-300">
+                      <h3 className="text-lg font-medium mb-2">Action Completed Successfully</h3>
+                      <p className="text-sm">{result.summary}</p>
+                      {result.message && (
+                        <p className="text-sm mt-2 text-green-300">{result.message}</p>
+                      )}
+                    </div>
+
+                    <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
+                      <h4 className="text-sm font-medium text-gray-400 mb-2">Result Details</h4>
+                      {result.details ? (
+                        <pre className="text-xs text-gray-300 overflow-auto">
+{JSON.stringify(result.details, null, 2)}
+                        </pre>
+                      ) : (
+                        <p className="text-xs text-gray-400">No additional details available</p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={handleReset}
+                      className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+                    >
+                      Start Over
+                    </button>
+                  </motion.div>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Main Content Area */}
-          <div className="flex-1">
-            {error && (
-              <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200">
-                {typeof error === 'string' ? <p>{error}</p> : error}
-              </div>
-            )}
-
-            {/* Step 1: Select Action */}
-            {currentStep === 'select' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              >
-                {filteredActions.map((action) => (
-                  <div key={action.id} className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
-                    <h3 className="text-[18px] font-medium text-white mb-2">{action.label}</h3>
-                    <p className="text-gray-400 text-[14px] mb-4">{action.description}</p>
-                    <div className="mt-auto">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={`${
-                          action.category === 'Marketing' ? 'bg-[#f59e0b]' :
-                          action.category === 'Customer Service' ? 'bg-[#10b981]' :
-                          'bg-[#8763E580]'
-                        } text-white text-[13px] px-3 py-1 rounded min-w-[100px] max-w-[120px] min-h-[28px] flex items-center justify-center text-center`}>
-                          {action.category}
-                        </div>
-                        <span className="text-gray-400 text-[13px] ml-2">
-                          {/* You can add actual adoption rates here if available */}
-                          {Math.floor(Math.random() * (95 - 75) + 75)}% adoption
-                        </span>
-                      </div>
-                      {!action.comingSoon && (
-                        <button
-                          onClick={() => handleActionSelect(action.id)}
-                          className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium"
-                        >
-                          Configure in Autopilot
-                        </button>
-                      )}
-                      {action.comingSoon && (
-                        <div className="text-center text-amber-400 text-[13px] px-4 py-[10px]">
-                          Coming Soon
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-
-            {/* Step 2: Configure Action */}
-            {currentStep === 'form' && selectedActionType && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-medium text-white">Configure {selectedActionType.label}</h2>
-                  <button
-                    onClick={() => setCurrentStep('select')}
-                    className="text-gray-400 hover:text-white text-sm flex items-center"
-                  >
-                    <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                    </svg>
-                    Back
-                  </button>
-                </div>
-                
-                {/* Action specific help text */}
-                <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
-                  {selectedAction === 'inventory' && (
-                    <div className="space-y-2">
-                      <p>This action allows you to adjust the inventory quantity of a specific product.</p>
-                      <ul className="list-disc list-inside text-sm space-y-1">
-                        <li>Use positive numbers to add inventory (e.g., 10)</li>
-                        <li>Use negative numbers to remove inventory (e.g., -5)</li>
-                        <li>Reason for adjustment is required</li>
-                        <li>Variant ID is optional - if not provided, the action will affect the first variant</li>
-                      </ul>
-                    </div>
-                  )}
-
-                  {selectedAction === 'discount' && (
-                    <div className="space-y-2">
-                      <p>This action applies a percentage discount to a product and sets compare-at prices.</p>
-                      <ul className="list-disc list-inside text-sm space-y-1">
-                        <li>Enter the percentage value only (e.g., 20 for 20% discount)</li>
-                        <li>Round To controls price rounding (0.99 gives prices like $19.99)</li>
-                        <li>The original price will be shown as a compare-at price</li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {selectedActionType.fields.map((field) => (
-                    <div key={field.name} className="space-y-2">
-                      <label htmlFor={field.name} className="block text-sm font-medium text-gray-300">
-                        {field.label} {field.required && <span className="text-red-400">*</span>}
-                      </label>
-                      
-                      {field.type === 'textarea' ? (
-                        <textarea
-                          id={field.name}
-                          name={field.name}
-                          value={formData[field.name] || ''}
-                          onChange={handleInputChange}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                          rows={4}
-                        />
-                      ) : field.type === 'select' ? (
-                        <select
-                          id={field.name}
-                          name={field.name}
-                          value={formData[field.name] || ''}
-                          onChange={handleInputChange}
-                          required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        >
-                          <option value="">Select {field.label}</option>
-                          {field.options?.map((option: string) => (
-                            <option key={option} value={option}>{option}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          id={field.name}
-                          name={field.name}
-                          type={field.type}
-                          value={formData[field.name] || ''}
-                          onChange={handleInputChange}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                          className="w-full px-4 py-2 rounded-lg bg-[#2c2d32] border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      )}
-                    </div>
-                  ))}
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors disabled:bg-purple-700 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit'}
-                  </button>
-                </form>
-              </motion.div>
-            )}
-
-            {/* Step 3: Review Proposal */}
-            {currentStep === 'review' && proposal && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-medium text-white">Review Proposal</h2>
-                  <button
-                    onClick={() => setCurrentStep('form')}
-                    className="text-gray-400 hover:text-white text-sm flex items-center"
-                  >
-                    <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                    </svg>
-                    Back
-                  </button>
-                </div>
-
-                <div className="mb-6 p-4 bg-purple-900/20 border border-purple-400/30 rounded-lg text-gray-300">
-                  <h3 className="text-lg font-medium mb-2">Proposal Details</h3>
-                  <p className="text-sm">{proposal.description}</p>
-                </div>
-
-                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Proposal Parameters</h4>
-                  <pre className="text-xs text-gray-300 overflow-auto">
-{JSON.stringify(proposal.parameters, null, 2)}
-                  </pre>
-                </div>
-
-                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Expected Outcome</h4>
-                  <p className="text-xs text-gray-300">{proposal.expected_outcome}</p>
-                </div>
-
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => handleProposalAction('approve')}
-                    disabled={isSubmitting}
-                    className="flex-1 py-2 px-4 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors disabled:bg-green-700 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Approving...' : 'Approve'}
-                  </button>
-                  <button
-                    onClick={() => handleProposalAction('refine')}
-                    disabled={isSubmitting}
-                    className="flex-1 py-2 px-4 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition-colors disabled:bg-yellow-700 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Refining...' : 'Refine'}
-                  </button>
-                  <button
-                    onClick={() => handleProposalAction('reject')}
-                    disabled={isSubmitting}
-                    className="flex-1 py-2 px-4 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:bg-red-700 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Rejecting...' : 'Reject'}
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 4: Show Result */}
-            {currentStep === 'result' && result && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-medium text-white">Action Result</h2>
-                  <button
-                    onClick={() => setCurrentStep('select')}
-                    className="text-gray-400 hover:text-white text-sm flex items-center"
-                  >
-                    <svg className="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                    </svg>
-                    Back
-                  </button>
-                </div>
-
-                <div className="mb-6 p-4 bg-green-900/20 border border-green-400/30 rounded-lg text-gray-300">
-                  <h3 className="text-lg font-medium mb-2">Action Completed Successfully</h3>
-                  <p className="text-sm">{result.summary}</p>
-                  {result.message && (
-                    <p className="text-sm mt-2 text-green-300">{result.message}</p>
-                  )}
-                </div>
-
-                <div className="mb-6 p-4 bg-[#222326] rounded-lg border border-gray-700">
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Result Details</h4>
-                  {result.details ? (
-                    <pre className="text-xs text-gray-300 overflow-auto">
-{JSON.stringify(result.details, null, 2)}
-                    </pre>
-                  ) : (
-                    <p className="text-xs text-gray-400">No additional details available</p>
-                  )}
-                </div>
-
-                <button
-                  onClick={handleReset}
-                  className="w-full py-2 px-4 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors"
-                >
-                  Start Over
-                </button>
-              </motion.div>
-            )}
           </div>
         </div>
       </div>

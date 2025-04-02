@@ -548,7 +548,7 @@ export default function Scheduler() {
   }
 
   return (
-    <div className="h-full bg-[#141718] py-8 lg:py-12 font-inter">
+    <div className="h-full bg-[#141718] py-8 lg:py-12 font-inter overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div className="flex flex-col gap-1">
