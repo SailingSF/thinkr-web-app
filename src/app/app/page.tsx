@@ -220,10 +220,10 @@ export default function App() {
       <div className="container mx-auto px-4 lg:px-8">
         {/* Title Section */}
         <div className="mb-12">
-          <h1 className="text-[35px] text-[#8B5CF6] font-normal m-0">
+          <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
             Action Hub
           </h1>
-          <p className="text-white text-[25px] font-normal m-0 mb-10">
+          <p className="text-[22px] text-white font-normal mb-8">
             Boost your store's performance.
           </p>
           <hr className="border-t border-white mb-10" />

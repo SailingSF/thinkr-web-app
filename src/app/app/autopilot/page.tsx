@@ -954,67 +954,68 @@ export default function Autopilot() {
         {loadingMessage && <LoadingOverlay message={loadingMessage} />}
         
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center mb-2">
-            <h1 className="text-[35px] text-[#8B5CF6] font-normal m-0">
-              Autopilot
-            </h1>
-          </div>
-          <p className="text-white text-[25px] font-normal m-0 mb-6">
+        <div>
+          <h1 className="text-[40px] text-[#8B5CF6] font-normal mb-2">
+            Autopilot
+          </h1>
+          <p className="text-[22px] text-white font-normal mb-8">
             Automate everyday store tasks.
           </p>
+          <div className="h-[1px] w-full bg-white mb-8"></div>
         </div>
 
         {/* Main Content */}
         <div className="flex gap-6">
           {/* Sidebar */}
           <div className="w-64 flex-shrink-0">
-            {/* Sort By Section */}
-            <div className="mb-8">
-              <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">SORTED BY</h2>
-              <div className="flex flex-col gap-2">
-                <div 
-                  className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Most Popular' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
-                  onClick={() => setSelectedSort('Most Popular')}
-                >
-                  <span className="text-white text-[14px]">Most Popular</span>
-                </div>
-                <div 
-                  className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Recently Added' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
-                  onClick={() => setSelectedSort('Recently Added')}
-                >
-                  <span className="text-white text-[14px]">Recently Added</span>
+            <div className="bg-[#1E1F20] rounded-lg p-6">
+              {/* Sort By Section */}
+              <div className="mb-8">
+                <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">SORTED BY</h2>
+                <div className="flex flex-col gap-2">
+                  <div 
+                    className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Most Popular' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                    onClick={() => setSelectedSort('Most Popular')}
+                  >
+                    <span className="text-white text-[14px]">Most Popular</span>
+                  </div>
+                  <div 
+                    className={`px-4 py-3 rounded cursor-pointer ${selectedSort === 'Recently Added' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                    onClick={() => setSelectedSort('Recently Added')}
+                  >
+                    <span className="text-white text-[14px]">Recently Added</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Categories Section */}
-            <div>
-              <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">CATEGORIES</h2>
-              <div className="flex flex-col gap-2">
-                <div 
-                  className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Inventory' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
-                  onClick={() => setSelectedCategory('Inventory')}
-                >
-                  <span className="text-white text-[14px]">Inventory</span>
-                </div>
-                <div 
-                  className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Marketing' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
-                  onClick={() => setSelectedCategory('Marketing')}
-                >
-                  <span className="text-white text-[14px]">Marketing</span>
-                </div>
-                <div 
-                  className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Finance' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
-                  onClick={() => setSelectedCategory('Finance')}
-                >
-                  <span className="text-white text-[14px]">Finance</span>
-                </div>
-                <div 
-                  className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Customer Service' ? 'bg-[#1c1d1f]' : 'hover:bg-[#1c1d1f]/70'}`}
-                  onClick={() => setSelectedCategory('Customer Service')}
-                >
-                  <span className="text-white text-[14px]">Customer Service</span>
+              {/* Categories Section */}
+              <div>
+                <h2 className="text-[#9CA3AF] font-medium mb-4 uppercase text-[13px] tracking-wider">CATEGORIES</h2>
+                <div className="flex flex-col gap-2">
+                  <div 
+                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Inventory' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                    onClick={() => setSelectedCategory('Inventory')}
+                  >
+                    <span className="text-white text-[14px]">Inventory</span>
+                  </div>
+                  <div 
+                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Marketing' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                    onClick={() => setSelectedCategory('Marketing')}
+                  >
+                    <span className="text-white text-[14px]">Marketing</span>
+                  </div>
+                  <div 
+                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Finance' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                    onClick={() => setSelectedCategory('Finance')}
+                  >
+                    <span className="text-white text-[14px]">Finance</span>
+                  </div>
+                  <div 
+                    className={`px-4 py-3 rounded cursor-pointer ${selectedCategory === 'Customer Service' ? 'bg-[#2C2D32]' : 'hover:bg-[#2C2D32]/70'}`}
+                    onClick={() => setSelectedCategory('Customer Service')}
+                  >
+                    <span className="text-white text-[14px]">Customer Service</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1037,7 +1038,7 @@ export default function Autopilot() {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
                 {/* Restock Alert Trigger Card */}
-                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
                   <h3 className="text-[18px] font-medium text-white mb-2">Restock Alert Trigger</h3>
                   <p className="text-gray-400 text-[14px] mb-auto">
                     Automatically notify suppliers when inventory falls below threshold
@@ -1051,7 +1052,7 @@ export default function Autopilot() {
                 </div>
 
                 {/* Update Inventory Quantity Card */}
-                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
                   <h3 className="text-[18px] font-medium text-white mb-2">Update Inventory Quantity</h3>
                   <p className="text-gray-400 text-[14px] mb-4">
                     Increase or decrease inventory levels for products with detailed logging
@@ -1073,7 +1074,7 @@ export default function Autopilot() {
                 </div>
 
                 {/* Configure Apply Percentage Discount Card */}
-                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
                   <h3 className="text-[18px] font-medium text-white mb-2">Configure Apply Percentage Discount</h3>
                   <p className="text-gray-400 text-[14px] mb-4">
                     Reduce product prices by a percentage and set compare-at prices for better conversions
@@ -1095,7 +1096,7 @@ export default function Autopilot() {
                 </div>
 
                 {/* Inventory Age Tracker Card */}
-                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
                   <h3 className="text-[18px] font-medium text-white mb-2">Inventory Age Tracker</h3>
                   <p className="text-gray-400 text-[14px] mb-auto">
                     Automatically flag products that have been in stock for extended periods and suggest discount strategies based on aging thresholds
@@ -1109,7 +1110,7 @@ export default function Autopilot() {
                 </div>
 
                 {/* Return Request Processor Card */}
-                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
                   <h3 className="text-[18px] font-medium text-white mb-2">Return Request Processor</h3>
                   <p className="text-gray-400 text-[14px] mb-auto">
                     Generate return labels and update inventory when returns initiated
@@ -1123,7 +1124,7 @@ export default function Autopilot() {
                 </div>
 
                 {/* Bundle Stock Management Card */}
-                <div className="bg-[#1c1d1f] rounded-lg p-6 flex flex-col h-[220px]">
+                <div className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
                   <h3 className="text-[18px] font-medium text-white mb-2">Bundle Stock Management</h3>
                   <p className="text-gray-400 text-[14px] mb-auto">
                     Synchronize inventory levels across bundled products
