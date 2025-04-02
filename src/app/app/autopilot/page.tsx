@@ -1073,36 +1073,42 @@ export default function Autopilot() {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
                 {filteredActions.map((action) => (
-                  <div key={action.id} className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[280px]">
+                  <div key={action.id} className="bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[308px]">
                     <h3 className="text-[18px] font-medium text-white mb-2">{action.label}</h3>
-                    <p className="text-gray-400 text-[14px] mb-4">{action.description}</p>
+                    <p className="text-gray-400 text-[13.9px] mb-4">{action.description}</p>
                     <div className="mt-auto">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className={`${
-                          action.category === 'Marketing' ? 'bg-[#f59e0b]' :
-                          action.category === 'Customer Service' ? 'bg-[#10b981]' :
-                          'bg-[#8763E580]'
-                        } text-white text-[13px] px-3 py-1 rounded min-w-[100px] max-w-[120px] min-h-[28px] flex items-center justify-center text-center`}>
-                          {action.category}
-                        </div>
-                        <span className="text-gray-400 text-[13px] ml-2">
-                          {/* You can add actual adoption rates here if available */}
-                          {Math.floor(Math.random() * (95 - 75) + 75)}% adoption
-                        </span>
-                      </div>
                       {!action.comingSoon && (
                         <button
                           onClick={() => handleActionSelect(action.id)}
-                          className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium"
+                          className="bg-[#8763E550] text-white text-[13px] px-4 py-[10px] rounded hover:bg-[#8763E580] transition-colors w-full flex items-center justify-center font-medium mb-4"
                         >
                           Configure in Autopilot
                         </button>
                       )}
                       {action.comingSoon && (
-                        <div className="text-center text-amber-400 text-[13px] px-4 py-[10px]">
-                          Coming Soon
-                        </div>
+                        <a
+                          href="https://apps.shopify.com/thinkr"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-center text-[#475569] text-[11px] px-4 py-[10px] mb-4 block hover:text-[#475569]/80 transition-colors font-medium"
+                        >
+                          Upgrade to Pro
+                        </a>
                       )}
+                      <div className="flex items-center justify-between">
+                        <div className={`${
+                          action.category === 'Marketing' ? 'bg-[#FF9800]' :
+                          action.category === 'Customer Service' ? 'bg-[#2196F3]' :
+                          action.category === 'Inventory' ? 'bg-[#9C27B0]' :
+                          action.category === 'Finance' ? 'bg-[#4CAF50]' :
+                          'bg-[#00BCD4]'
+                        } text-white text-[13px] px-3 py-1 rounded min-w-[120px] max-w-[140px] min-h-[28px] flex items-center justify-center text-center`}>
+                          {action.category}
+                        </div>
+                        <span className="text-gray-400 text-[13px] ml-2">
+                          {Math.floor(Math.random() * (95 - 75) + 75)}% adoption
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
