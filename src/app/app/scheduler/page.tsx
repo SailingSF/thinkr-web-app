@@ -63,7 +63,7 @@ export default function Scheduler() {
   const fetchingRef = useRef(false);
   const initialLoadDoneRef = useRef(false);
   const [schedules, setSchedules] = useState<Schedule[]>(storedData?.schedules || []);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isDeletingSchedule, setIsDeletingSchedule] = useState<number | null>(null);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
@@ -581,20 +581,20 @@ export default function Scheduler() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-6">
                 <button
-                  onClick={() => setViewMode('list')}
-                  className={`text-lg font-semibold transition-colors ${
-                    viewMode === 'list' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
-                  }`}
-                >
-                  List View
-                </button>
-                <button
                   onClick={() => setViewMode('kanban')}
                   className={`text-lg font-semibold transition-colors ${
                     viewMode === 'kanban' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
                   }`}
                 >
                   Kanban View
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`text-lg font-semibold transition-colors ${
+                    viewMode === 'list' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
+                  }`}
+                >
+                  List View
                 </button>
                 <button
                   onClick={() => setViewMode('weekly')}
