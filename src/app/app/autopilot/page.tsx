@@ -1140,8 +1140,11 @@ export default function Autopilot() {
                     className={`bg-[#1E1F20] rounded-lg p-6 flex flex-col h-[237px] ${!action.comingSoon ? 'cursor-pointer hover:bg-[#2C2D32] transition-colors' : ''}`}
                     onClick={() => !action.comingSoon ? handleActionSelect(action.id) : undefined}
                   >
-                    <h3 className="text-[18px] font-medium text-white mb-2">{action.label}</h3>
-                    <p className="text-gray-400 text-[13.9px] mb-4">{action.description}</p>
+                    <div className="flex-1">
+                      <h3 className="text-[18px] font-medium text-white mb-2">{action.label}</h3>
+                      <p className="text-gray-400 text-[13.9px]">{action.description}</p>
+                    </div>
+                    
                     <div className="mt-auto">
                       {action.comingSoon && (
                         <a
