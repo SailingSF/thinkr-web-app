@@ -108,138 +108,149 @@ export default function Integrations() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-        <div className="text-xl text-purple-400">Loading...</div>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-xl text-[#8C74FF] flex items-center gap-3">
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          Loading...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
-      <div className="container mx-auto px-sm sm:px-md lg:px-lg">
-        {/* Title Section */}
-        <div className="flex flex-col gap-1 mb-8">
-          <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
-            Connected integrations
-          </h1>
-          <p className="text-[25px] text-[#8C74FF] font-normal m-0">
-            Manage your connected data sources.
-          </p>
-        </div>
+    <div className="h-full bg-[#141718] font-inter">
+      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+        <div className="py-4 lg:py-6">
+          <div className="container mx-auto px-4 lg:px-8">
+            {/* Title Section */}
+            <div className="mb-8">
+              <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
+                Connected Integrations
+              </h1>
+              <p className="text-[22px] text-white font-normal mb-6">
+                Manage your connected data sources.
+              </p>
+              <hr className="border-t border-white mb-8" />
+            </div>
 
-        {/* Shopify Connection Card */}
-        <div className="w-full max-w-[364px] bg-[#242424] rounded-[10px] p-sm sm:p-md">
-          <div className="flex flex-col gap-sm sm:gap-md">
-            <div className="flex flex-col gap-xs sm:gap-sm">
-              <img
-                className="w-6 h-[27px] object-contain"
-                alt="Shopify"
-                src="/shopify_glyph_white.svg"
-              />
-              <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Shopify</span>
-            </div>
-            <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
-              <div className="flex items-center gap-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
-                <span className="text-sm lg:text-base text-gray-300">Connected</span>
+            {/* Shopify Connection Card */}
+            <div className="w-full max-w-[364px] bg-[#242424] rounded-[10px] p-sm sm:p-md">
+              <div className="flex flex-col gap-sm sm:gap-md">
+                <div className="flex flex-col gap-xs sm:gap-sm">
+                  <img
+                    className="w-6 h-[27px] object-contain"
+                    alt="Shopify"
+                    src="/shopify_glyph_white.svg"
+                  />
+                  <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Shopify</span>
+                </div>
+                <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
+                  <div className="flex items-center gap-sm">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+                    <span className="text-sm lg:text-base text-gray-300">Connected</span>
+                  </div>
+                  <p className="m-0 mt-sm sm:mt-md text-sm lg:text-base text-gray-300">Store: {connectionStatus?.shop_domain || 'coffeeelsalvador.myshopify.com'}</p>
+                  <p className="m-0 mt-xs sm:mt-sm text-sm lg:text-base text-gray-300">Last Synced: {connectionStatus?.last_sync ? new Date(connectionStatus.last_sync).toLocaleString() : '1/24/2024, 6:02:09 PM'}</p>
+                  <p className="m-0 mt-xs sm:mt-sm text-sm lg:text-base text-gray-300">Subscription: {connectionStatus?.subscription_status || 'Active'}</p>
+                </div>
+                <div className="text-[#22C55E] text-right text-sm sm:text-base lg:text-[16.7px]">Active</div>
               </div>
-              <p className="m-0 mt-sm sm:mt-md text-sm lg:text-base text-gray-300">Store: {connectionStatus?.shop_domain || 'coffeeelsalvador.myshopify.com'}</p>
-              <p className="m-0 mt-xs sm:mt-sm text-sm lg:text-base text-gray-300">Last Synced: {connectionStatus?.last_sync ? new Date(connectionStatus.last_sync).toLocaleString() : '1/24/2024, 6:02:09 PM'}</p>
-              <p className="m-0 mt-xs sm:mt-sm text-sm lg:text-base text-gray-300">Subscription: {connectionStatus?.subscription_status || 'Active'}</p>
             </div>
-            <div className="text-[#22C55E] text-right text-sm sm:text-base lg:text-[16.7px]">Active</div>
+
+            {/* Integration Request Section */}
+            <h2 className="text-xl sm:text-2xl lg:text-[25px] text-[#FFFFFF] font-normal m-0 mt-xl">
+              Let us know which integrations you would like to connect
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-md">
+              {/* Meta Ads Card */}
+              <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
+                <div className="flex flex-col gap-sm sm:gap-md">
+                  <div className="flex flex-col gap-xs sm:gap-sm">
+                    <img
+                      src="/meta-icon-2.png"
+                      alt="Meta"
+                      className="w-6 h-[27px] object-contain"
+                    />
+                    <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Meta Ads</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
+                    <p className="text-sm text-[#7B7B7B] leading-relaxed">
+                      Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
+                    </p>
+                  </div>
+                  <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
+                    <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                      Request
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Google Ads Card */}
+              <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
+                <div className="flex flex-col gap-sm sm:gap-md">
+                  <div className="flex flex-col gap-xs sm:gap-sm">
+                    <img
+                      src="/google-ads-icon-2.png"
+                      alt="Google Ads"
+                      className="w-6 h-[27px] object-contain"
+                    />
+                    <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Google Ads</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
+                    <p className="text-sm text-[#7B7B7B] leading-relaxed">
+                      Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
+                    </p>
+                  </div>
+                  <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
+                    <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                      Request
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mailchimp Card */}
+              <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
+                <div className="flex flex-col gap-sm sm:gap-md">
+                  <div className="flex flex-col gap-xs sm:gap-sm">
+                    <img
+                      src="/mailchimp-icon-2.png"
+                      alt="Mailchimp"
+                      className="w-6 h-[27px] object-contain"
+                    />
+                    <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Mailchimp</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
+                    <p className="text-sm text-[#7B7B7B] leading-relaxed">
+                      Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
+                    </p>
+                  </div>
+                  <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
+                    <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                      Request
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Advanced Integrations Button */}
+            <div className="mt-8 flex justify-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => router.push('/app/integrations/advanced')}
+                className="px-6 py-3 bg-[#8C74FF] text-white font-medium rounded-lg shadow-lg hover:bg-[#7B63EE] transition-colors"
+              >
+                Advanced Integrations
+              </motion.button>
+            </div>
           </div>
-        </div>
-
-        {/* Integration Request Section */}
-        <h2 className="text-xl sm:text-2xl lg:text-[25px] text-[#FFFFFF] font-normal m-0 mt-xl">
-          Let us know which integrations you would like to connect
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-md">
-          {/* Meta Ads Card */}
-          <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
-            <div className="flex flex-col gap-sm sm:gap-md">
-              <div className="flex flex-col gap-xs sm:gap-sm">
-                <img
-                  src="/meta-icon-2.png"
-                  alt="Meta"
-                  className="w-6 h-[27px] object-contain"
-                />
-                <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Meta Ads</span>
-              </div>
-              <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
-                <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                  Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
-                </p>
-              </div>
-              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
-                  Request
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Google Ads Card */}
-          <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
-            <div className="flex flex-col gap-sm sm:gap-md">
-              <div className="flex flex-col gap-xs sm:gap-sm">
-                <img
-                  src="/google-ads-icon-2.png"
-                  alt="Google Ads"
-                  className="w-6 h-[27px] object-contain"
-                />
-                <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Google Ads</span>
-              </div>
-              <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
-                <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                  Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
-                </p>
-              </div>
-              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
-                  Request
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Mailchimp Card */}
-          <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
-            <div className="flex flex-col gap-sm sm:gap-md">
-              <div className="flex flex-col gap-xs sm:gap-sm">
-                <img
-                  src="/mailchimp-icon-2.png"
-                  alt="Mailchimp"
-                  className="w-6 h-[27px] object-contain"
-                />
-                <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Mailchimp</span>
-              </div>
-              <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
-                <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                  Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
-                </p>
-              </div>
-              <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
-                  Request
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Advanced Integrations Button */}
-        <div className="mt-8 flex justify-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push('/app/integrations/advanced')}
-            className="px-6 py-3 bg-[#8C74FF] text-white font-medium rounded-lg shadow-lg hover:bg-[#7B63EE] transition-colors"
-          >
-            Advanced Integrations
-          </motion.button>
         </div>
       </div>
 

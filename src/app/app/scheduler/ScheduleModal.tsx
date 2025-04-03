@@ -108,10 +108,12 @@ const DAYS: Day[] = [
   { value: '0', label: 'Sunday' },
 ];
 
-const HOURS = Array.from({ length: 24 }, (_, i) => ({
-  value: i,
-  label: i === 0 ? '12 AM' : i === 12 ? '12 PM' : i > 12 ? `${i-12} PM` : `${i} AM`
-}));
+const HOURS = [
+  { value: 9, label: '9:00 AM' },
+  { value: 11, label: '11:00 AM' },
+  { value: 13, label: '1:00 PM' },
+  { value: 15, label: '3:00 PM' }
+];
 
 // Helper function to convert local hour to UTC
 const convertToUTC = (localHour: number, localDay: string): { hour: number, day: string } => {
@@ -204,7 +206,16 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#25262b] p-6 md:p-8 rounded-xl w-full max-w-3xl font-inter max-h-[90vh] overflow-y-auto">
+      <div className="bg-[#25262b] p-6 md:p-8 rounded-xl w-full max-w-3xl font-inter max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42] relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-[#2c2d32]"
+          aria-label="Close modal"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
         <h2 className="text-2xl font-normal mb-6 text-white">Schedule Weekly Suggestion</h2>
         <p className="text-sm text-[#7B7B7B] mb-6">
           All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})

@@ -63,7 +63,7 @@ export default function Scheduler() {
   const fetchingRef = useRef(false);
   const initialLoadDoneRef = useRef(false);
   const [schedules, setSchedules] = useState<Schedule[]>(storedData?.schedules || []);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isDeletingSchedule, setIsDeletingSchedule] = useState<number | null>(null);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
@@ -548,46 +548,42 @@ export default function Scheduler() {
   }
 
   return (
-    <div className="h-full bg-[#141718] py-8 lg:py-12 font-inter">
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
-              Analysis Scheduler
-            </h1>
-            <p className="text-[#8C74FF] text-[25px] font-normal m-0">
-              Schedule automated analysis for your store.
-              <span className="text-sm text-[#7B7B7B] block mt-1">
-                All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
-              </span>
-            </p>
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-4 lg:py-6 font-inter">
+      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+        <div className="container mx-auto px-4 lg:px-8">
+          {/* Title Section */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
+                  Analysis Scheduler
+                </h1>
+                <p className="text-[22px] text-white font-normal">
+                  Schedule automated analysis for your store.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="px-6 py-3 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#8B5CF6]/20 hover:shadow-lg hover:shadow-[#8B5CF6]/30"
+              >
+                Add Schedule
+              </button>
+            </div>
+            <hr className="border-t border-white mb-4" />
+            <span className="text-sm text-[#7B7B7B] block mb-4">
+              All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+            </span>
           </div>
-          <button
-            onClick={() => setIsScheduleModalOpen(true)}
-            className="mt-4 lg:mt-0 w-full lg:w-auto px-6 py-3 bg-[#8C74FF] hover:bg-[#8C74FF]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#8C74FF]/20 hover:shadow-lg hover:shadow-[#8C74FF]/30"
-          >
-            Add Schedule
-          </button>
-        </div>
 
-        {error && (
-          <div className="mb-6 lg:mb-8 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="mb-4 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
+              {error}
+            </div>
+          )}
 
-        <div className="bg-[#141718] rounded-2xl">
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-[#141718] rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-6">
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`text-lg font-semibold transition-colors ${
-                    viewMode === 'list' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
-                  }`}
-                >
-                  List View
-                </button>
                 <button
                   onClick={() => setViewMode('kanban')}
                   className={`text-lg font-semibold transition-colors ${
@@ -595,6 +591,14 @@ export default function Scheduler() {
                   }`}
                 >
                   Kanban View
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`text-lg font-semibold transition-colors ${
+                    viewMode === 'list' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
+                  }`}
+                >
+                  List View
                 </button>
                 <button
                   onClick={() => setViewMode('weekly')}

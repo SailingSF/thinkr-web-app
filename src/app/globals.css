@@ -2,6 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;  /* Firefox */
+    scrollbar-color: rgba(139, 92, 246, 0.3) rgba(44, 45, 50, 0.1);  /* Firefox */
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(44, 45, 50, 0.1);
+    border-radius: 100vh;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 100vh;
+    border: 2px solid rgba(44, 45, 50, 0.1);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.5);
+  }
+
+  .dark-scrollbar {
+    scrollbar-width: thin;  /* Firefox */
+    scrollbar-color: rgba(45, 45, 45, 0.8) rgba(30, 30, 30, 0.3);  /* Firefox */
+  }
+
+  .dark-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .dark-scrollbar::-webkit-scrollbar-track {
+    background: rgba(30, 30, 30, 0.3);
+    border-radius: 8px;
+  }
+
+  .dark-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(45, 45, 45, 0.8);
+    border-radius: 8px;
+    border: 2px solid rgba(30, 30, 30, 0.3);
+  }
+
+  .dark-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(55, 55, 55, 0.9);
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

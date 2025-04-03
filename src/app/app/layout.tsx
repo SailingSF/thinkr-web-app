@@ -62,7 +62,7 @@ export default function AppLayout({
     <div className="h-screen bg-[#141718] overflow-hidden">
       <Navigation />
       <AppSidebar />
-      <main className="lg:pl-[336px] pt-16 p-4 h-[calc(100vh-1rem)] overflow-auto">
+      <main className="lg:pl-[336px] pt-16 p-4 h-[calc(100vh-1rem)] overflow-auto dark-scrollbar">
         {children}
       </main>
     </div>
