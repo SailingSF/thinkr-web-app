@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import RotatingBackground from "@/components/RotatingBackground";
-import HomeLoginForm from "@/components/HomeLoginForm";
-import { Suspense, useState } from "react";
+import { Suspense, useState, lazy } from "react";
+
+// Lazy load non-critical components
+const RotatingBackground = lazy(() => import("@/components/RotatingBackground"));
+const HomeLoginForm = lazy(() => import("@/components/HomeLoginForm"));
+
+// Loading fallback components
+const BackgroundFallback = () => <div className="bg-[#141718] w-full h-full" />;
+const FormFallback = () => <div className="text-white p-8 text-center">Loading login form...</div>;
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,6 +31,7 @@ export default function Home() {
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="text-white p-2"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isMenuOpen ? (
@@ -58,7 +65,9 @@ export default function Home() {
       <div className="hidden md:flex flex-1 flex-row">
         {/* Left side - Rotating Image */}
         <div className="w-1/2 relative">
-          <RotatingBackground />
+          <Suspense fallback={<BackgroundFallback />}>
+            <RotatingBackground />
+          </Suspense>
           {/* Logo overlay */}
           <div className="absolute top-7 left-12">
             <Image
@@ -97,7 +106,7 @@ export default function Home() {
 
           {/* Login Form Container */}
           <div className="flex-1 flex justify-center items-center">
-            <Suspense fallback={<div className="text-white">Loading...</div>}>
+            <Suspense fallback={<FormFallback />}>
               <HomeLoginForm />
             </Suspense>
           </div>
@@ -108,14 +117,16 @@ export default function Home() {
       <div className="flex flex-col md:hidden flex-1">
         {/* Login Form Container */}
         <div className="flex-1 flex justify-center items-center px-4 py-8">
-          <Suspense fallback={<div className="text-white">Loading...</div>}>
+          <Suspense fallback={<FormFallback />}>
             <HomeLoginForm />
           </Suspense>
         </div>
 
         {/* Bottom Image */}
         <div className="relative h-[calc(100vh-80vh)]">
-          <RotatingBackground />
+          <Suspense fallback={<BackgroundFallback />}>
+            <RotatingBackground />
+          </Suspense>
         </div>
       </div>
     </div>
