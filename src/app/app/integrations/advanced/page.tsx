@@ -45,7 +45,7 @@ export default function AdvancedIntegrations() {
   useEffect(() => {
     async function getProjectId(apiUrlBase: string): Promise<string | null> {
       // Check if we already have a project ID in local storage
-      const existingProjectId = storedData?.user?.advancedIntegrationsProjectId || storedData?.user?.peaka_project_id || projectId;
+      const existingProjectId = storedData?.user?.peaka_project_id || projectId;
       if (existingProjectId) {
         debugLog(`Found existing project ID in local storage or state: ${existingProjectId}`);
         // Ensure the project ID is set in component state
@@ -78,8 +78,8 @@ export default function AdvancedIntegrations() {
         const userData: User = await userResponse.json();
         debugLog('Received user data', userData);
         
-        // Check both possible field names for project ID
-        const userProjectId = userData.advancedIntegrationsProjectId || userData.peaka_project_id;
+        // Check for project ID
+        const userProjectId = userData.peaka_project_id;
         
         // Update local storage with user data
         updateStoredData({ user: userData });
@@ -144,8 +144,7 @@ export default function AdvancedIntegrations() {
         if (storedData?.user) {
           const updatedUser = {
             ...storedData.user,
-            advancedIntegrationsProjectId: newProjectId,
-            peaka_project_id: newProjectId // Store in both formats to be safe
+            peaka_project_id: newProjectId // Only set peaka_project_id
           };
           
           updateStoredData({ user: updatedUser });
