@@ -116,7 +116,10 @@ export default function Profile() {
             <div className="flex justify-between items-center pb-6 border-b border-[#8C74FF]/10">
               <div>
                 <h3 className="text-lg text-white mb-2">Store Information</h3>
-                <p className="text-[#7B7B7B]">{user?.store || 'No store connected'}</p>
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-[#E0E0E0]">Connected Store</label>
+                  <p className="text-[#7B7B7B]">{user?.store_shop_name || 'No store connected'}</p> 
+                </div>
               </div>
               <div className="text-[#8C74FF]">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,7 +143,7 @@ export default function Profile() {
             <div className="pb-6 border-b border-[#8C74FF]/10">
               <h3 className="text-lg text-white mb-4">Active Integrations</h3>
               <div className="flex gap-2">
-                {user?.store && (
+                {user?.store_shopify_domain && (
                   <span className="px-4 py-1.5 bg-[#141718] text-white rounded-full text-sm">
                     Shopify
                   </span>

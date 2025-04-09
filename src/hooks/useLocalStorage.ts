@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 
 export interface User {
-  id: number;
   email: string;
   first_name: string;
   last_name: string;
   contact_email: string;
-  shopify_user_id: number;
-  store: string | null;
-  advancedIntegrationsProjectId?: string;
-  peaka_project_id?: string;
+  store_shopify_domain: string | null;
+  store_shop_name: string | null;
+  store_primary_domain_url: string | null;
+  peaka_project_id: string | null;
 }
 
 export interface ConnectionStatus {

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthFetch } from '@/utils/shopify';
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import type { User } from '@/hooks/useLocalStorage';
 
 export default function Navigation() {
   const router = useRouter();
@@ -16,15 +18,13 @@ export default function Navigation() {
     // Get store name from localStorage
     const getUserData = () => {
       if (typeof window !== 'undefined') {
-        const userData = localStorage.getItem('user_data');
-        if (userData) {
-          try {
-            const parsed = JSON.parse(userData);
-            if (parsed.store) {
-              setStoreName(parsed.store);
-            }
-          } catch (e) {
-            console.error('Error parsing user data:', e);
+        const data = localStorage.getItem('app_data');
+        if (data) {
+          const parsed = JSON.parse(data) as { user: User | null };
+          if (parsed.user?.store_shop_name) {
+            setStoreName(parsed.user.store_shop_name);
+          } else {
+            setStoreName(null);
           }
         }
       }
