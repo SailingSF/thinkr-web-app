@@ -9,6 +9,8 @@ import { useLocalStorage, User, ConnectionStatus } from '@/hooks/useLocalStorage
 // Lazy load non-critical components
 const ShopifyConnectButton = lazy(() => import('@/components/ShopifyConnectButton'));
 const ShopifyErrorModal = lazy(() => import('@/components/ShopifyErrorModal'));
+const AuditCard = lazy(() => import('@/components/AuditCard'));
+const InfoModal = lazy(() => import('@/components/InfoModal'));
 
 // Loading fallbacks
 const ButtonFallback = () => (
@@ -62,33 +64,32 @@ const ConnectStoreCard = memo(({ connectionStatus, isConnecting, startOAuthFlow 
   </div>
 ));
 
-const EmailsCard = memo(({ connectionStatus }: EmailsCardProps) => (
-  <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg">
-    <div className="mb-6 lg:mb-8">
-      <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 2:</p>
-      <h3 className="text-[32px] font-inter font-normal text-white">Set up Emails</h3>
-    </div>
+const EmailsCard = memo(({ connectionStatus }: EmailsCardProps) => {
+  // Determine if the card content should be enabled
+  // This component is now only rendered when connected, so link is always enabled.
+  const isEnabled = connectionStatus?.is_connected;
 
-    <div className="space-y-4 lg:space-y-6">
-      <Link
-        href="/app/scheduler"
-        className={`inline-block w-full px-4 lg:px-6 py-3 lg:py-4 text-center text-white font-medium rounded-md transition-colors ${
-          connectionStatus?.is_connected
-            ? 'bg-[#8B5CF6] hover:bg-[#7C3AED]'
-            : 'bg-gray-600 cursor-not-allowed'
-        }`}
-      >
-        Configure Emails
-      </Link>
+  return (
+    <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg">
+      <div className="mb-6 lg:mb-8">
+        <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 2:</p>
+        <h3 className="text-[32px] font-inter font-normal text-white">Set up Emails</h3>
+      </div>
 
-      {!connectionStatus?.is_connected && (
-        <p className="text-xs lg:text-sm text-gray-500">
-          Connect your store first to configure email settings
-        </p>
-      )}
+      <div className="space-y-4 lg:space-y-6">
+        <Link
+          href="/app/scheduler"
+          className={`inline-block w-full px-4 lg:px-6 py-3 lg:py-4 text-center text-white font-medium rounded-md transition-colors bg-[#8B5CF6] hover:bg-[#7C3AED]`}
+          aria-disabled={!isEnabled} // Keep aria-disabled for semantics if needed, though visually always enabled now
+          onClick={(e) => { if (!isEnabled) e.preventDefault(); }} // Prevent navigation just in case
+        >
+          Configure Emails
+        </Link>
+        {/* Removed the conditional text explanation as it's no longer needed */}
+      </div>
     </div>
-  </div>
-));
+  );
+});
 
 interface Recommendation {
   id: string;
@@ -377,6 +378,11 @@ export default function App() {
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [expandedRecommendationId, setExpandedRecommendationId] = useState<string | null>(null);
 
+  // State for Audit Feature
+  const [isAuditing, setIsAuditing] = useState(false);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [infoModalContent, setInfoModalContent] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' }>({ title: '', message: '', type: 'info' });
+
   useEffect(() => {
     mountedRef.current = true;
 
@@ -536,6 +542,49 @@ export default function App() {
     }
   };
 
+  // Function to trigger the store audit
+  const handleTriggerAudit = async () => {
+    setIsAuditing(true);
+    setError(''); // Clear previous errors
+    setIsErrorModalOpen(false); // Close generic error modal if open
+
+    try {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/trigger-store-audit/`);
+      const data = await response.json();
+
+      if (response.status === 202) { // Accepted - audit started
+        setInfoModalContent({
+          title: 'Audit Started',
+          message: `Your store audit has begun. The report will be emailed to ${data.user_email || 'your contact email'}.`,
+          type: 'success'
+        });
+      } else if (response.status === 200) { // OK - already sent
+        setInfoModalContent({
+          title: 'Audit Already Generated',
+          message: data.message || 'The initial audit for this store has already been generated.',
+          type: 'info'
+        });
+      } else { // Handle other errors (400, 404, 500, 503)
+        setInfoModalContent({
+          title: 'Audit Failed',
+          message: data.error || 'An unexpected error occurred while trying to start the audit.',
+          type: 'error'
+        });
+      }
+      setIsInfoModalOpen(true);
+    } catch (err) {
+      console.error('Trigger audit error:', err);
+      setInfoModalContent({
+        title: 'Audit Error',
+        message: err instanceof Error ? err.message : 'A network or system error occurred. Please try again later.',
+        type: 'error'
+      });
+      setIsInfoModalOpen(true);
+    } finally {
+      setIsAuditing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-64px)]">
@@ -559,21 +608,60 @@ export default function App() {
             <hr className="border-t border-white mb-10" />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-            {/* Connect Store Card */}
-            <ConnectStoreCard
-              connectionStatus={connectionStatus}
-              isConnecting={isConnecting}
-              startOAuthFlow={startOAuthFlow}
-            />
+          {/* Conditional Rendering based on Connection Status */} 
+          {connectionStatus?.is_connected ? (
+            <>
+              {/* --- Connected State --- */} 
+              {/* Connection Status Bar */} 
+              <div className="mb-8 flex items-center gap-3 p-4 bg-[#2C2C2E] rounded-lg"> 
+                <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></span> 
+                <span className="text-white text-sm lg:text-base"> 
+                  Connected to {connectionStatus.shop_domain} 
+                </span> 
+                {connectionStatus.last_sync && ( 
+                  <span className="text-xs lg:text-sm text-gray-400 ml-auto"> 
+                    (Last synced: {new Date(connectionStatus.last_sync).toLocaleString()}) 
+                  </span> 
+                )} 
+              </div>
 
-            {/* Set up Emails Card */}
-            <EmailsCard
-              connectionStatus={connectionStatus}
-            />
-          </div>
+              {/* Grid for Audit and Email Cards */} 
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6"> 
+                {/* Audit Card - Step 1 (after connection) */} 
+                <Suspense fallback={<ButtonFallback />}> 
+                  <AuditCard 
+                    onTriggerAudit={handleTriggerAudit} 
+                    isLoading={isAuditing} 
+                    // No isDisabled prop needed anymore 
+                  /> 
+                </Suspense>
 
-          {/* Recommendations Section */}
+                {/* Set up Emails Card - Step 2 (after connection) */} 
+                <EmailsCard 
+                  connectionStatus={connectionStatus} 
+                  // Pass connectionStatus for potential internal use, but disabling logic is removed 
+                /> 
+              </div> 
+            </>
+          ) : (
+            <> 
+              {/* --- Not Connected State --- */} 
+              {/* Connect Store Card Only */} 
+              <div className="grid grid-cols-1 gap-4 lg:gap-6"> 
+                <ConnectStoreCard 
+                  connectionStatus={connectionStatus} 
+                  isConnecting={isConnecting} 
+                  startOAuthFlow={startOAuthFlow} 
+                /> 
+              </div> 
+              {/* Optionally add a placeholder or message where other cards would be */} 
+               <div className="mt-10 lg:mt-12 text-center text-gray-500"> 
+                Connect your store to proceed with setup steps. 
+              </div> 
+            </>
+          )}
+
+          {/* Recommendations Section (Always Visible Below Setup Steps/Connection) */}
           <div className="mt-10 lg:mt-12">
             <div className="mb-0">
               <h2 className="text-[25px] text-white font-normal mb-2">Task Management</h2>
@@ -647,6 +735,17 @@ export default function App() {
         error={error}
         userEmail={user?.email}
       />
+
+      {/* Info Modal for Audit Results - Added */} 
+      <Suspense fallback={null}> 
+        <InfoModal 
+          isOpen={isInfoModalOpen} 
+          onClose={() => setIsInfoModalOpen(false)} 
+          title={infoModalContent.title} 
+          message={infoModalContent.message} 
+          type={infoModalContent.type} 
+        /> 
+      </Suspense>
       
       <style jsx global>{`
         @keyframes fadeIn {
