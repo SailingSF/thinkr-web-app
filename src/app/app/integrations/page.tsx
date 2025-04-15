@@ -179,11 +179,16 @@ export default function Integrations() {
                   </div>
                   <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
                     <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                      Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
+                      See your ad performance with Instagram and Facebook ads aligned with your Shopify store information to get an even better look into the performance of your ad campaigns. 
                     </p>
                   </div>
                   <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                    <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                    <a 
+                      href="https://cal.com/edu-samayoa-im7mvi" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-block px-4 py-1 border border-[#7B7B7B] rounded text-[#7B7B7B] hover:bg-[#8C74FF] hover:text-white hover:border-[#8C74FF] transition-colors"
+                    >
                       Request
                     </a>
                   </div>
@@ -203,11 +208,16 @@ export default function Integrations() {
                   </div>
                   <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
                     <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                      Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
+                      See your ad performance with Google Ads aligned with your Shopify store information to get an even better look into the performance of your ad campaigns and keyword performance. 
                     </p>
                   </div>
                   <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                    <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                    <a 
+                      href="https://cal.com/edu-samayoa-im7mvi" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-block px-4 py-1 border border-[#7B7B7B] rounded text-[#7B7B7B] hover:bg-[#8C74FF] hover:text-white hover:border-[#8C74FF] transition-colors"
+                    >
                       Request
                     </a>
                   </div>
@@ -227,11 +237,16 @@ export default function Integrations() {
                   </div>
                   <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
                     <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                      Install our Shopify app from the Shopify App Store. Ensure you are the store owner or have admin access. Your email should match your Shopify account.
+                      Send email campaigns to your customers with Mailchimp and see the performance of your email campaigns aligned with your Shopify store customers. 
                     </p>
                   </div>
                   <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                    <a href="https://calendly.com/edu-thinkr/15min-thinkr" target="_blank" rel="noopener noreferrer" className="text-[#7B7B7B] hover:text-[#8C74FF] transition-colors">
+                    <a 
+                      href="https://cal.com/edu-samayoa-im7mvi" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-block px-4 py-1 border border-[#7B7B7B] rounded text-[#7B7B7B] hover:bg-[#8C74FF] hover:text-white hover:border-[#8C74FF] transition-colors"
+                    >
                       Request
                     </a>
                   </div>
