@@ -74,6 +74,9 @@ const EmailsCard = memo(({ connectionStatus }: EmailsCardProps) => {
       <div className="mb-6 lg:mb-8">
         <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 2:</p>
         <h3 className="text-[32px] font-inter font-normal text-white">Set up Emails</h3>
+        <p className="text-sm lg:text-base text-gray-400 mt-2">
+          Configure your email recommendations and schedule them to be sent at the best times.
+        </p>
       </div>
 
       <div className="space-y-4 lg:space-y-6">
