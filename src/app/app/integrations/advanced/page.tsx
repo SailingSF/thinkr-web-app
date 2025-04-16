@@ -1,404 +1,394 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback, Suspense, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthFetch } from '@/utils/shopify';
 import { useLocalStorage, User } from '@/hooks/useLocalStorage';
 
-// Removed Peaka constants
-// const PEAKA_PARTNER_API_BASE_URL = 'https://partner.peaka.studio/api/v1';
-// const TEST_PROJECT_ID = 'acFxu7Xr';
+// Define the structure for a Fivetran connection from our backend
+interface FivetranConnection {
+  id: number; // Local DB ID
+  fivetran_connector_id: string;
+  service: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
 
-export default function AdvancedIntegrations() {
+// Define the structure for available Fivetran services
+interface AvailableService {
+  id: string; // e.g., 'google_ads'
+  name: string; // e.g., 'Google Ads'
+  icon?: string; // Optional: Path to an icon
+  description: string;
+}
+
+// Hardcoded list based on Django ALLOWED_FIVETRAN_SERVICES
+const AVAILABLE_SERVICES: AvailableService[] = [
+  { id: 'google_ads', name: 'Google Ads', description: 'Analyze Google Ads performance.', icon: '/google-ads-icon-2.png' },
+  { id: 'facebook_ads', name: 'Meta Ads (Facebook/Instagram)', description: 'Analyze Facebook & Instagram Ads performance.', icon: '/meta-icon-2.png' },
+  { id: 'google_analytics_4', name: 'Google Analytics 4', description: 'Connect your GA4 data.', icon: '/google-analytics-icon.png' }, // Assuming icon path
+  { id: 'klaviyo', name: 'Klaviyo', description: 'Analyze email marketing performance.', icon: '/klaviyo-icon.png' }, // Assuming icon path
+  { id: 'gorgias', name: 'Gorgias', description: 'Connect customer support data.', icon: '/gorgias-icon.png' }, // Assuming icon path
+  { id: 'pinterest_ads', name: 'Pinterest Ads', description: 'Analyze Pinterest Ads performance.', icon: '/pinterest-icon.png' }, // Assuming icon path
+];
+
+function AdvancedIntegrationsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const authFetch = useAuthFetch();
-  const { storedData, updateStoredData } = useLocalStorage();
-  const [sessionURL, setSessionURL] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [apiResponse, setApiResponse] = useState<any>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  
-  // Use refs to prevent duplicate initialization
-  const initializationInProgress = useRef(false);
-  const isInitialized = useRef(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const { storedData } = useLocalStorage(); // Keep user data if needed
 
-  // Function to log session events to assist with debugging
+  const [connections, setConnections] = useState<FivetranConnection[]>([]);
+  const [isLoadingConnections, setIsLoadingConnections] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false); // For connect/delete actions
+  const [error, setError] = useState<string | null>(null);
+  const [callbackStatus, setCallbackStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [hasHandledCallback, setHasHandledCallback] = useState(false); // Flag to prevent double fetch
+
+  // Use refs to track loading state without causing rerenders
+  const isFetchingRef = useRef(false);
+  
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  // Function to log messages
   const debugLog = (message: string, data?: any) => {
-    console.log(`[AdvancedIntegrations:${new Date().toISOString()}] ${message}`, data || '');
+    console.log(`[FivetranIntegrations:${new Date().toISOString()}] ${message}`, data || '');
   };
 
-  // Direct state to store project ID to avoid relying solely on local storage
-  const [projectId, setProjectId] = useState<string | null>(null);
+  // 1. Fetch Existing Connections - SIMPLIFIED dependencies
+  const fetchConnections = useCallback(async () => {
+    // Prevent concurrent fetches and infinite loops
+    if (isFetchingRef.current) {
+       debugLog('Skipping fetchConnections as it is already in progress.');
+       return;
+    }
+    
+    debugLog('Fetching existing Fivetran connections...');
+    setIsLoadingConnections(true);
+    setError(null); // Clear previous errors on new fetch attempt
+    isFetchingRef.current = true;
+    
+    try {
+      const response = await authFetch(`${API_BASE_URL}/fivetran/connections/`);
+      if (!response.ok) {
+        // Try to parse error details from backend
+        let errorDetail = `Failed to fetch connections: ${response.statusText}`;
+        try {
+            const errorData = await response.json();
+            errorDetail = errorData.detail || errorData.error || JSON.stringify(errorData);
+        } catch (parseError) {
+            // Ignore if response is not JSON
+        }
+        throw new Error(errorDetail);
+      }
+      const data = await response.json();
+      debugLog('Received connections:', data.connectors);
+      setConnections(data.connectors || []);
+    } catch (err: any) {
+       // Check if the error is due to an aborted request (can happen on navigation/cleanup)
+       if (err.name === 'AbortError') {
+            debugLog('Fetch connections request was aborted, likely due to component unmount or navigation.');
+            // Do not update state if aborted to prevent useEffect loops
+       } else {
+            debugLog('Error fetching connections:', err);
+            setError(err instanceof Error ? err.message : 'An unknown error occurred while fetching connections.');
+            setConnections([]); // Clear connections on error
+       }
+    } finally {
+      setIsLoadingConnections(false);
+      isFetchingRef.current = false;
+    }
+  }, [authFetch, API_BASE_URL]); // REMOVE circular dependencies
 
+  // 2. Handle Callback from Fivetran Redirect - ONCE only
   useEffect(() => {
-    // Cleanup function to abort any in-flight requests when component unmounts
-    return () => {
-      debugLog('Component unmounting, aborting any in-flight requests');
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+    // This effect runs once on mount to check for callback params
+    const handleCallback = () => {
+      const status = searchParams.get('fivetran_status');
+      if (!status || hasHandledCallback) return;
+      
+      debugLog('Handling Fivetran callback...');
+      setHasHandledCallback(true); // Mark as processed
+
+      const reason = searchParams.get('reason');
+      const message = searchParams.get('message');
+      const service = searchParams.get('service');
+      const connectorId = searchParams.get('connector_id');
+
+      debugLog('Detected Fivetran callback status:', { status, reason, message, service, connectorId });
+
+      if (status === 'success') {
+        setCallbackStatus({ 
+          type: 'success', 
+          message: `Successfully connected ${service || 'service'}${connectorId ? ` (ID: ${connectorId})` : ''}. Refreshing list...` 
+        });
+        // After setting state, clean URL and fetch connections
+        setTimeout(() => {
+          // Clean the URL - remove Fivetran query params (this will cause a re-render)
+          router.replace(window.location.pathname, { scroll: false });
+          // Then fetch connections
+          fetchConnections();
+        }, 0);
+      } else {
+        const errorMessage = `Connection failed${service ? ` for ${service}` : ''}. ${reason ? `Reason: ${reason}` : ''} ${message ? `(${message})` : ''}`.trim();
+        setCallbackStatus({ type: 'error', message: errorMessage });
+        setError(errorMessage); // Also set the main error state
+        setIsLoadingConnections(false); // Stop loading indicator on error
+        
+        // Clean URL
+        setTimeout(() => {
+          router.replace(window.location.pathname, { scroll: false });
+        }, 0);
       }
     };
-  }, []);
-
+    
+    handleCallback();
+    // This effect only needs to run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - run only on mount
+  
+  // 3. Initial Fetch of Connections on Mount
   useEffect(() => {
-    async function getProjectId(apiUrlBase: string): Promise<string | null> {
-      // Check if we already have a project ID in local storage
-      const existingProjectId = storedData?.user?.peaka_project_id || projectId;
-      if (existingProjectId) {
-        debugLog(`Found existing project ID in local storage or state: ${existingProjectId}`);
-        // Ensure the project ID is set in component state
-        setProjectId(existingProjectId);
-        return existingProjectId;
-      }
-
-      debugLog('No project ID in local storage or state, fetching user data...');
-      try {
-        abortControllerRef.current = new AbortController();
-        const userResponse = await authFetch(`${apiUrlBase}/user/`, {
-          signal: abortControllerRef.current.signal
-        });
-
-        if (!userResponse.ok) {
-          const errorMessage = `Failed to fetch user data: ${userResponse.statusText}`;
-          debugLog('ERROR: User data fetch failed', errorMessage);
-          
-          // Set error state
-          setError(errorMessage);
-          
-          // Explicitly trigger loading and initialization flags to stop retrying
-          setLoading(false);
-          initializationInProgress.current = false;
-          
-          // Return null instead of throwing
-          return null;
-        }
-
-        const userData: User = await userResponse.json();
-        debugLog('Received user data', userData);
-        
-        // Check for project ID
-        const userProjectId = userData.peaka_project_id;
-        
-        // Update local storage with user data
-        updateStoredData({ user: userData });
-        debugLog('Local storage updated with user data. Project ID from user data:', userProjectId);
-
-        if (userProjectId) {
-          debugLog(`Found project ID from user data: ${userProjectId}`);
-          setProjectId(userProjectId);
-          return userProjectId;
-        }
-
-        // No project ID in user data, need to create one
-        debugLog('No project ID in user data, creating project...');
-        
-        abortControllerRef.current = new AbortController();
-        const createResponse = await authFetch(
-          `${apiUrlBase}/peaka/project/create/`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({}), // Empty body, as backend now auto-generates project names
-            signal: abortControllerRef.current.signal
-          }
-        );
-
-        const createData = await createResponse.json();
-        debugLog('Create project response', createData);
-
-        if (!createResponse.ok || !createData.success) {
-          // Capture the error message from the response
-          const errorMessage = createData.message || `Failed to create project: ${createResponse.statusText}`;
-          debugLog('ERROR: Project creation failed', errorMessage);
-          
-          // Set the API response for debugging display
-          setApiResponse(createData);
-          
-          // Set error state - this will be displayed to the user
-          setError(errorMessage);
-          
-          // Explicitly trigger loading and initialization flags to stop retrying
-          setLoading(false);
-          initializationInProgress.current = false;
-          
-          // Return null instead of throwing to prevent automatic retries
-          return null;
-        }
-
-        // Use the project_id directly from the create response
-        const newProjectId = createData.project_id;
-        if (!newProjectId) {
-          debugLog('ERROR: Project created but no project_id in response', createData);
-          throw new Error('Project created but no project_id in response');
-        }
-        
-        debugLog(`Successfully created project with ID: ${newProjectId}`);
-        
-        // Update component state
-        setProjectId(newProjectId);
-        
-        // Update local storage with the new project ID
-        // First get current user data and update it
-        if (storedData?.user) {
-          const updatedUser = {
-            ...storedData.user,
-            peaka_project_id: newProjectId // Only set peaka_project_id
-          };
-          
-          updateStoredData({ user: updatedUser });
-          debugLog('Updated local storage with new project ID', updatedUser);
-        }
-        
-        // Return the project ID directly from create response
-        return newProjectId;
-      } catch (err) {
-        if ((err as Error).name === 'AbortError') {
-          debugLog('Request was aborted');
-          return null;
-        }
-        debugLog('Error in getProjectId', err);
-        throw err;
-      }
+    // Only fetch if we don't have callback params that will trigger their own fetch
+    const status = searchParams.get('fivetran_status');
+    if (!status) {
+      debugLog('No callback detected, performing initial fetch.');
+      fetchConnections();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - run only on mount
 
-    async function initializeSession() {
-      // Prevent duplicate initialization calls
-      if (initializationInProgress.current) {
-        debugLog('Initialization already in progress, skipping');
-        return;
+  // 4. Initiate Connection
+  const handleInitiateConnection = async (serviceType: string) => {
+    debugLog(`Initiating connection for service: ${serviceType}`);
+    setIsProcessing(true);
+    setError(null);
+    setCallbackStatus(null); // Clear previous callback messages
+
+    try {
+      const response = await authFetch(`${API_BASE_URL}/fivetran/initiate/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service_type: serviceType }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.connect_card_url) {
+         const errorDetail = data.detail || data.error || (data.details ? JSON.stringify(data.details) : `HTTP ${response.status}`);
+        throw new Error(errorDetail || 'Failed to initiate Fivetran connection.');
       }
 
-      // Skip if already initialized successfully
-      if (isInitialized.current && sessionURL) {
-        debugLog('Already initialized with session URL, skipping');
-        return;
-      }
+      debugLog(`Received connect card URL: ${data.connect_card_url}`);
+      // Redirect user to Fivetran Connect Card
+      window.location.href = data.connect_card_url;
+      // Note: State remains Processing until the redirect happens or fails.
+      // No need to set IsProcessing(false) here as the page navigates away.
 
-      // Set initialization flag
-      initializationInProgress.current = true;
-      
-      debugLog('Starting initialization');
-      setLoading(true);
-      setError(null);
-      setApiResponse(null);
-
-      try {
-        const apiUrlBase = process.env.NEXT_PUBLIC_API_URL;
-        if (!apiUrlBase) {
-          throw new Error('API URL is not configured');
-        }
-
-        // STAGE 1: Get the project ID if we don't already have it in state
-        let currentProjectId = projectId;
-        if (!currentProjectId) {
-          debugLog('No project ID in component state, attempting to retrieve one...');
-          currentProjectId = await getProjectId(apiUrlBase);
-          
-          if (!currentProjectId) {
-            debugLog('ERROR: Could not determine project ID after all attempts');
-            throw new Error('Could not determine project ID');
-          }
-          
-          debugLog(`Successfully obtained project ID: ${currentProjectId}`);
-        } else {
-          debugLog(`Using existing project ID from state: ${currentProjectId}`);
-        }
-
-        // STAGE 2: Initialize the session with the obtained project ID
-        debugLog(`Proceeding to session initialization with project ID: ${currentProjectId}`);
-        
-        abortControllerRef.current = new AbortController();
-        const sessionResponse = await authFetch(
-          `${apiUrlBase}/peaka/session/initialize/`,
-          {
-            method: 'POST',
-            signal: abortControllerRef.current.signal
-          }
-        );
-
-        const sessionData = await sessionResponse.json();
-        debugLog('Session initialization response', sessionData);
-        setApiResponse(sessionData);
-
-        if (!sessionResponse.ok || !sessionData.success) {
-          const errorMessage = sessionData.message || `Failed to initialize session: ${sessionResponse.statusText}`;
-          debugLog('ERROR: Session initialization failed', errorMessage);
-          
-          // Set error state to show to user
-          setError(errorMessage);
-          
-          // Explicitly set flags to prevent retries
-          isInitialized.current = false;
-          
-          // Return without throwing to prevent automatic retries
-          return;
-        }
-
-        if (sessionData.sessionUrl) {
-          debugLog(`Session URL received: ${sessionData.sessionUrl}`);
-          setSessionURL(sessionData.sessionUrl);
-          isInitialized.current = true;
-        } else {
-          throw new Error('Session response missing sessionUrl');
-        }
-      } catch (err) {
-        if ((err as Error).name === 'AbortError') {
-          debugLog('Request was aborted');
-          return;
-        }
-        
-        debugLog('Error in initializeSession', err);
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setLoading(false);
-        initializationInProgress.current = false;
-      }
+    } catch (err) {
+      debugLog('Error initiating connection:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during connection initiation.');
+      setIsProcessing(false); // Stop processing on error
     }
-
-    // Only try to initialize if we have storedData and haven't already successfully initialized
-    const shouldInitialize = 
-      storedData !== null && 
-      !initializationInProgress.current && 
-      (!isInitialized.current || !sessionURL) &&
-      !error; // Don't try to initialize if there's already an error
-
-    if (shouldInitialize) {
-      debugLog('Conditions met for initialization');
-      // Wrap in setTimeout to avoid potential race conditions during React rendering
-      setTimeout(() => {
-        initializeSession();
-      }, 0);
-    }
-  }, [authFetch, storedData, updateStoredData, retryCount, sessionURL, projectId, error]);
-
-  const handleRetry = () => {
-    debugLog('Manual retry requested');
-    // Reset initialization flags
-    isInitialized.current = false;
-    initializationInProgress.current = false;
-    
-    // Abort any in-flight requests
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    
-    // Trigger a retry
-    setRetryCount(prev => prev + 1);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-        <div className="text-xl text-purple-400">Loading Advanced Integrations...</div>
-      </div>
-    );
-  }
+  // 5. Delete Connection
+  const handleDeleteConnection = async (connectorId: string, serviceName: string) => {
+    // Optional: Add a confirmation dialog here
+    if (!window.confirm(`Are you sure you want to delete the ${serviceName} connection? This cannot be undone.`)) {
+        return;
+    }
 
-  if (error) {
-    return (
-      <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
-        <div className="container mx-auto px-sm sm:px-md lg:px-lg h-full flex items-center justify-center">
-          <div className="flex flex-col gap-4 items-center justify-center">
-            <h1 className="text-2xl text-[#FFFFFF] font-normal">Advanced Integrations Error</h1>
-            <p className="text-lg text-[#FF6B6B] max-w-2xl text-center">{error}</p>
-            
-            {apiResponse && (
-              <div className="mt-4 p-4 bg-[#1E1E1E] rounded-lg max-w-2xl w-full">
-                <h3 className="text-white mb-2">Debug Info (Last API Response):</h3>
-                <pre className="text-xs text-gray-300 overflow-auto max-h-40">
-                  {JSON.stringify(apiResponse, null, 2)}
-                </pre>
-              </div>
-            )}
-            
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={handleRetry}
-                className="px-6 py-2 bg-[#8C74FF] text-white font-medium rounded-lg shadow-lg hover:bg-[#7B63EE] transition-colors"
-              >
-                Retry Connection
-              </button>
-              <button
-                onClick={() => router.back()}
-                className="px-6 py-2 bg-[#343536] text-white font-medium rounded-lg shadow-lg hover:bg-[#424344] transition-colors"
-              >
-                Back to Integrations
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    debugLog(`Deleting connection: ${connectorId}`);
+    setIsProcessing(true);
+    setError(null);
+    setCallbackStatus(null);
+
+    try {
+      const response = await authFetch(`${API_BASE_URL}/fivetran/connections/${connectorId}/`, {
+        method: 'DELETE',
+      });
+
+      if (response.status === 204) {
+        debugLog(`Successfully deleted connection: ${connectorId}`);
+        setCallbackStatus({ type: 'success', message: `Successfully deleted ${serviceName} connection.` });
+        // Refresh the list after successful deletion
+        fetchConnections();
+      } else if (!response.ok) {
+        // Try to parse error details
+        let errorDetail = `Failed to delete connection: HTTP ${response.status}`;
+         try {
+            const errorData = await response.json();
+            errorDetail = errorData.detail || errorData.error || JSON.stringify(errorData);
+         } catch (parseError) {
+            // Ignore if response is not JSON
+         }
+        throw new Error(errorDetail);
+      } else {
+         // Handle unexpected success statuses if needed, e.g. 200 OK with body
+         debugLog(`Delete request returned status ${response.status}, expected 204. Refreshing connections.`);
+         fetchConnections(); // Refresh anyway
+      }
+    } catch (err) {
+      debugLog('Error deleting connection:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during deletion.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Determine which services are already connected
+  const connectedServiceIds = new Set(connections.map(c => c.service));
+  const availableToConnect = AVAILABLE_SERVICES.filter(s => !connectedServiceIds.has(s.id));
+
+  // --- UI Rendering ---
+
+  // Show loading indicator ONLY if we are actively loading AND haven't processed a callback yet OR if processing an action
+  const showLoadingIndicator = isLoadingConnections || isProcessing;
+
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] flex flex-col">
-      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
-        <div className="py-4 lg:py-6">
-          <div className="container mx-auto px-4 lg:px-8">
-            {/* Title Section */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-6">
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
+       {/* Loading Overlay (Optional but good UX) */}
+       {showLoadingIndicator && (
+           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="text-xl text-purple-400 flex items-center gap-2">
+                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {isProcessing ? 'Processing...' : 'Loading Integrations...'}
+                </div>
+           </div>
+       )}
+
+      <div className="container mx-auto px-sm sm:px-md lg:px-lg">
+        {/* Title Section */}
+        <div className="mb-8">
+           <div className="flex justify-between items-center mb-6">
                 <div>
                   <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
                     Advanced Integrations
                   </h1>
                   <p className="text-[22px] text-white font-normal">
-                    Configure and manage advanced data integrations.
+                    Connect and manage your data sources via Fivetran.
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={handleRetry}
+                   <button
+                    onClick={() => { setCallbackStatus(null); fetchConnections(); }} // Manual refresh also clears status
                     className="px-4 py-2 bg-[#8B5CF6] text-white font-medium rounded-lg hover:bg-[#7B63EE] transition-colors disabled:opacity-50"
-                    disabled={initializationInProgress.current}
+                    disabled={isLoadingConnections || isProcessing}
+                    title="Refresh connections list"
                   >
-                    {initializationInProgress.current ? 'Loading...' : 'Refresh'}
+                    {isLoadingConnections ? 'Loading...' : 'Refresh'}
                   </button>
                   <button
                     onClick={() => router.back()}
                     className="px-4 py-2 bg-[#343536] text-white font-medium rounded-lg hover:bg-[#424344] transition-colors"
+                    title="Go back to previous page"
                   >
                     Back
                   </button>
                 </div>
               </div>
-              <hr className="border-t border-white mb-8" />
-            </div>
+          <hr className="border-t border-white mb-8" />
+        </div>
 
-            {/* Main Content */}
-            {sessionURL ? (
-              <div className="flex-grow w-full h-[calc(100vh-130px)]">
-                <iframe
-                  src={sessionURL}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                  allowFullScreen
-                  referrerPolicy="no-referrer"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals"
-                  onError={(e) => {
-                    console.error('iframe error:', e);
-                    setError('Failed to load the embedded integration window. Please try refreshing.');
-                    setSessionURL(null);
-                    isInitialized.current = false;
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="flex-grow flex items-center justify-center">
-                <div className="text-xl text-[#FF6B6B]">
-                  {initializationInProgress.current 
-                    ? 'Setting up your advanced integrations...' 
-                    : 'No session URL available. Please try refreshing.'}
+        {/* Callback Status Messages */}
+        {callbackStatus && (
+          <div className={`mb-6 p-4 rounded-md ${callbackStatus.type === 'success' ? 'bg-green-900 text-green-100' : 'bg-red-900 text-red-100'}`}>
+            {callbackStatus.message}
+          </div>
+        )}
+
+        {/* General Error Messages */}
+        {error && !callbackStatus /* Don't show general error if a specific callback error/success is shown */ && (
+          <div className="mb-6 p-4 rounded-md bg-red-900 text-red-100">
+            Error: {error}
+          </div>
+        )}
+
+        {/* Connected Integrations */}
+        <div className="mb-12">
+          <h2 className="text-2xl text-white font-semibold mb-4">Connected Sources</h2>
+          {connections.length === 0 && !isLoadingConnections && (
+            <p className="text-gray-400">No data sources connected yet.</p>
+          )}
+           {connections.length === 0 && isLoadingConnections && !isProcessing && (
+                <p className="text-gray-400">Loading connected sources...</p> // Show loading text if initial load
+           )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {connections.map(conn => {
+               const serviceInfo = AVAILABLE_SERVICES.find(s => s.id === conn.service);
+              return (
+                <div key={conn.fivetran_connector_id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px]"> {/* Ensure minimum height */}
+                   <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      {serviceInfo?.icon && <img src={serviceInfo.icon} alt={serviceInfo.name} className="w-6 h-6 object-contain"/>}
+                      <h3 className="text-lg text-white font-medium">{serviceInfo?.name || conn.service}</h3>
+                    </div>
+                     {/* Display Status more prominently */}
+                     <p className="text-sm text-gray-300 mb-2">Status: <span className={`font-semibold ${conn.status?.toUpperCase() === 'ACTIVE' ? 'text-green-400' : 'text-yellow-400'}`}>{conn.status || 'Unknown'}</span></p>
+                     <p className="text-xs text-gray-400">Connector ID: {conn.fivetran_connector_id}</p>
+                     <p className="text-xs text-gray-400">Connected: {new Date(conn.created_at).toLocaleString()}</p>
+                     <p className="text-xs text-gray-400">Last Updated: {new Date(conn.updated_at).toLocaleString()}</p>
+                   </div>
+                  <button
+                    onClick={() => handleDeleteConnection(conn.fivetran_connector_id, serviceInfo?.name || conn.service)}
+                    disabled={isProcessing}
+                    className="mt-4 w-full px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isProcessing ? 'Deleting...' : 'Delete Connection'}
+                  </button>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Available Integrations */}
+        <div>
+          <h2 className="text-2xl text-white font-semibold mb-4">Available Sources</h2>
+          {availableToConnect.length === 0 && !isLoadingConnections && connections.length > 0 && (
+             <p className="text-gray-400">All available sources are connected.</p>
+          )}
+           {availableToConnect.length === 0 && isLoadingConnections && !isProcessing && (
+                <p className="text-gray-400">Loading available sources...</p> // Show loading text if initial load
+           )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {availableToConnect.map(service => (
+              <div key={service.id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px]"> {/* Ensure minimum height */}
+                <div>
+                   <div className="flex items-center gap-3 mb-2">
+                       {service.icon && <img src={service.icon} alt={service.name} className="w-6 h-6 object-contain"/>}
+                       <h3 className="text-lg text-white font-medium">{service.name}</h3>
+                    </div>
+                  <p className="text-sm text-gray-400 mb-4">{service.description}</p>
+                </div>
+                <button
+                  onClick={() => handleInitiateConnection(service.id)}
+                  disabled={isProcessing}
+                  className="mt-4 w-full px-4 py-2 bg-[#8C74FF] text-white text-sm font-medium rounded hover:bg-[#7B63EE] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isProcessing ? 'Processing...' : 'Connect'}
+                </button>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+
+// Wrap with Suspense because useSearchParams() needs it
+export default function AdvancedIntegrations() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-[calc(100vh-64px)] bg-[#141718]"><div className="text-xl text-purple-400">Loading Page...</div></div>}>
+      <AdvancedIntegrationsContent />
+    </Suspense>
   );
 } 
