@@ -27,8 +27,8 @@ interface AvailableService {
 const AVAILABLE_SERVICES: AvailableService[] = [
   { id: 'google_ads', name: 'Google Ads', description: 'Analyze Google Ads performance.', icon: '/google-ads-icon-2.png' },
   { id: 'facebook_ads', name: 'Meta Ads (Facebook/Instagram)', description: 'Analyze Facebook & Instagram Ads performance.', icon: '/meta-icon-2.png' },
-  { id: 'google_analytics_4', name: 'Google Analytics 4', description: 'Connect your GA4 data.', icon: '/google-analytics-icon.png' }, // Assuming icon path
-  { id: 'klaviyo', name: 'Klaviyo', description: 'Analyze email marketing performance.', icon: '/klaviyo-icon.png' }, // Assuming icon path
+  { id: 'google_analytics_4', name: 'Google Analytics', description: 'Connect your GA4 data.', icon: '/google-analytics-icon.png' }, // Assuming icon path
+  { id: 'klaviyo', name: 'Klaviyo', description: 'Analyze email marketing performance.', icon: '/klaviyo-white-icon.png' }, // Assuming icon path
   { id: 'gorgias', name: 'Gorgias', description: 'Connect customer support data.', icon: '/gorgias-icon.png' }, // Assuming icon path
   { id: 'pinterest_ads', name: 'Pinterest Ads', description: 'Analyze Pinterest Ads performance.', icon: '/pinterest-icon.png' }, // Assuming icon path
 ];
