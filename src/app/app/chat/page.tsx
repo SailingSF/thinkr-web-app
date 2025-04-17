@@ -49,6 +49,13 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
+  // Scroll to bottom when loading indicator appears
+  useEffect(() => {
+    if (isLoading) {
+      scrollToBottom();
+    }
+  }, [isLoading]);
+
   async function sendChatMessage(message: string, threadId?: string) {
     setError(null);
     try {
@@ -269,6 +276,7 @@ export default function ChatPage() {
                     </div>
                   </div>
                 ))}
+                {isLoading && messages[messages.length - 1]?.role === 'user' && <TypingIndicator />}
                 <div ref={messagesEndRef} />
               </div>
 
@@ -299,6 +307,17 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// New TypingIndicator component for loading animation
+function TypingIndicator() {
+  return (
+    <div className="mb-6 ml-4 flex justify-start">
+      <p className="italic text-gray-400 animate-pulse">
+        Consulting your Shopify data...
+      </p>
     </div>
   );
 }
