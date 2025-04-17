@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import Link from 'next/link';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,6 +20,18 @@ interface Thread {
 
 const MAX_POLLING_ATTEMPTS = 30; // 30 seconds max wait time
 
+const EXAMPLE_QUESTIONS = [
+  'How can I increase my average order value?',
+  'What\'s the best time to send email promotions?',
+  'How can I improve my product descriptions?',
+  'Can you recommend upsell strategies?',
+  'What are my top customers?',
+  'What are some SEO tips for my product pages?',
+  'How can I segment my customers for targeted marketing?',
+  'What are the top performing products last month?',
+  'How can I use discounts effectively?'
+];
+
 export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -27,6 +40,16 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [exampleQuestions, setExampleQuestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!currentThreadId) {
+      const shuffled = [...EXAMPLE_QUESTIONS].sort(() => 0.5 - Math.random());
+      setExampleQuestions(shuffled.slice(0, 3));
+    }
+  }, [currentThreadId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -201,12 +224,15 @@ export default function ChatPage() {
         <div className="container mx-auto px-4 lg:px-8">
           {/* Title Section */}
           <div className="mb-8">
-            <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
-              Chat Assistant
-            </h1>
-            <p className="text-[22px] text-white font-normal mb-6">
-              Discuss your Shopify store data and get AI assistance.
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-[35px] text-[#8B5CF6] font-normal">Chat Assistant</h1>
+              <Link href="/app/integrations">
+                <button className="py-2 px-4 rounded-lg bg-[#7B6EF6] hover:bg-[#7B6EF6]/90 text-white font-medium transition-colors">
+                  Integrate with more platforms
+                </button>
+              </Link>
+            </div>
+            <p className="text-[22px] text-white font-normal mb-6">Discuss your Shopify store data and get AI assistance.</p>
             <hr className="border-t border-white mb-8" />
           </div>
 
@@ -247,6 +273,25 @@ export default function ChatPage() {
             {/* Chat Area */}
             <div className="flex-1 flex flex-col bg-[#1E1F20] rounded-2xl overflow-hidden">
               <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
+                {!currentThreadId && messages.length === 0 && (
+                  <div className="mb-6">
+                    <p className="text-lg text-white">Welcome to thinkr chat! How can I help you grow your ecommerce store today?</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                      {exampleQuestions.map((q, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setMessage(q);
+                            inputRef.current?.focus();
+                          }}
+                          className="p-3 bg-[#232627] text-gray-200 rounded-lg hover:bg-[#353638] text-left"
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {error && (
                   <div className="mb-4 p-3 bg-red-900/20 border border-red-900/50 rounded-lg text-red-400 text-sm flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
@@ -283,6 +328,7 @@ export default function ChatPage() {
               <div className="p-4 border-t border-[#232627]">
                 <form onSubmit={handleSubmit} className="flex gap-3">
                   <input
+                    ref={inputRef}
                     type="text"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
