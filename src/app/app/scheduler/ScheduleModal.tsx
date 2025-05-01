@@ -173,7 +173,7 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
         body: JSON.stringify({
           analysis_type: selectedType.name,
           cron_expression: getCronExpression(),
-          description: description.trim() || `${selectedType.displayName} - Weekly on ${DAYS.find(d => d.value === day)?.label} at ${HOURS[hour].label}`,
+          description: description.trim() || `${selectedType.displayName} - Weekly on ${DAYS.find(d => d.value === day)?.label} at ${HOURS.find(h => h.value === hour)?.label}`,
           is_active: true
         }),
       });
@@ -190,7 +190,7 @@ export default function ScheduleModal({ isOpen, onClose, onScheduleAdd }: Schedu
         analysis_type: selectedType.name,
         cron_expression: getCronExpression(),
         is_active: true,
-        description: description.trim() || `${selectedType.displayName} - Weekly on ${DAYS.find(d => d.value === day)?.label} at ${HOURS[hour].label}`,
+        description: description.trim() || `${selectedType.displayName} - Weekly on ${DAYS.find(d => d.value === day)?.label} at ${HOURS.find(h => h.value === hour)?.label}`,
         last_run: null,
         next_run: responseData.next_run
       };
