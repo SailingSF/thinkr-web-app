@@ -59,10 +59,10 @@ export default function AppLayout({
   }
 
   return (
-    <div className="h-screen bg-[#141718] overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#141718]">
       <Navigation />
       <AppSidebar />
-      <main className="lg:pl-[336px] pt-16 p-4 h-[calc(100vh-1rem)] overflow-auto dark-scrollbar">
+      <main className="flex-1 lg:pl-[336px] p-4 overflow-auto dark-scrollbar">
         {children}
       </main>
     </div>

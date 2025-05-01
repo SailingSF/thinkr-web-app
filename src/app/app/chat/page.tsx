@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
@@ -218,6 +218,26 @@ export default function ChatPage() {
     }
   };
 
+  const renderedMessages = useMemo(() => messages.map((msg, index) => (
+    <div
+      key={`${msg.created_at}-${index}`}
+      className={`mb-6 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+    >
+      <div className={`max-w-[80%] ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+        <div
+          className={`inline-block p-3 rounded-lg ${
+            msg.role === 'user' ? 'bg-[#7B6EF6] text-white' : 'bg-[#232627] text-gray-200'
+          } prose prose-invert max-w-none`}
+        >
+          <ReactMarkdown>{msg.content}</ReactMarkdown>
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {new Date(msg.created_at).toLocaleTimeString()}
+        </div>
+      </div>
+    </div>
+  )), [messages]);
+
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-4 lg:py-6 font-inter">
       <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
@@ -298,29 +318,7 @@ export default function ChatPage() {
                     {error}
                   </div>
                 )}
-                {messages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={`mb-6 flex ${
-                      msg.role === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    <div className={`max-w-[80%] ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                      <div
-                        className={`inline-block p-3 rounded-lg ${
-                          msg.role === 'user'
-                            ? 'bg-[#7B6EF6] text-white'
-                            : 'bg-[#232627] text-gray-200'
-                        } prose prose-invert max-w-none`}
-                      >
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {new Date(msg.created_at).toLocaleTimeString()}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                {renderedMessages}
                 {isLoading && messages[messages.length - 1]?.role === 'user' && <TypingIndicator />}
                 <div ref={messagesEndRef} />
               </div>
@@ -357,13 +355,12 @@ export default function ChatPage() {
   );
 }
 
-// New TypingIndicator component for loading animation
-function TypingIndicator() {
-  return (
-    <div className="mb-6 ml-4 flex justify-start">
-      <p className="italic text-gray-400 animate-pulse">
-        Consulting your Shopify data...
-      </p>
-    </div>
-  );
-}
+const TypingIndicator = memo(() => (
+  <div className="mb-6 ml-4 flex justify-start">
+    <p className="italic relative overflow-hidden text-gray-400">
+      <span className="block bg-gradient-to-r from-gray-600 via-gray-400 to-gray-600 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer">
+        Consulting your data...
+      </span>
+    </p>
+  </div>
+));
