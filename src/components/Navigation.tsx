@@ -38,8 +38,8 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 right-0 p-4 z-10">
-      <div className="flex items-center gap-4 mr-8">
+    <nav className="sticky top-0 z-10 bg-[#141718]">
+      <div className="container mx-auto px-4 py-4 flex justify-end items-center gap-4">
         {storeName && (
           <div className="px-4 py-2 text-gray-300 font-medium">
             {storeName}
