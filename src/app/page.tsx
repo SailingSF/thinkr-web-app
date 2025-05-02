@@ -110,6 +110,13 @@ export default function Home() {
               <HomeLoginForm />
             </Suspense>
           </div>
+
+          {/* Install Button */}
+          <div className="flex justify-center items-center py-4">
+            <Link href="https://apps.shopify.com/thinkr" target="_blank" rel="noopener noreferrer" className="px-4 py-3 bg-[#8c74ff] hover:bg-[#7c64ef] rounded-[10px] text-white transition-colors font-medium text-[15px]">
+              Install our Shopify app to connect your store
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -127,6 +134,13 @@ export default function Home() {
           <Suspense fallback={<BackgroundFallback />}>
             <RotatingBackground />
           </Suspense>
+        </div>
+
+        {/* Install Button */}
+        <div className="px-4 py-4">
+          <Link href="https://apps.shopify.com/thinkr" target="_blank" rel="noopener noreferrer" className="w-full text-center px-4 py-3 bg-[#8c74ff] hover:bg-[#7c64ef] rounded-[10px] text-white transition-colors font-bold text-[15px]">
+            Install our Shopify app to connect your store
+          </Link>
         </div>
       </div>
     </div>
