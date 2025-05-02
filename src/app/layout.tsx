@@ -12,11 +12,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Thinkr - Shopify AI Agent',
+  title: 'thinkr - Shopify AI Agent',
   description: 'Automate your Shopify store with AI',
-  applicationName: 'Thinkr',
+  applicationName: 'thinkr',
   keywords: ['shopify', 'ai', 'automation', 'e-commerce'],
-  authors: [{ name: 'Thinkr' }],
+  authors: [{ name: 'thinkr' }],
   robots: {
     index: true,
     follow: true,
@@ -26,9 +26,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: process.env.NEXT_PUBLIC_APP_URL || '',
-    title: 'Thinkr - Shopify AI Agent',
+    title: 'thinkr - Shopify AI Agent',
     description: 'Automate your Shopify store with AI',
-    siteName: 'Thinkr',
+    siteName: 'thinkr',
   },
 };
 
