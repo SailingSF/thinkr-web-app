@@ -1,9 +1,41 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, memo } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Settings } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
+
+import ConnectionsBar, { Connection } from './ConnectionsBar';
+import ThreadSelector from './ThreadSelector';
+
+// Interfaces for Fivetran data and service mapping
+interface FivetranConnection {
+  id: number; // or string, depending on actual API response, though not directly used for Connection mapping
+  fivetran_connector_id: string;
+  service: string; // e.g., 'google_ads', 'facebook_ads'
+  status: string;  // e.g., 'ACTIVE', 'INCOMPLETE'
+  // Add other fields if necessary for logic, though not directly mapped to Connection interface
+}
+
+interface AvailableService {
+  id: string;      // Matches FivetranConnection.service
+  name: string;    // Display name for the service
+  icon?: string;   // Path to the icon
+  // description?: string; // Not needed for ConnectionsBar
+}
+
+// Hardcoded list based on Django ALLOWED_FIVETRAN_SERVICES and used in integrations/advanced/page.tsx
+// This should ideally be fetched or come from a shared utility if it grows complex or changes often.
+const AVAILABLE_SERVICES: AvailableService[] = [
+  { id: 'shopify', name: 'Shopify', icon: '/shopify-icon-64.png' }, // Placeholder icon, update if available
+  { id: 'google_ads', name: 'Google Ads', icon: '/google-ads-icon-2.png' },
+  { id: 'facebook_ads', name: 'Meta Ads', icon: '/meta-icon-2.png' },
+  { id: 'google_analytics_4', name: 'Google Analytics', icon: '/google-analytics-icon.png' },
+  { id: 'klaviyo', name: 'Klaviyo', icon: '/klaviyo-white-icon.png' },
+  { id: 'gorgias', name: 'Gorgias', icon: '/gorgias-icon.png' },
+  { id: 'pinterest_ads', name: 'Pinterest Ads', icon: '/pinterest-icon.png' },
+  // Add other services as they become available and are relevant for the chat connections bar
+];
 
 interface Message {
   role: 'user' | 'assistant';
@@ -16,20 +48,21 @@ interface Thread {
   created_at: string;
   updated_at: string;
   last_message: string | null;
+  display_name?: string;
 }
 
-const MAX_POLLING_ATTEMPTS = 30; // 30 seconds max wait time
+const MAX_POLLING_ATTEMPTS = 30;
 
 const EXAMPLE_QUESTIONS = [
-  'How can I increase my average order value?',
-  'What\'s the best time to send email promotions?',
   'How can I improve my product descriptions?',
+  'How can I segment my customers for targeted marketing?',
   'Can you recommend upsell strategies?',
   'What are my top customers?',
   'What are some SEO tips for my product pages?',
-  'How can I segment my customers for targeted marketing?',
   'What are the top performing products last month?',
-  'How can I use discounts effectively?'
+  'How can I use discounts effectively?',
+  'How can I increase my average order value?',
+  "What's the best time to send email promotions?",
 ];
 
 export default function ChatPage() {
@@ -40,16 +73,9 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const inputRef = useRef<HTMLInputElement>(null);
   const [exampleQuestions, setExampleQuestions] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!currentThreadId) {
-      const shuffled = [...EXAMPLE_QUESTIONS].sort(() => 0.5 - Math.random());
-      setExampleQuestions(shuffled.slice(0, 3));
-    }
-  }, [currentThreadId]);
+  const [connections, setConnections] = useState<Connection[]>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,14 +83,22 @@ export default function ChatPage() {
 
   useEffect(() => {
     loadThreads();
+    loadConnections();
   }, []);
 
   useEffect(() => {
     if (currentThreadId) {
       loadChatHistory(currentThreadId);
     } else {
-      // Clear messages when starting a new chat
-      setMessages([]);
+      setMessages([
+        {
+          role: 'assistant',
+          content: 'Hello! How can I assist you today?',
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      const shuffled = [...EXAMPLE_QUESTIONS].sort(() => 0.5 - Math.random());
+      setExampleQuestions(shuffled.slice(0, 3));
     }
   }, [currentThreadId]);
 
@@ -72,15 +106,53 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-  // Scroll to bottom when loading indicator appears
   useEffect(() => {
     if (isLoading) {
       scrollToBottom();
     }
   }, [isLoading]);
 
-  async function sendChatMessage(message: string, threadId?: string) {
+  async function loadConnections() {
     setError(null);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fivetran/connections/`, { // Using /fivetran/connections/
+        headers: { Authorization: `Token ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json(); // Expected: { connectors: FivetranConnection[] }
+        const fivetranConnectors: FivetranConnection[] = data.connectors || [];
+
+        const mappedConnections: Connection[] = fivetranConnectors.map((fc) => {
+          const serviceInfo = AVAILABLE_SERVICES.find(s => s.id === fc.service);
+          return {
+            id: fc.fivetran_connector_id || fc.service, // Use fivetran_connector_id if available, else service
+            name: serviceInfo?.name || fc.service, // Use mapped name, or service id as fallback
+            iconUrl: serviceInfo?.icon || '',       // Use mapped icon, or empty string
+            enabled: fc.status?.toUpperCase() === 'ACTIVE' || fc.status?.toLowerCase().includes('connected'), // Determine enabled status
+          };
+        });
+        setConnections(mappedConnections);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to load connections:', response.statusText, errorData);
+        // setError('Failed to load connection data.'); // Optionally set user-facing error
+      }
+    } catch (e) {
+      console.error('Error in loadConnections:', e);
+      // setError('Could not fetch connection details.'); // Optionally set user-facing error
+    }
+  }
+
+  async function sendChatMessage(messageContent: string, threadId?: string) {
+    setError(null);
+    setMessages(prev => [...prev, {
+      role: 'user',
+      content: messageContent,
+      created_at: new Date().toISOString()
+    }]);
+    setIsLoading(true);
+
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/message/`, {
@@ -89,23 +161,16 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
           'Authorization': `Token ${token}`
         },
-        body: JSON.stringify({ message, thread_id: threadId })
+        body: JSON.stringify({ message: messageContent, thread_id: threadId })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.error || 'Failed to send message');
       }
 
       const { task_id } = await response.json();
       
-      // Add user message immediately
-      setMessages(prev => [...prev, {
-        role: 'user',
-        content: message,
-        created_at: new Date().toISOString()
-      }]);
-      
-      // Poll for result with timeout
       let attempts = 0;
       while (attempts < MAX_POLLING_ATTEMPTS) {
         const statusResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/status/?task_id=${task_id}`, {
@@ -113,38 +178,30 @@ export default function ChatPage() {
         });
 
         if (!statusResponse.ok) {
-          throw new Error('Failed to check message status');
+          const errorData = await statusResponse.json().catch(() => ({}));
+          throw new Error(errorData.detail || errorData.error || 'Failed to check message status');
         }
 
         const result = await statusResponse.json();
         
         if (result.status === 'completed') {
-          // Add assistant message
           setMessages(prev => [...prev, {
             role: 'assistant',
             content: result.response,
             created_at: new Date().toISOString()
           }]);
-          
-          // After getting a successful response, load the updated threads
-          // This will ensure we have the latest thread information
-          await loadThreads();
-          
-          // If this was a new conversation, get the latest thread and set it as current
+          await loadThreads(); 
           if (!threadId) {
             const threadsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/threads/`, {
               headers: { 'Authorization': `Token ${token}` }
             });
-            
             if (threadsResponse.ok) {
               const { threads: latestThreads } = await threadsResponse.json();
               if (latestThreads.length > 0) {
-                // Set the most recent thread as current
                 setCurrentThreadId(latestThreads[0].thread_id);
               }
             }
           }
-          
           return result;
         } else if (result.status === 'error') {
           throw new Error(result.error || 'Error processing message');
@@ -157,12 +214,16 @@ export default function ChatPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       setError(errorMessage);
+      console.error('Error in sendChatMessage:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   }
   
   async function loadChatHistory(threadId: string) {
     setError(null);
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/history/?thread_id=${threadId}`, {
@@ -179,11 +240,12 @@ export default function ChatPage() {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load chat history';
       setError(errorMessage);
       console.error('Error loading chat history:', error);
+    } finally {
+      setIsLoading(false);
     }
   }
   
   async function loadThreads() {
-    setError(null);
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/threads/`, {
@@ -198,156 +260,134 @@ export default function ChatPage() {
       setThreads(data.threads);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load chat threads';
-      setError(errorMessage);
       console.error('Error loading threads:', error);
+      if (threads.length === 0) setError(errorMessage);
     }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || isLoading) return;
 
-    setIsLoading(true);
+    const messageToSend = message;
+    setMessage('');
+
     try {
-      await sendChatMessage(message, currentThreadId);
-      setMessage('');
+      await sendChatMessage(messageToSend, currentThreadId);
     } catch (error) {
-      console.error('Error sending message:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Error sending message (handleSubmit):', error);
     }
+  };
+
+  const handleThreadSelect = (threadId?: string) => {
+    setCurrentThreadId(threadId);
   };
 
   const renderedMessages = useMemo(() => messages.map((msg, index) => (
     <div
-      key={`${msg.created_at}-${index}`}
-      className={`mb-6 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+      key={`${msg.role}-${msg.created_at}-${index}`}
+      className={`mb-4 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
     >
       <div className={`max-w-[80%] ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
         <div
-          className={`inline-block p-3 rounded-lg ${
-            msg.role === 'user' ? 'bg-[#7B6EF6] text-white' : 'bg-[#232627] text-gray-200'
-          } prose prose-invert max-w-none`}
+          className={`inline-block p-3 rounded-lg shadow-md ${ 
+            msg.role === 'user' ? 'bg-[#7B6EF6] text-white' : 'bg-[#2A2D2E] text-gray-100'
+          } prose prose-sm prose-invert max-w-none`}
         >
           <ReactMarkdown>{msg.content}</ReactMarkdown>
         </div>
         <div className="text-xs text-gray-500 mt-1">
-          {new Date(msg.created_at).toLocaleTimeString()}
+          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
     </div>
   )), [messages]);
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-4 lg:py-6 font-inter">
-      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
-        <div className="container mx-auto px-4 lg:px-8">
-          {/* Title Section */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <h1 className="text-[35px] text-[#8B5CF6] font-normal">Chat Assistant</h1>
-              <Link href="/app/integrations">
-                <button className="py-2 px-4 rounded-lg bg-[#7B6EF6] hover:bg-[#7B6EF6]/90 text-white font-medium transition-colors">
-                  Integrate with more platforms
-                </button>
-              </Link>
-            </div>
-            <p className="text-[22px] text-white font-normal mb-6">Discuss your Shopify store data and get AI assistance.</p>
-            <hr className="border-t border-white mb-8" />
+    <div className="min-h-screen bg-[#141718] text-white py-6 font-inter flex flex-col">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-grow w-full max-w-4xl">
+        
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-medium text-white mb-4 text-center sm:text-left">
+            Discuss your Shopify store data and get AI assistance.
+          </h1>
+          <div className="flex justify-center sm:justify-start">
+            <ConnectionsBar connections={connections} />
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+          <ThreadSelector
+            threads={threads}
+            currentThreadId={currentThreadId}
+            onSelect={handleThreadSelect}
+          />
+          <Link href="/app/integrations" className="w-full sm:w-auto">
+            <button className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors duration-150">
+              <Settings className="w-4 h-4" />
+              Integrations
+            </button>
+          </Link>
+        </div>
+
+        <div className="flex-1 flex flex-col bg-[#1E1F20] rounded-xl shadow-2xl overflow-hidden min-h-[calc(100vh-20rem)] sm:min-h-[450px]">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/50 hover:scrollbar-thumb-gray-500">
+            {renderedMessages}
+
+            {!currentThreadId && messages.length === 1 && messages[0].role === 'assistant' && (
+              <div className="my-4">
+                <p className="text-sm text-gray-400 mb-2 text-center">Or try one of these:</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {exampleQuestions.map((q, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setMessage(q);
+                        inputRef.current?.focus();
+                      }}
+                      className="p-3 bg-[#2A2D2E] text-gray-200 rounded-lg hover:bg-[#3A3D3E] text-left text-sm transition-colors duration-150 shadow-md"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {error && (
+              <div className="my-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-sm flex items-center gap-2 shadow-md">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <span className="break-all">Error: {error}</span>
+              </div>
+            )}
+
+            {isLoading && messages[messages.length -1]?.role === 'user' && <TypingIndicator />}
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Main Content */}
-          <div className="flex flex-1 gap-6 h-[calc(100vh-14rem)] overflow-hidden">
-            {/* Thread List */}
-            <div className="w-72 flex flex-col bg-[#1E1F20] rounded-2xl overflow-hidden">
-              <div className="p-4 border-b border-[#232627]">
-                <button
-                  onClick={() => setCurrentThreadId(undefined)}
-                  className="w-full py-2.5 px-4 rounded-lg bg-[#7B6EF6] hover:bg-[#7B6EF6]/90 text-white font-medium transition-colors"
-                >
-                  New Chat
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto">
-                {threads.map((thread) => (
-                  <button
-                    key={thread.thread_id}
-                    className={`w-full text-left p-4 border-b border-[#232627] transition-colors ${
-                      currentThreadId === thread.thread_id 
-                        ? 'bg-[#232627] text-white' 
-                        : 'text-gray-400 hover:bg-[#232627] hover:text-white'
-                    }`}
-                    onClick={() => setCurrentThreadId(thread.thread_id)}
-                  >
-                    <div className="font-medium truncate">
-                      {thread.last_message || 'New Thread'}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {new Date(thread.updated_at).toLocaleDateString()}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Chat Area */}
-            <div className="flex-1 flex flex-col bg-[#1E1F20] rounded-2xl overflow-hidden">
-              <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
-                {!currentThreadId && messages.length === 0 && (
-                  <div className="mb-6">
-                    <p className="text-lg text-white">Welcome to thinkr chat! How can I help you grow your ecommerce store today?</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                      {exampleQuestions.map((q, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setMessage(q);
-                            inputRef.current?.focus();
-                          }}
-                          className="p-3 bg-[#232627] text-gray-200 rounded-lg hover:bg-[#353638] text-left"
-                        >
-                          {q}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+          <div className="p-3 sm:p-4 border-t border-[#252829] bg-[#1A1C1D]">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 sm:gap-3">
+              <input
+                ref={inputRef}
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Ask anything..."
+                disabled={isLoading}
+                className="flex-1 bg-[#252829] text-white placeholder-gray-500 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#7B6EF6] focus:border-transparent text-sm sm:text-base"
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !message.trim()}
+                className="px-4 sm:px-6 py-2.5 rounded-lg bg-[#7B6EF6] hover:bg-[#6A5ACD] text-white font-medium transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#7B6EF6] focus:ring-offset-2 focus:ring-offset-[#1A1C1D]"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  'Send'
                 )}
-                {error && (
-                  <div className="mb-4 p-3 bg-red-900/20 border border-red-900/50 rounded-lg text-red-400 text-sm flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    {error}
-                  </div>
-                )}
-                {renderedMessages}
-                {isLoading && messages[messages.length - 1]?.role === 'user' && <TypingIndicator />}
-                <div ref={messagesEndRef} />
-              </div>
-
-              <div className="p-4 border-t border-[#232627]">
-                <form onSubmit={handleSubmit} className="flex gap-3">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    disabled={isLoading}
-                    className="flex-1 bg-[#232627] text-white placeholder-gray-500 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#7B6EF6]"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="px-6 py-2.5 rounded-lg bg-[#7B6EF6] hover:bg-[#7B6EF6]/90 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      'Send'
-                    )}
-                  </button>
-                </form>
-              </div>
-            </div>
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -355,6 +395,7 @@ export default function ChatPage() {
   );
 }
 
+// Reverted TypingIndicator
 const TypingIndicator = memo(() => (
   <div className="mb-6 ml-4 flex justify-start">
     <p className="italic relative overflow-hidden text-gray-400">
@@ -364,3 +405,5 @@ const TypingIndicator = memo(() => (
     </p>
   </div>
 ));
+
+// Removed the tryParseJson helper as it was not used and added in error previously.
