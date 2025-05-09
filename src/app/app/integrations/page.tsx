@@ -1,280 +1,394 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import ShopifyConnectButton from '@/components/ShopifyConnectButton';
-import ShopifyErrorModal from '@/components/ShopifyErrorModal';
+import { useEffect, useState, useCallback, Suspense, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthFetch } from '@/utils/shopify';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { useLocalStorage, User, ConnectionStatus } from '@/hooks/useLocalStorage';
+import { useLocalStorage, User } from '@/hooks/useLocalStorage';
 
-export default function Integrations() {
+// Define the structure for a Fivetran connection from our backend
+interface FivetranConnection {
+  id: number; // Local DB ID
+  fivetran_connector_id: string;
+  service: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Define the structure for available Fivetran services
+interface AvailableService {
+  id: string; // e.g., 'google_ads'
+  name: string; // e.g., 'Google Ads'
+  icon?: string; // Optional: Path to an icon
+  description: string;
+}
+
+// Hardcoded list based on Django ALLOWED_FIVETRAN_SERVICES
+const AVAILABLE_SERVICES: AvailableService[] = [
+  { id: 'google_ads', name: 'Google Ads', description: 'Analyze Google Ads performance.', icon: '/google-ads-icon-2.png' },
+  { id: 'facebook_ads', name: 'Meta Ads (Facebook/Instagram)', description: 'Analyze Facebook & Instagram Ads performance.', icon: '/meta-icon-2.png' },
+  { id: 'google_analytics_4', name: 'Google Analytics', description: 'Connect your GA4 data.', icon: '/google-analytics-icon.png' }, // Assuming icon path
+  { id: 'klaviyo', name: 'Klaviyo', description: 'Analyze email marketing performance.', icon: '/klaviyo-white-icon.png' }, // Assuming icon path
+  { id: 'gorgias', name: 'Gorgias', description: 'Connect customer support data.', icon: '/gorgias-icon.png' }, // Assuming icon path
+  { id: 'pinterest_ads', name: 'Pinterest Ads', description: 'Analyze Pinterest Ads performance.', icon: '/pinterest-icon.png' }, // Assuming icon path
+];
+
+function AdvancedIntegrationsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const authFetch = useAuthFetch();
-  const { storedData, updateStoredData, isExpired } = useLocalStorage();
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-  const [error, setError] = useState('');
-  const [user, setUser] = useState<User | null>(storedData?.user || null);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(storedData?.connectionStatus || null);
-  const [loading, setLoading] = useState(isExpired);
+  const { storedData } = useLocalStorage(); // Keep user data if needed
 
+  const [connections, setConnections] = useState<FivetranConnection[]>([]);
+  const [isLoadingConnections, setIsLoadingConnections] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false); // For connect/delete actions
+  const [error, setError] = useState<string | null>(null);
+  const [callbackStatus, setCallbackStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [hasHandledCallback, setHasHandledCallback] = useState(false); // Flag to prevent double fetch
+
+  // Use refs to track loading state without causing rerenders
+  const isFetchingRef = useRef(false);
+  
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  // Function to log messages
+  const debugLog = (message: string, data?: any) => {
+    console.log(`[FivetranIntegrations:${new Date().toISOString()}] ${message}`, data || '');
+  };
+
+  // 1. Fetch Existing Connections - SIMPLIFIED dependencies
+  const fetchConnections = useCallback(async () => {
+    // Prevent concurrent fetches and infinite loops
+    if (isFetchingRef.current) {
+       debugLog('Skipping fetchConnections as it is already in progress.');
+       return;
+    }
+    
+    debugLog('Fetching existing Fivetran connections...');
+    setIsLoadingConnections(true);
+    setError(null); // Clear previous errors on new fetch attempt
+    isFetchingRef.current = true;
+    
+    try {
+      const response = await authFetch(`${API_BASE_URL}/fivetran/connections/`);
+      if (!response.ok) {
+        // Try to parse error details from backend
+        let errorDetail = `Failed to fetch connections: ${response.statusText}`;
+        try {
+            const errorData = await response.json();
+            errorDetail = errorData.detail || errorData.error || JSON.stringify(errorData);
+        } catch (parseError) {
+            // Ignore if response is not JSON
+        }
+        throw new Error(errorDetail);
+      }
+      const data = await response.json();
+      debugLog('Received connections:', data.connectors);
+      setConnections(data.connectors || []);
+    } catch (err: any) {
+       // Check if the error is due to an aborted request (can happen on navigation/cleanup)
+       if (err.name === 'AbortError') {
+            debugLog('Fetch connections request was aborted, likely due to component unmount or navigation.');
+            // Do not update state if aborted to prevent useEffect loops
+       } else {
+            debugLog('Error fetching connections:', err);
+            setError(err instanceof Error ? err.message : 'An unknown error occurred while fetching connections.');
+            setConnections([]); // Clear connections on error
+       }
+    } finally {
+      setIsLoadingConnections(false);
+      isFetchingRef.current = false;
+    }
+  }, [authFetch, API_BASE_URL]); // REMOVE circular dependencies
+
+  // 2. Handle Callback from Fivetran Redirect - ONCE only
   useEffect(() => {
-    async function fetchInitialData() {
-      if (!isExpired && storedData?.user && storedData?.connectionStatus) {
-        setUser(storedData.user);
-        setConnectionStatus(storedData.connectionStatus);
-        setLoading(false);
-        return;
-      }
+    // This effect runs once on mount to check for callback params
+    const handleCallback = () => {
+      const status = searchParams.get('fivetran_status');
+      if (!status || hasHandledCallback) return;
+      
+      debugLog('Handling Fivetran callback...');
+      setHasHandledCallback(true); // Mark as processed
 
-      try {
-        // Get user data first
-        const userResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`);
-        if (!userResponse.ok) {
-          if (userResponse.status === 401) {
-            router.push('/login');
-            return;
-          }
-          throw new Error('Failed to fetch user data');
-        }
-        const userData = await userResponse.json();
-        setUser(userData);
+      const reason = searchParams.get('reason');
+      const message = searchParams.get('message');
+      const service = searchParams.get('service');
+      const connectorId = searchParams.get('connector_id');
 
-        // Then get connection status
-        const statusResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/connection-status/`);
-        if (!statusResponse.ok) {
-          throw new Error('Failed to fetch connection status');
-        }
-        const statusData = await statusResponse.json();
-        setConnectionStatus(statusData);
+      debugLog('Detected Fivetran callback status:', { status, reason, message, service, connectorId });
 
-        // Update local storage
-        updateStoredData({
-          user: userData,
-          connectionStatus: statusData
+      if (status === 'success') {
+        setCallbackStatus({ 
+          type: 'success', 
+          message: `Successfully connected ${service || 'service'}${connectorId ? ` (ID: ${connectorId})` : ''}. Refreshing list...` 
         });
-      } catch (err) {
-        console.error('Integrations error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load integration data');
-      } finally {
-        setLoading(false);
+        // After setting state, clean URL and fetch connections
+        setTimeout(() => {
+          // Clean the URL - remove Fivetran query params (this will cause a re-render)
+          router.replace(window.location.pathname, { scroll: false });
+          // Then fetch connections
+          fetchConnections();
+        }, 0);
+      } else {
+        const errorMessage = `Connection failed${service ? ` for ${service}` : ''}. ${reason ? `Reason: ${reason}` : ''} ${message ? `(${message})` : ''}`.trim();
+        setCallbackStatus({ type: 'error', message: errorMessage });
+        setError(errorMessage); // Also set the main error state
+        setIsLoadingConnections(false); // Stop loading indicator on error
+        
+        // Clean URL
+        setTimeout(() => {
+          router.replace(window.location.pathname, { scroll: false });
+        }, 0);
       }
+    };
+    
+    handleCallback();
+    // This effect only needs to run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - run only on mount
+  
+  // 3. Initial Fetch of Connections on Mount
+  useEffect(() => {
+    // Only fetch if we don't have callback params that will trigger their own fetch
+    const status = searchParams.get('fivetran_status');
+    if (!status) {
+      debugLog('No callback detected, performing initial fetch.');
+      fetchConnections();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - run only on mount
 
-    fetchInitialData();
-  }, [authFetch, router, isExpired, storedData, updateStoredData]);
-
-  const startOAuthFlow = async () => {
-    if (!user?.email) {
-      setError('User email not found');
-      setIsErrorModalOpen(true);
-      return;
-    }
-
-    setIsConnecting(true);
-    setError('');
-    setIsErrorModalOpen(false);
+  // 4. Initiate Connection
+  const handleInitiateConnection = async (serviceType: string) => {
+    debugLog(`Initiating connection for service: ${serviceType}`);
+    setIsProcessing(true);
+    setError(null);
+    setCallbackStatus(null); // Clear previous callback messages
 
     try {
-      const returnTo = `${process.env.NEXT_PUBLIC_APP_URL}/app/integrations`;
-      
-      const response = await authFetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/?` + new URLSearchParams({
-          email: user.email,
-          return_to: returnTo
-        })
-      );
+      const response = await authFetch(`${API_BASE_URL}/fivetran/initiate/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service_type: serviceType }),
+      });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to start OAuth process');
+      if (!response.ok || !data.connect_card_url) {
+         const errorDetail = data.detail || data.error || (data.details ? JSON.stringify(data.details) : `HTTP ${response.status}`);
+        throw new Error(errorDetail || 'Failed to initiate Fivetran connection.');
       }
 
-      if (data.oauth_url) {
-        window.location.href = data.oauth_url;
-      } else {
-        throw new Error('Invalid OAuth response from server');
-      }
-    } catch (error) {
-      console.error('OAuth start error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start OAuth process');
-      setIsErrorModalOpen(true);
-    } finally {
-      setIsConnecting(false);
+      debugLog(`Received connect card URL: ${data.connect_card_url}`);
+      // Redirect user to Fivetran Connect Card
+      window.location.href = data.connect_card_url;
+      // Note: State remains Processing until the redirect happens or fails.
+      // No need to set IsProcessing(false) here as the page navigates away.
+
+    } catch (err) {
+      debugLog('Error initiating connection:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during connection initiation.');
+      setIsProcessing(false); // Stop processing on error
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-xl text-[#8C74FF] flex items-center gap-3">
-          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          Loading...
-        </div>
-      </div>
-    );
-  }
+  // 5. Delete Connection
+  const handleDeleteConnection = async (connectorId: string, serviceName: string) => {
+    // Optional: Add a confirmation dialog here
+    if (!window.confirm(`Are you sure you want to delete the ${serviceName} connection? This cannot be undone.`)) {
+        return;
+    }
+
+    debugLog(`Deleting connection: ${connectorId}`);
+    setIsProcessing(true);
+    setError(null);
+    setCallbackStatus(null);
+
+    try {
+      const response = await authFetch(`${API_BASE_URL}/fivetran/connections/${connectorId}/`, {
+        method: 'DELETE',
+      });
+
+      if (response.status === 204) {
+        debugLog(`Successfully deleted connection: ${connectorId}`);
+        setCallbackStatus({ type: 'success', message: `Successfully deleted ${serviceName} connection.` });
+        // Refresh the list after successful deletion
+        fetchConnections();
+      } else if (!response.ok) {
+        // Try to parse error details
+        let errorDetail = `Failed to delete connection: HTTP ${response.status}`;
+         try {
+            const errorData = await response.json();
+            errorDetail = errorData.detail || errorData.error || JSON.stringify(errorData);
+         } catch (parseError) {
+            // Ignore if response is not JSON
+         }
+        throw new Error(errorDetail);
+      } else {
+         // Handle unexpected success statuses if needed, e.g. 200 OK with body
+         debugLog(`Delete request returned status ${response.status}, expected 204. Refreshing connections.`);
+         fetchConnections(); // Refresh anyway
+      }
+    } catch (err) {
+      debugLog('Error deleting connection:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during deletion.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Determine which services are already connected
+  const connectedServiceIds = new Set(connections.map(c => c.service));
+  const availableToConnect = AVAILABLE_SERVICES.filter(s => !connectedServiceIds.has(s.id));
+
+  // --- UI Rendering ---
+
+  // Show loading indicator ONLY if we are actively loading AND haven't processed a callback yet OR if processing an action
+  const showLoadingIndicator = isLoadingConnections || isProcessing;
+
 
   return (
-    <div className="h-full bg-[#141718] font-inter">
-      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
-        <div className="py-4 lg:py-6">
-          <div className="container mx-auto px-4 lg:px-8">
-            {/* Title Section */}
-            <div className="mb-8">
-              <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
-                Connected Integrations
-              </h1>
-              <p className="text-[22px] text-white font-normal mb-6">
-                Manage your connected data sources.
-              </p>
-              <hr className="border-t border-white mb-8" />
-            </div>
-
-            {/* Shopify Connection Card */}
-            <div className="w-full max-w-[364px] bg-[#242424] rounded-[10px] p-sm sm:p-md">
-              <div className="flex flex-col gap-sm sm:gap-md">
-                <div className="flex flex-col gap-xs sm:gap-sm">
-                  <img
-                    className="w-6 h-[27px] object-contain"
-                    alt="Shopify"
-                    src="/shopify_glyph_white.svg"
-                  />
-                  <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Shopify</span>
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
+       {/* Loading Overlay (Optional but good UX) */}
+       {showLoadingIndicator && (
+           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="text-xl text-purple-400 flex items-center gap-2">
+                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {isProcessing ? 'Processing...' : 'Loading Integrations...'}
                 </div>
-                <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
-                  <div className="flex items-center gap-sm">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
-                    <span className="text-sm lg:text-base text-gray-300">Connected</span>
-                  </div>
-                  <p className="m-0 mt-sm sm:mt-md text-sm lg:text-base text-gray-300">Store: {connectionStatus?.shop_domain || 'coffeeelsalvador.myshopify.com'}</p>
-                  <p className="m-0 mt-xs sm:mt-sm text-sm lg:text-base text-gray-300">Last Synced: {connectionStatus?.last_sync ? new Date(connectionStatus.last_sync).toLocaleString() : '1/24/2024, 6:02:09 PM'}</p>
-                  <p className="m-0 mt-xs sm:mt-sm text-sm lg:text-base text-gray-300">Subscription: {connectionStatus?.subscription_status || 'Active'}</p>
+           </div>
+       )}
+
+      <div className="container mx-auto px-sm sm:px-md lg:px-lg">
+        {/* Title Section */}
+        <div className="mb-8">
+           <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
+                    Advanced Integrations
+                  </h1>
+                  <p className="text-[22px] text-white font-normal">
+                    Connect and manage your data sources via Fivetran.
+                  </p>
                 </div>
-                <div className="text-[#22C55E] text-right text-sm sm:text-base lg:text-[16.7px]">Active</div>
-              </div>
-            </div>
-
-            {/* Integration Request Section */}
-            <h2 className="text-xl sm:text-2xl lg:text-[25px] text-[#FFFFFF] font-normal m-0 mt-xl">
-              Let us know which integrations you would like to connect
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-md">
-              {/* Meta Ads Card */}
-              <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
-                <div className="flex flex-col gap-sm sm:gap-md">
-                  <div className="flex flex-col gap-xs sm:gap-sm">
-                    <img
-                      src="/meta-icon-2.png"
-                      alt="Meta"
-                      className="w-6 h-[27px] object-contain"
-                    />
-                    <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Meta Ads</span>
-                  </div>
-                  <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
-                    <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                      See your ad performance with Instagram and Facebook ads aligned with your Shopify store information to get an even better look into the performance of your ad campaigns. 
-                    </p>
-                  </div>
-                  <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                    <a 
-                      href="https://cal.com/edu-samayoa-im7mvi" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="inline-block px-4 py-1 border border-[#7B7B7B] rounded text-[#7B7B7B] hover:bg-[#8C74FF] hover:text-white hover:border-[#8C74FF] transition-colors"
-                    >
-                      Request
-                    </a>
-                  </div>
+                <div className="flex gap-2">
+                   <button
+                    onClick={() => { setCallbackStatus(null); fetchConnections(); }} // Manual refresh also clears status
+                    className="px-4 py-2 bg-[#8B5CF6] text-white font-medium rounded-lg hover:bg-[#7B63EE] transition-colors disabled:opacity-50"
+                    disabled={isLoadingConnections || isProcessing}
+                    title="Refresh connections list"
+                  >
+                    {isLoadingConnections ? 'Loading...' : 'Refresh'}
+                  </button>
+                  <button
+                    onClick={() => router.back()}
+                    className="px-4 py-2 bg-[#343536] text-white font-medium rounded-lg hover:bg-[#424344] transition-colors"
+                    title="Go back to previous page"
+                  >
+                    Back
+                  </button>
                 </div>
               </div>
+          <hr className="border-t border-white mb-8" />
+        </div>
 
-              {/* Google Ads Card */}
-              <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
-                <div className="flex flex-col gap-sm sm:gap-md">
-                  <div className="flex flex-col gap-xs sm:gap-sm">
-                    <img
-                      src="/google-ads-icon-2.png"
-                      alt="Google Ads"
-                      className="w-6 h-[27px] object-contain"
-                    />
-                    <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Google Ads</span>
-                  </div>
-                  <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
-                    <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                      See your ad performance with Google Ads aligned with your Shopify store information to get an even better look into the performance of your ad campaigns and keyword performance. 
-                    </p>
-                  </div>
-                  <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                    <a 
-                      href="https://cal.com/edu-samayoa-im7mvi" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="inline-block px-4 py-1 border border-[#7B7B7B] rounded text-[#7B7B7B] hover:bg-[#8C74FF] hover:text-white hover:border-[#8C74FF] transition-colors"
-                    >
-                      Request
-                    </a>
-                  </div>
+        {/* Callback Status Messages */}
+        {callbackStatus && (
+          <div className={`mb-6 p-4 rounded-md ${callbackStatus.type === 'success' ? 'bg-green-900 text-green-100' : 'bg-red-900 text-red-100'}`}>
+            {callbackStatus.message}
+          </div>
+        )}
+
+        {/* General Error Messages */}
+        {error && !callbackStatus /* Don't show general error if a specific callback error/success is shown */ && (
+          <div className="mb-6 p-4 rounded-md bg-red-900 text-red-100">
+            Error: {error}
+          </div>
+        )}
+
+        {/* Connected Integrations */}
+        <div className="mb-12">
+          <h2 className="text-2xl text-white font-semibold mb-4">Connected Sources</h2>
+          {connections.length === 0 && !isLoadingConnections && (
+            <p className="text-gray-400">No data sources connected yet.</p>
+          )}
+           {connections.length === 0 && isLoadingConnections && !isProcessing && (
+                <p className="text-gray-400">Loading connected sources...</p> // Show loading text if initial load
+           )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {connections.map(conn => {
+               const serviceInfo = AVAILABLE_SERVICES.find(s => s.id === conn.service);
+              return (
+                <div key={conn.fivetran_connector_id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px]"> {/* Ensure minimum height */}
+                   <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      {serviceInfo?.icon && <img src={serviceInfo.icon} alt={serviceInfo.name} className="w-6 h-6 object-contain"/>}
+                      <h3 className="text-lg text-white font-medium">{serviceInfo?.name || conn.service}</h3>
+                    </div>
+                     {/* Display Status more prominently */}
+                     <p className="text-sm text-gray-300 mb-2">Status: <span className={`font-semibold ${conn.status?.toUpperCase() === 'ACTIVE' ? 'text-green-400' : 'text-yellow-400'}`}>{conn.status || 'Unknown'}</span></p>
+                     <p className="text-xs text-gray-400">Connector ID: {conn.fivetran_connector_id}</p>
+                     <p className="text-xs text-gray-400">Connected: {new Date(conn.created_at).toLocaleString()}</p>
+                     <p className="text-xs text-gray-400">Last Updated: {new Date(conn.updated_at).toLocaleString()}</p>
+                   </div>
+                  <button
+                    onClick={() => handleDeleteConnection(conn.fivetran_connector_id, serviceInfo?.name || conn.service)}
+                    disabled={isProcessing}
+                    className="mt-4 w-full px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isProcessing ? 'Deleting...' : 'Delete Connection'}
+                  </button>
                 </div>
-              </div>
+              );
+            })}
+          </div>
+        </div>
 
-              {/* Mailchimp Card */}
-              <div className="w-full bg-[#242424] rounded-[10px] p-sm sm:p-md">
-                <div className="flex flex-col gap-sm sm:gap-md">
-                  <div className="flex flex-col gap-xs sm:gap-sm">
-                    <img
-                      src="/mailchimp-icon-2.png"
-                      alt="Mailchimp"
-                      className="w-6 h-[27px] object-contain"
-                    />
-                    <span className="text-sm sm:text-base lg:text-[16.7px] text-[#FFFFFF]">Mailchimp</span>
-                  </div>
-                  <div className="text-xs sm:text-sm text-[#7B7B7B] font-medium relative">
-                    <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                      Send email campaigns to your customers with Mailchimp and see the performance of your email campaigns aligned with your Shopify store customers. 
-                    </p>
-                  </div>
-                  <div className="text-[#7B7B7B] text-right text-sm sm:text-base lg:text-[16.7px]">
-                    <a 
-                      href="https://cal.com/edu-samayoa-im7mvi" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="inline-block px-4 py-1 border border-[#7B7B7B] rounded text-[#7B7B7B] hover:bg-[#8C74FF] hover:text-white hover:border-[#8C74FF] transition-colors"
-                    >
-                      Request
-                    </a>
-                  </div>
+        {/* Available Integrations */}
+        <div>
+          <h2 className="text-2xl text-white font-semibold mb-4">Available Sources</h2>
+          {availableToConnect.length === 0 && !isLoadingConnections && connections.length > 0 && (
+             <p className="text-gray-400">All available sources are connected.</p>
+          )}
+           {availableToConnect.length === 0 && isLoadingConnections && !isProcessing && (
+                <p className="text-gray-400">Loading available sources...</p> // Show loading text if initial load
+           )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {availableToConnect.map(service => (
+              <div key={service.id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px]"> {/* Ensure minimum height */}
+                <div>
+                   <div className="flex items-center gap-3 mb-2">
+                       {service.icon && <img src={service.icon} alt={service.name} className="w-6 h-6 object-contain"/>}
+                       <h3 className="text-lg text-white font-medium">{service.name}</h3>
+                    </div>
+                  <p className="text-sm text-gray-400 mb-4">{service.description}</p>
                 </div>
+                <button
+                  onClick={() => handleInitiateConnection(service.id)}
+                  disabled={isProcessing}
+                  className="mt-4 w-full px-4 py-2 bg-[#8C74FF] text-white text-sm font-medium rounded hover:bg-[#7B63EE] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isProcessing ? 'Processing...' : 'Connect'}
+                </button>
               </div>
-            </div>
-
-            {/* Advanced Integrations Button */}
-            <div className="mt-8 flex justify-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => router.push('/app/integrations/advanced')}
-                className="px-6 py-3 bg-[#8C74FF] text-white font-medium rounded-lg shadow-lg hover:bg-[#7B63EE] transition-colors"
-              >
-                Advanced Integrations
-              </motion.button>
-            </div>
+            ))}
           </div>
         </div>
       </div>
-
-      <ShopifyErrorModal
-        isOpen={isErrorModalOpen}
-        onClose={() => setIsErrorModalOpen(false)}
-        error={error}
-        userEmail={user?.email}
-      />
     </div>
+  );
+}
+
+
+// Wrap with Suspense because useSearchParams() needs it
+export default function AdvancedIntegrations() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-[calc(100vh-64px)] bg-[#141718]"><div className="text-xl text-purple-400">Loading Page...</div></div>}>
+      <AdvancedIntegrationsContent />
+    </Suspense>
   );
 } 
