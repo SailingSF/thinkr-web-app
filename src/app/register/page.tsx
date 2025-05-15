@@ -16,7 +16,7 @@ export default function Register() {
           <div className="flex w-full md:w-auto justify-between items-center">
             <div className="text-[22px] font-tofino tracking-[-0.05em]">
               <Image
-                src="/2 Thinkr logo white letter.png"
+                src="/thinkr-logo-white.png"
                 alt="Thinkr Logo"
                 width={108}
                 height={36}

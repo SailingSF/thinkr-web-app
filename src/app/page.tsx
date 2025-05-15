@@ -21,7 +21,7 @@ export default function Home() {
       <header className="w-full flex flex-col md:hidden">
         <div className="flex justify-between items-center px-4 py-4">
           <Image
-            src="/2 Thinkr logo white letter.png"
+            src="/thinkr-logo-white.png"
             alt="Thinkr Logo"
             width={108}
             height={36}
@@ -71,7 +71,7 @@ export default function Home() {
           {/* Logo overlay */}
           <div className="absolute top-7 left-12">
             <Image
-              src="/2 Thinkr logo white letter.png"
+              src="/thinkr-logo-white.png"
               alt="Thinkr Logo"
               width={108}
               height={36}
