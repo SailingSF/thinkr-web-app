@@ -7,6 +7,7 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -85,14 +86,19 @@ export default function AppSidebar() {
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="px-3 py-5">
-        <Image
-          src="/2 Thinkr logo white letter.png"
-          alt="Thinkr Logo"
-          width={240}
-          height={80}
-          priority
-          className="w-auto h-[60px]"
-        />
+        {!imageError ? (
+          <Image
+            src="/thinkr-logo-white.png"
+            alt="Thinkr Logo"
+            width={240}
+            height={80}
+            priority
+            className="w-auto h-[60px]"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="text-white text-2xl font-bold">THINKR</div>
+        )}
       </div>
       
       <nav className="flex-1 px-2">
@@ -143,7 +149,7 @@ export default function AppSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block fixed top-0 left-0 h-screen p-3">
+      <div className="hidden lg:block fixed top-0 left-0 h-screen p-3 z-20">
         <div className="h-full w-[256px]">
           <div className="w-full h-full bg-[#1E1F20] rounded-[8px] shadow-lg">
             {sidebarContent}
