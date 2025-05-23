@@ -190,15 +190,32 @@ export default function Scheduler() {
         const alertsResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts/`);
         let alertsData: Alert[] = [];
         if (alertsResponse.ok) {
-          const alertsResponseData = await alertsResponse.json() as AlertsResponse;
-          alertsData = alertsResponseData.results;
+          const alertsResponseData = await alertsResponse.json();
+          // Handle both paginated response and direct array response
+          if (Array.isArray(alertsResponseData)) {
+            // Direct array response
+            alertsData = alertsResponseData;
+          } else if (alertsResponseData.results && Array.isArray(alertsResponseData.results)) {
+            // Paginated response
+            alertsData = alertsResponseData.results;
+          }
         }
 
         // Fetch usage status
         const usageResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/usage-status/`);
         let usageData: UsageStatus | null = null;
         if (usageResponse.ok) {
-          usageData = await usageResponse.json() as UsageStatus;
+          const rawUsageData = await usageResponse.json();
+          // Transform the API response to match our expected structure
+          if (rawUsageData.usage && rawUsageData.usage.alert) {
+            usageData = {
+              alerts: {
+                used: rawUsageData.usage.alert.current,
+                limit: rawUsageData.usage.alert.limit,
+                percentage: rawUsageData.usage.alert.percentage
+              }
+            };
+          }
         }
         
         if (mountedRef.current) {
@@ -263,9 +280,18 @@ export default function Scheduler() {
     try {
       const usageResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/usage-status/`);
       if (usageResponse.ok) {
-        const usageData = await usageResponse.json() as UsageStatus;
-        setUsageStatus(usageData);
-        updateStoredData({ usageStatus: usageData });
+        const rawUsageData = await usageResponse.json();
+        if (rawUsageData.usage && rawUsageData.usage.alert) {
+          const usageData = {
+            alerts: {
+              used: rawUsageData.usage.alert.current,
+              limit: rawUsageData.usage.alert.limit,
+              percentage: rawUsageData.usage.alert.percentage
+            }
+          };
+          setUsageStatus(usageData);
+          updateStoredData({ usageStatus: usageData });
+        }
       }
     } catch (error) {
       console.error('Failed to refresh usage status:', error);
@@ -324,9 +350,18 @@ export default function Scheduler() {
       try {
         const usageResponse = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/usage-status/`);
         if (usageResponse.ok) {
-          const usageData = await usageResponse.json() as UsageStatus;
-          setUsageStatus(usageData);
-          updateStoredData({ usageStatus: usageData });
+          const rawUsageData = await usageResponse.json();
+          if (rawUsageData.usage && rawUsageData.usage.alert) {
+            const usageData = {
+              alerts: {
+                used: rawUsageData.usage.alert.current,
+                limit: rawUsageData.usage.alert.limit,
+                percentage: rawUsageData.usage.alert.percentage
+              }
+            };
+            setUsageStatus(usageData);
+            updateStoredData({ usageStatus: usageData });
+          }
         }
       } catch (error) {
         console.error('Failed to refresh usage status:', error);
