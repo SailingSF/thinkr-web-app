@@ -28,10 +28,47 @@ export interface Schedule {
   next_run: string | null;
 }
 
+export interface Alert {
+  id: number;
+  name: string;
+  metric: 'inventory_level' | 'orders_count' | 'revenue' | 'customer_count';
+  parameters: Record<string, any>;
+  instructions?: string;
+  threshold_type: 'gt' | 'lt';
+  threshold_value: number;
+  frequency: string;
+  next_run?: string;
+  last_evaluated?: string;
+  last_triggered?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateAlertRequest {
+  name: string;
+  metric: 'inventory_level' | 'orders_count' | 'revenue' | 'customer_count';
+  parameters: Record<string, any>;
+  instructions?: string;
+  threshold_type: 'gt' | 'lt';
+  threshold_value: number;
+  frequency: string;
+}
+
+export interface UsageStatus {
+  alerts: {
+    used: number;
+    limit: number;
+    percentage: number;
+  };
+}
+
 interface StoredData {
   user: User | null;
   connectionStatus: ConnectionStatus | null;
   schedules: Schedule[] | null;
+  alerts: Alert[] | null;
+  usageStatus: UsageStatus | null;
   lastUpdated: number;
 }
 
