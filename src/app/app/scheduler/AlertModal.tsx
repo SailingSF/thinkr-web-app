@@ -110,7 +110,6 @@ export default function AlertModal({ isOpen, onClose, onAlertAdd, usageStatus }:
   if (!isOpen) return null;
 
   const selectedMetric = METRIC_TYPES.find(m => m.name === metric);
-  const canCreateAlert = !usageStatus || !usageStatus.alerts || usageStatus.alerts.used < usageStatus.alerts.limit;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,10 +117,6 @@ export default function AlertModal({ isOpen, onClose, onAlertAdd, usageStatus }:
     setLoading(true);
 
     try {
-      if (!canCreateAlert) {
-        throw new Error(`You have reached the limit of ${usageStatus?.alerts?.limit || 'your plan'} alerts for your plan. Please upgrade or deactivate existing alerts.`);
-      }
-
       const selectedMetricType = METRIC_TYPES.find(m => m.name === metric);
       if (!selectedMetricType) {
         throw new Error('Please select a metric type');
@@ -357,7 +352,7 @@ export default function AlertModal({ isOpen, onClose, onAlertAdd, usageStatus }:
             </button>
             <button
               type="submit"
-              disabled={loading || !metric || !canCreateAlert}
+              disabled={loading || !metric}
               className="px-8 py-2.5 bg-[#8C74FF] hover:bg-[#7B63EE] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating...' : 'Create Alert'}
