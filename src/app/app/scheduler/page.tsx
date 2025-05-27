@@ -113,8 +113,8 @@ export default function Scheduler() {
   const [expandedTimeSlots, setExpandedTimeSlots] = useState<Set<string>>(new Set());
   const [showAllHours, setShowAllHours] = useState(false);
 
-  // Ensure alerts is always an array
-  const safeAlerts = alerts || [];
+  // Ensure alerts is always an array and filter out deactivated alerts
+  const safeAlerts = (alerts || []).filter(alert => alert.is_active);
   const safeSchedules = schedules || [];
   
   // Ensure usageStatus has safe nested properties
@@ -426,13 +426,6 @@ export default function Scheduler() {
                           {alert.name}
                         </h3>
                       </div>
-                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                        alert.is_active 
-                          ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
-                          : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
-                      }`}>
-                        {alert.is_active ? 'Active' : 'Inactive'}
-                      </span>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm text-[#7B7B7B]">
@@ -916,11 +909,6 @@ export default function Scheduler() {
                 {safeAlerts.length > 0 && (
                   <span className="ml-2 px-2 py-0.5 text-xs bg-[#FF9800]/20 text-[#FF9800] rounded-full">
                     {safeAlerts.length}
-                  </span>
-                )}
-                {safeUsageStatus && (
-                  <span className="ml-2 text-xs text-[#7B7B7B]">
-                    ({safeUsageStatus.alerts.used}/{safeUsageStatus.alerts.limit})
                   </span>
                 )}
                 {activeSection === 'alerts' && (
