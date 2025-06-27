@@ -7,6 +7,10 @@ export interface ChatMessage {
   created_at: string;
   intent?: ChatIntent;
   agent_specification?: AgentSpecification;
+  metadata?: {
+    agent_specification?: AgentSpecification;
+    [key: string]: any;
+  };
 }
 
 export interface Thread {
