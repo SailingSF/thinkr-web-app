@@ -1,23 +1,58 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Plus, ArrowUp } from 'lucide-react';
+import { Plus, ArrowUp, X } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import SegmentedModeSelector from '@/components/SegmentedModeSelector';
 import MessageList from '@/components/MessageList';
 import AgentPreviewDrawer from '@/components/AgentPreviewDrawer';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ShopifyConnectButton from '@/components/ShopifyConnectButton';
+import AuditCard from '@/components/AuditCard';
+import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 import { useChat, useChatUI } from '@/hooks/useChat';
 import { ChatIntent, AgentSpecification } from '@/types/chat';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useLocalStorage, ConnectionStatus } from '@/hooks/useLocalStorage';
 import { AGENT_TYPES } from '@/components/icons/AgentIcons';
+import { useAuthFetch } from '@/utils/shopify';
 import queryClient from '@/lib/queryClient';
 
+interface UserData {
+  email: string;
+  first_name: string;
+  last_name: string;
+  contact_email: string;
+  store_shopify_domain: string | null;
+  store_shop_name: string | null;
+  store_primary_domain_url: string | null;
+  store_audit_sent: boolean;
+}
+
+interface ApiConnectionStatus {
+  is_connected: boolean;
+  shop_domain?: string;
+  error?: string;
+}
+
 function ChatShell() {
+  const router = useRouter();
+  const authFetch = useAuthFetch();
   const [currentThreadId, setCurrentThreadId] = useState<string | undefined>();
   const [message, setMessage] = useState('');
+  const [isConnectingShopify, setIsConnectingShopify] = useState(false);
+  const [isGeneratingAudit, setIsGeneratingAudit] = useState(false);
+  const [shopifyError, setShopifyError] = useState('');
+  const [showShopifyErrorModal, setShowShopifyErrorModal] = useState(false);
+  const [userDataLoading, setUserDataLoading] = useState(true);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  
+  // Dismissed states from localStorage
+  const [dismissedShopify, setDismissedShopify] = useState(false);
+  const [dismissedAudit, setDismissedAudit] = useState(false);
+  
   const {
     mode,
     setMode,
@@ -40,6 +75,113 @@ function ChatShell() {
     intent: mode,
     onThreadChange: setCurrentThreadId
   });
+
+  const { storedData } = useLocalStorage();
+
+  // Load dismissed states from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDismissedShopify(localStorage.getItem('dismissed_shopify_connect') === 'true');
+      setDismissedAudit(localStorage.getItem('dismissed_store_audit') === 'true');
+    }
+  }, []);
+
+  // Fetch user data from /user/ endpoint on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          setUserDataLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Token ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json() as UserData;
+          setUserData(data);
+          console.log('User data loaded:', data);
+        } else {
+          console.error('Failed to fetch user data:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setUserDataLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Check if user has connected Shopify based on user data
+  const hasConnectedShopify = useMemo(() => {
+    if (userDataLoading) {
+      // Fallback to stored data while loading
+      return !!(storedData?.user?.store_shopify_domain || storedData?.connectionStatus?.is_connected);
+    }
+    
+    // Use user data if available, otherwise fallback to stored data
+    if (userData) {
+      return !!(userData.store_shopify_domain);
+    }
+    
+    return !!(storedData?.user?.store_shopify_domain || storedData?.connectionStatus?.is_connected);
+  }, [userDataLoading, userData, storedData?.user?.store_shopify_domain, storedData?.connectionStatus?.is_connected]);
+
+  // Check if user has run audit based on user data
+  const hasRunAudit = useMemo(() => {
+    if (userDataLoading) {
+      // Fallback to stored data while loading
+      const hasSchedules = !!(storedData?.schedules && storedData.schedules.length > 0);
+      const hasAlerts = !!(storedData?.alerts && storedData.alerts.length > 0);
+      return hasSchedules || hasAlerts;
+    }
+    
+    // Use user data if available
+    if (userData) {
+      return userData.store_audit_sent;
+    }
+    
+    // Fallback to stored data
+    const hasSchedules = !!(storedData?.schedules && storedData.schedules.length > 0);
+    const hasAlerts = !!(storedData?.alerts && storedData.alerts.length > 0);
+    return hasSchedules || hasAlerts;
+  }, [userDataLoading, userData, storedData?.schedules, storedData?.alerts]);
+
+  // Show onboarding buttons logic
+  const showOnboardingButtons = useMemo(() => {
+    // Don't show anything while loading
+    if (userDataLoading) return false;
+    
+    // Only show for new chat sessions
+    if (messages.length > 1) return false;
+    
+    // Show if user hasn't connected Shopify (and not dismissed) OR hasn't run audit (and not dismissed)
+    const showShopifyConnect = !hasConnectedShopify && !dismissedShopify;
+    const showAuditButton = hasConnectedShopify && !hasRunAudit && !dismissedAudit;
+    
+    return showShopifyConnect || showAuditButton;
+  }, [userDataLoading, messages.length, hasConnectedShopify, hasRunAudit, dismissedShopify, dismissedAudit]);
+
+  // Dismiss handlers
+  const handleDismissShopify = useCallback(() => {
+    setDismissedShopify(true);
+    localStorage.setItem('dismissed_shopify_connect', 'true');
+  }, []);
+
+  const handleDismissAudit = useCallback(() => {
+    setDismissedAudit(true);
+    localStorage.setItem('dismissed_store_audit', 'true');
+  }, []);
 
   // Memoized event handlers to prevent unnecessary re-renders
   const handleSendMessage = useCallback(() => {
@@ -76,6 +218,58 @@ function ChatShell() {
     sendMessage(agentMessage, currentThreadId);
   }, [setMode, sendMessage, currentThreadId]);
 
+  const handleShopifyConnect = useCallback(async () => {
+    setIsConnectingShopify(true);
+    setShopifyError('');
+    
+    try {
+      // Redirect to Shopify OAuth
+      const authUrl = `${process.env.NEXT_PUBLIC_API_URL}/shopify/auth`;
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error('Shopify connection error:', error);
+      setShopifyError(error instanceof Error ? error.message : 'Failed to connect to Shopify');
+      setShowShopifyErrorModal(true);
+    } finally {
+      setIsConnectingShopify(false);
+    }
+  }, []);
+
+  const handleTriggerAudit = useCallback(async () => {
+    setIsGeneratingAudit(true);
+    
+    try {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/trigger-store-audit/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to generate store audit');
+      }
+
+      const result = await response.json();
+      
+      // Update user data to reflect audit was sent
+      if (userData) {
+        setUserData({ ...userData, store_audit_sent: true });
+      }
+      
+      // Show success message
+      console.log('Store audit triggered:', result);
+      alert(`Store audit generation started! The report will be emailed to ${result.user_email || userData?.contact_email || 'you'}.`);
+      
+    } catch (error) {
+      console.error('Audit generation error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to generate store audit. Please try again.');
+    } finally {
+      setIsGeneratingAudit(false);
+    }
+  }, [authFetch, userData]);
+
   // Memoized computations
   const intentLocked = useMemo(() => 
     messages.some((m) => m.role === 'user'), 
@@ -87,11 +281,13 @@ function ChatShell() {
     return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   }, []);
 
-  const { storedData } = useLocalStorage();
-  const userName = useMemo(() => 
-    storedData?.user?.first_name || '', 
-    [storedData?.user?.first_name]
-  );
+  const userName = useMemo(() => {
+    // Prefer userData over storedData
+    if (userData?.first_name) {
+      return userData.first_name;
+    }
+    return storedData?.user?.first_name || '';
+  }, [userData?.first_name, storedData?.user?.first_name]);
 
   return (
     <ErrorBoundary>
@@ -152,6 +348,61 @@ function ChatShell() {
                 <h1 className="text-white text-2xl font-normal mb-6 text-center">
                   {greeting}{userName ? `, ${userName}` : ''}
                 </h1>
+                
+                {/* Onboarding Cards for New Users */}
+                {showOnboardingButtons && (
+                  <div className="mb-8 space-y-6">
+                    {/* Shopify Connection Card */}
+                    {!hasConnectedShopify && !dismissedShopify && (
+                      <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
+                        <button
+                          onClick={handleDismissShopify}
+                          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                          title="Dismiss this suggestion"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                        <div className="mb-6 lg:mb-8 pr-8">
+                          <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
+                          <h3 className="text-[32px] font-inter font-normal text-white">Connect your Shopify store</h3>
+                          <p className="text-sm lg:text-base text-gray-400 mt-2">
+                            Connect your store to start receiving AI-powered analytics and recommendations
+                          </p>
+                        </div>
+                        <ShopifyConnectButton
+                          onClick={handleShopifyConnect}
+                          isLoading={isConnectingShopify}
+                        />
+                      </div>
+                    )}
+
+                    {/* Store Audit Card */}
+                    {hasConnectedShopify && !hasRunAudit && !dismissedAudit && (
+                      <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
+                        <button
+                          onClick={handleDismissAudit}
+                          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                          title="Dismiss this suggestion"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                        <div className="pr-8">
+                          <AuditCard
+                            onTriggerAudit={handleTriggerAudit}
+                            isLoading={isGeneratingAudit}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Loading indicator while fetching user data */}
+                {userDataLoading && (
+                  <div className="mb-8 text-center">
+                    <div className="text-gray-400">Loading your profile...</div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -215,6 +466,14 @@ function ChatShell() {
           description="This agent will help monitor your store's performance automatically."
           onConfirm={handleAgentCreate}
           loading={createAgentLoading}
+        />
+
+        {/* Shopify Error Modal */}
+        <ShopifyErrorModal
+          isOpen={showShopifyErrorModal}
+          onClose={() => setShowShopifyErrorModal(false)}
+          error={shopifyError}
+          userEmail={userData?.contact_email || storedData?.user?.email}
         />
       </div>
     </ErrorBoundary>
