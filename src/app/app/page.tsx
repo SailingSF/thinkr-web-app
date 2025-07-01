@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import SegmentedModeSelector from '@/components/SegmentedModeSelector';
+import { Connection } from '@/components/SegmentedModeSelector';
 import MessageList from '@/components/MessageList';
 import AgentPreviewDrawer from '@/components/AgentPreviewDrawer';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -19,6 +20,26 @@ import { useLocalStorage, ConnectionStatus } from '@/hooks/useLocalStorage';
 import { AGENT_TYPES } from '@/components/icons/AgentIcons';
 import { useAuthFetch } from '@/utils/shopify';
 import queryClient from '@/lib/queryClient';
+
+// Interface for Fivetran connections
+interface FivetranConnection {
+  id: number;
+  fivetran_connector_id: string;
+  service: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Available services mapping (same as integrations page)
+const AVAILABLE_SERVICES = [
+  { id: 'google_ads', name: 'Google Ads', icon: '/google-ads-icon-2.png' },
+  { id: 'facebook_ads', name: 'Meta Ads', icon: '/meta-icon-2.png' },
+  { id: 'google_analytics_4', name: 'Google Analytics', icon: '/google-analytics-icon.png' },
+  { id: 'klaviyo', name: 'Klaviyo', icon: '/klaviyo-white-icon.png' },
+  { id: 'gorgias', name: 'Gorgias', icon: '/gorgias-icon.png' },
+  { id: 'pinterest_ads', name: 'Pinterest Ads', icon: '/pinterest-icon.png' },
+];
 
 interface UserData {
   email: string;
@@ -48,6 +69,7 @@ function ChatShell() {
   const [showShopifyErrorModal, setShowShopifyErrorModal] = useState(false);
   const [userDataLoading, setUserDataLoading] = useState(true);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [fivetranConnections, setFivetranConnections] = useState<FivetranConnection[]>([]);
   
   // Dismissed states from localStorage
   const [dismissedShopify, setDismissedShopify] = useState(false);
@@ -121,6 +143,26 @@ function ChatShell() {
 
     fetchUserData();
   }, []);
+
+  // Fetch Fivetran connections
+  useEffect(() => {
+    const fetchFivetranConnections = async () => {
+      try {
+        const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/fivetran/connections/`);
+        if (response.ok) {
+          const data = await response.json();
+          setFivetranConnections(data.connectors || []);
+          console.log('Fivetran connections loaded:', data.connectors);
+        } else {
+          console.error('Failed to fetch Fivetran connections:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching Fivetran connections:', error);
+      }
+    };
+
+    fetchFivetranConnections();
+  }, [authFetch]);
 
   // Check if user has connected Shopify based on user data
   const hasConnectedShopify = useMemo(() => {
@@ -289,6 +331,26 @@ function ChatShell() {
     return storedData?.user?.first_name || '';
   }, [userData?.first_name, storedData?.user?.first_name]);
 
+  // Build connections for integrations display
+  const connections = useMemo(() => {
+    const connectedServices: Connection[] = [];
+    
+    // Map Fivetran connections to Connection interface
+    fivetranConnections.forEach((fivetranConn) => {
+      const serviceInfo = AVAILABLE_SERVICES.find(s => s.id === fivetranConn.service);
+      if (serviceInfo) {
+        connectedServices.push({
+          id: fivetranConn.fivetran_connector_id,
+          name: serviceInfo.name,
+          iconUrl: serviceInfo.icon,
+          enabled: fivetranConn.status?.toUpperCase() === 'ACTIVE'
+        });
+      }
+    });
+    
+    return connectedServices;
+  }, [fivetranConnections]);
+
   return (
     <ErrorBoundary>
       <div className="flex flex-col h-full">
@@ -436,6 +498,8 @@ function ChatShell() {
                 mode={mode}
                 onChange={setMode}
                 disabled={isLoading || intentLocked}
+                connections={connections}
+                hasShopifyConnection={hasConnectedShopify}
               />
             </div>
 
