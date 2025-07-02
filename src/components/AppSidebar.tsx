@@ -18,29 +18,11 @@ export default function AppSidebar() {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
+  // Simplified navigation with only the required items
   const navigationItems = [
     {
-      name: 'Action Hub',
-      href: '/app',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      ),
-      isActive: pathname === '/app',
-    },
-    {
-      name: 'Chat',
-      href: '/app/chat',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-      ),
-      isActive: pathname === '/app/chat',
-    },
-    {
-      name: 'Scheduler',
+      name: 'Agents',
+      // Point "Agents" to the existing scheduler route
       href: '/app/scheduler',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,16 +30,6 @@ export default function AppSidebar() {
         </svg>
       ),
       isActive: pathname === '/app/scheduler',
-    },
-    {
-      name: 'Deep Research',
-      href: '/app/deep_research',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      ),
-      isActive: pathname === '/app/deep_research'
     },
     {
       name: 'Integrations',
@@ -69,36 +41,26 @@ export default function AppSidebar() {
       ),
       isActive: pathname === '/app/integrations',
     },
-    {
-      name: 'Autopilot',
-      href: '/app/autopilot',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4L12 2M8 8h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2zM10 11h.01M14 11h.01" />
-          <circle cx="10" cy="11" r="1" className="text-current" fill="currentColor" />
-          <circle cx="14" cy="11" r="1" className="text-current" fill="currentColor" />
-        </svg>
-      ),
-      isActive: pathname === '/app/autopilot',
-    },
   ];
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="px-3 py-5">
-        {!imageError ? (
-          <Image
-            src="/thinkr-logo-white.png"
-            alt="Thinkr Logo"
-            width={240}
-            height={80}
-            priority
-            className="w-auto h-[60px]"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="text-white text-2xl font-bold">THINKR</div>
-        )}
+        <Link href="/app" className="block">
+          {!imageError ? (
+            <Image
+              src="/thinkr-logo-white.png"
+              alt="Thinkr Logo"
+              width={240}
+              height={80}
+              priority
+              className="w-auto h-[60px] hover:opacity-80 transition-opacity"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="text-white text-2xl font-bold hover:opacity-80 transition-opacity">THINKR</div>
+          )}
+        </Link>
       </div>
       
       <nav className="flex-1 px-2">
