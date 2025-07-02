@@ -10,11 +10,19 @@ import {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('auth_token');
-  return {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'Authorization': `Token ${token}`,
   };
+  
+  // Only access localStorage on the client side
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers['Authorization'] = `Token ${token}`;
+    }
+  }
+  
+  return headers;
 }
 
 export async function sendMessage(request: SendMessageRequest): Promise<ChatResponse> {

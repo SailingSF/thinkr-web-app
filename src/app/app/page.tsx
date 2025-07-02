@@ -234,7 +234,7 @@ function ChatShell() {
     sendMessage(messageToSend, currentThreadId);
   }, [message, isLoading, sendMessage, currentThreadId]);
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
       e.preventDefault();
       handleSendMessage();
@@ -257,7 +257,7 @@ function ChatShell() {
   const handleAgentTypeClick = useCallback((agentName: string) => {
     const agentMessage = `Create a ${agentName} agent`;
     setMode('agent_builder');
-    sendMessage(agentMessage, currentThreadId);
+    sendMessage(agentMessage, currentThreadId, 'agent_builder');
   }, [setMode, sendMessage, currentThreadId]);
 
   const handleShopifyConnect = useCallback(async () => {
@@ -343,7 +343,7 @@ function ChatShell() {
           id: fivetranConn.fivetran_connector_id,
           name: serviceInfo.name,
           iconUrl: serviceInfo.icon,
-          enabled: fivetranConn.status?.toUpperCase() === 'ACTIVE'
+          enabled: ['ACTIVE', 'SUCCEEDED'].includes(fivetranConn.status?.toUpperCase() || '')
         });
       }
     });
@@ -474,7 +474,7 @@ function ChatShell() {
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyDown}
                   placeholder="I want to monitor growth of my store"
                   disabled={isLoading}
                   rows={1}

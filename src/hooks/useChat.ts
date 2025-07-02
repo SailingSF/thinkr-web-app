@@ -53,8 +53,19 @@ export function useChat({ threadId, intent, onThreadChange }: UseChatOptions = {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async ({ message, currentThreadId }: { message: string; currentThreadId?: string }) => {
+    mutationFn: async ({ 
+      message, 
+      currentThreadId, 
+      explicitIntent 
+    }: { 
+      message: string; 
+      currentThreadId?: string; 
+      explicitIntent?: ChatIntent;
+    }) => {
       setError(null);
+      
+      // Use explicit intent if provided, otherwise use the current intent from the hook
+      const messageIntent = explicitIntent || intent;
       
       // Optimistically add user message
       const userMessage: ChatMessage = {
@@ -62,7 +73,7 @@ export function useChat({ threadId, intent, onThreadChange }: UseChatOptions = {
         role: 'user',
         content: message,
         created_at: new Date().toISOString(),
-        intent,
+        intent: messageIntent,
       };
       
       setMessages(prev => [...prev, userMessage]);
@@ -70,7 +81,7 @@ export function useChat({ threadId, intent, onThreadChange }: UseChatOptions = {
       const request: SendMessageRequest = {
         message,
         thread_id: currentThreadId || threadId, // Use the passed threadId or fallback to the hook's threadId
-        intent,
+        intent: messageIntent,
       };
 
       const response = await sendMessageAPI(request);
@@ -250,8 +261,8 @@ export function useChat({ threadId, intent, onThreadChange }: UseChatOptions = {
     setLatestAgentSpec(null);
   }, []);
 
-  const sendMessage = useCallback((message: string, currentThreadId?: string) => {
-    sendMessageMutation.mutate({ message, currentThreadId });
+  const sendMessage = useCallback((message: string, currentThreadId?: string, explicitIntent?: ChatIntent) => {
+    sendMessageMutation.mutate({ message, currentThreadId, explicitIntent });
   }, [sendMessageMutation]);
 
   return {
