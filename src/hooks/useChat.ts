@@ -113,8 +113,8 @@ export function useChat({ threadId, intent, onThreadChange }: UseChatOptions = {
           messageContent = parsed;
           agentSpec = parsedSpec || result.response.agent_specification || result.agent_specification;
         } else {
-          // Regular object response
-          messageContent = responseMessage;
+          // Regular object response - provide fallback if message is missing or not a string
+          messageContent = typeof responseMessage === 'string' ? responseMessage : 'Sorry, I encountered an issue processing your request.';
           agentSpec = result.response.agent_specification || result.agent_specification;
         }
       } else if (typeof result.response === 'string') {
