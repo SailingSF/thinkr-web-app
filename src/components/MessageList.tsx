@@ -3,6 +3,7 @@
 import { memo, useEffect, useRef } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 import { ChatMessage } from '@/types/chat';
 import InlineAgentSpec from './InlineAgentSpec';
 
@@ -21,7 +22,7 @@ const MessageBubble = memo(({ message }: MessageBubbleProps) => {
             isUser ? 'bg-[#7B6EF6] text-white' : 'bg-[#2A2D2E] text-gray-100'
           } prose prose-sm prose-invert max-w-none`}
         >
-          <ReactMarkdown>{message.content}</ReactMarkdown>
+          <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
           
           {/* Show agent specification inline for assistant messages */}
           {!isUser && message.agent_specification && (
