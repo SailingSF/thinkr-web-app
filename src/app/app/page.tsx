@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Plus, ArrowUp, X } from 'lucide-react';
+import { Plus, ArrowUp, X, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -356,18 +356,22 @@ function ChatShell() {
       <div className="flex flex-col h-full">
         {/* Top-left controls: History & New chat (flipped order) */}
         <div className="absolute top-4 left-4 lg:left-[280px] flex items-center gap-3 z-30">
-          <select
-            className="bg-[#2A2D2E] text-white text-sm rounded-lg px-3 py-2 focus:outline-none"
-            value={currentThreadId || ''}
-            onChange={(e) => handleThreadSelect(e.target.value)}
-          >
-            <option value="">Chat History</option>
-            {threads.map((thread) => (
-              <option key={thread.thread_id} value={thread.thread_id}>
-                {thread.display_name || thread.last_message?.slice(0, 30) || 'Conversation'}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              className="bg-[#2A2D2E] hover:bg-[#3A3D3E] text-white text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none transition-colors border border-gray-600/30 hover:border-purple-400/50 appearance-none -webkit-appearance-none"
+              value={currentThreadId || ''}
+              onChange={(e) => handleThreadSelect(e.target.value)}
+              style={{ backgroundImage: 'none' }}
+            >
+              <option value="" className="bg-[#2A2D2E] text-white">Chat History</option>
+              {threads.map((thread) => (
+                <option key={thread.thread_id} value={thread.thread_id} className="bg-[#2A2D2E] text-white">
+                  {thread.display_name || thread.last_message?.slice(0, 30) || 'Conversation'}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          </div>
 
           <button
             onClick={() => setCurrentThreadId(undefined)}
