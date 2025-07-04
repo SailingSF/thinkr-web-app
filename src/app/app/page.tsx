@@ -364,6 +364,54 @@ function ChatShell() {
     return connectedServices;
   }, [fivetranConnections]);
 
+  // Utility function to parse thread's last message for display (using same logic as messages)
+  const parseThreadLastMessage = useCallback((lastMessage: string | null | undefined): string => {
+    if (!lastMessage) return '';
+    
+    // Use the same parsing logic as messages
+    try {
+      // Clean up the string - remove leading/trailing whitespace and newlines
+      let content = lastMessage.trim();
+      
+      // Handle double-escaped JSON (from database storage)
+      if (content.startsWith('"{') && content.endsWith('}"')) {
+        content = JSON.parse(content);
+      }
+      
+      // Check if it starts with { and try to find the first complete JSON object
+      if (content.startsWith('{')) {
+        // If there are multiple JSON objects concatenated, try to extract the first one
+        let braceCount = 0;
+        let firstJsonEnd = -1;
+        
+        for (let i = 0; i < content.length; i++) {
+          if (content[i] === '{') braceCount++;
+          else if (content[i] === '}') {
+            braceCount--;
+            if (braceCount === 0) {
+              firstJsonEnd = i;
+              break;
+            }
+          }
+        }
+        
+        if (firstJsonEnd > -1) {
+          const firstJsonStr = content.substring(0, firstJsonEnd + 1);
+          const parsedResponse = JSON.parse(firstJsonStr);
+          
+          if (parsedResponse.message && typeof parsedResponse.message === 'string') {
+            return parsedResponse.message;
+          }
+        }
+      }
+    } catch (error) {
+      // If parsing fails, return the original message
+    }
+    
+    // If parsing fails or no JSON found, return original content
+    return lastMessage;
+  }, []);
+
   return (
     <ErrorBoundary>
       <div className="flex flex-col h-full">
@@ -377,11 +425,17 @@ function ChatShell() {
               style={{ backgroundImage: 'none' }}
             >
               <option value="" className="bg-[#2A2D2E] text-white">Chat History</option>
-              {threads.map((thread) => (
-                <option key={thread.thread_id} value={thread.thread_id} className="bg-[#2A2D2E] text-white">
-                  {thread.display_name || thread.last_message?.slice(0, 30) || 'Conversation'}
-                </option>
-              ))}
+              {threads.map((thread) => {
+                const cleanedMessage = parseThreadLastMessage(thread.last_message);
+                const displayText = thread.display_name || 
+                  (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) || 
+                  'Conversation';
+                return (
+                  <option key={thread.thread_id} value={thread.thread_id} className="bg-[#2A2D2E] text-white">
+                    {displayText}
+                  </option>
+                );
+              })}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
           </div>
