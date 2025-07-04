@@ -3,6 +3,7 @@
 import AppSidebar from "@/components/AppSidebar";
 import Navigation from "@/components/Navigation";
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { NavigationProvider } from '@/contexts/NavigationContext';
 
 function AppLayoutContent({
   children,
@@ -37,9 +38,11 @@ export default function AppLayout({
 }) {
   return (
     <AuthProvider>
-      <AppLayoutContent>
-        {children}
-      </AppLayoutContent>
+      <NavigationProvider>
+        <AppLayoutContent>
+          {children}
+        </AppLayoutContent>
+      </NavigationProvider>
     </AuthProvider>
   );
 } 
