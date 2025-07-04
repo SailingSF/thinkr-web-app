@@ -66,13 +66,13 @@ export default function AppSidebar() {
                   <Link
                     href="/app"
                     onClick={handleNav}
-                    className={`flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors font-medium ${
+                    className={`flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors ${
                       isChat
                         ? "text-[#A78BFA] font-bold shadow-none"
-                        : "text-[#A78BFA] hover:bg-[#A78BFA] hover:text-white"
+                        : "text-[#A78BFA] font-medium hover:bg-[#A78BFA] hover:text-white"
                     }`}
                   >
-                    <Plus className={`h-6 w-6 ${isChat ? "text-[#A78BFA] font-bold" : ""}`} />
+                    <Plus className={`h-6 w-6 ${isChat ? "text-[#A78BFA] font-bold" : "text-[#A78BFA]"}`} />
                   </Link>
                   <Link
                     href="/app/scheduler"
@@ -118,14 +118,16 @@ export default function AppSidebar() {
                 <div className="flex items-center justify-between w-full px-4 pt-6 pb-4">
                   <Link href="/app" onClick={handleNav}>
                     {!imageError ? (
-                      <Image
-                        src="/thinkr-logo-white.png"
-                        alt="Logo"
-                        width={120}
-                        height={40}
-                        className="h-[1.9rem] ml-2 cursor-pointer"
-                        onError={() => setImageError(true)}
-                      />
+                      <div className="flex items-center h-14">
+                        <Image
+                          src="/thinkr-logo-white.png"
+                          alt="Logo"
+                          height={56}
+                          width={168}
+                          className="h-14 w-auto object-contain cursor-pointer"
+                          onError={() => setImageError(true)}
+                        />
+                      </div>
                     ) : (
                       <div className="text-white text-xl font-bold ml-2 cursor-pointer">THINKR</div>
                     )}
@@ -143,14 +145,14 @@ export default function AppSidebar() {
                   <Link
                     href="/app"
                     onClick={handleNav}
-                    className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors font-medium ${
+                    className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                       isChat
                         ? "text-[#A78BFA] font-bold shadow-none"
-                        : "text-[#A78BFA] hover:bg-[#A78BFA] hover:text-white"
+                        : "text-[#A78BFA] font-medium hover:bg-[#A78BFA] hover:text-white"
                     }`}
                   >
-                    <Plus className={`h-5 w-5 ${isChat ? "text-[#A78BFA] font-bold" : ""}`} />
-                    <span className={isChat ? "font-bold" : undefined}>New chat</span>
+                    <Plus className={`h-5 w-5 ${isChat ? "text-[#A78BFA] font-bold" : "text-[#A78BFA]"}`} />
+                    <span className={isChat ? "font-bold" : "font-medium"}>New chat</span>
                   </Link>
                   <Link
                     href="/app/scheduler"
@@ -244,14 +246,16 @@ export default function AppSidebar() {
             <div className="flex items-center justify-between w-full px-4 pt-6 pb-4">
               <Link href="/app" onClick={() => setIsCollapsed(false)}>
                 {!imageError ? (
-                  <Image
-                    src="/thinkr-logo-white.png"
-                    alt="Logo"
-                    width={120}
-                    height={40}
-                    className="h-[1.9rem] ml-2 cursor-pointer"
-                    onError={() => setImageError(true)}
-                  />
+                  <div className="flex items-center h-14">
+                    <Image
+                      src="/thinkr-logo-white.png"
+                      alt="Logo"
+                      height={56}
+                      width={168}
+                      className="h-14 w-auto object-contain cursor-pointer"
+                      onError={() => setImageError(true)}
+                    />
+                  </div>
                 ) : (
                   <div className="text-white text-xl font-bold ml-2 cursor-pointer">THINKR</div>
                 )}
@@ -269,14 +273,14 @@ export default function AppSidebar() {
               <Link
                 href="/app"
                 onClick={() => setIsCollapsed(false)}
-                className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors font-medium ${
+                className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isChat
                     ? "text-[#A78BFA] font-bold shadow-none"
-                    : "text-[#A78BFA] hover:bg-[#A78BFA] hover:text-white"
+                    : "text-[#A78BFA] font-medium hover:bg-[#A78BFA] hover:text-white"
                 }`}
               >
-                <Plus className={`h-5 w-5 ${isChat ? "text-[#A78BFA] font-bold" : ""}`} />
-                <span className={isChat ? "font-bold" : undefined}>New chat</span>
+                <Plus className={`h-5 w-5 ${isChat ? "text-[#A78BFA] font-bold" : "text-[#A78BFA]"}`} />
+                <span className={isChat ? "font-bold" : "font-medium"}>New chat</span>
               </Link>
               <Link
                 href="/app/scheduler"
@@ -324,4 +328,4 @@ export default function AppSidebar() {
       </div>
     </>
   );
-} 
+}
