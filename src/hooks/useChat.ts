@@ -211,7 +211,7 @@ export function useChat({ threadId, intent, onThreadChange }: UseChatOptions = {
       // or if the historical messages are different from current messages
       setMessages(prevMessages => {
         // If we have no messages or it's a different thread, use history data
-        if (prevMessages.length === 0 || prevMessages.length === 1 && prevMessages[0].id === 'welcome') {
+        if (prevMessages.length === 0) {
           return processedMessages;
         }
         
@@ -235,15 +235,8 @@ export function useChat({ threadId, intent, onThreadChange }: UseChatOptions = {
         return processedMessages;
       });
     } else if (!threadId) {
-      // New chat - show welcome message
-      setMessages([
-        {
-          id: 'welcome',
-          role: 'assistant',
-          content: 'Hello! How can I assist you today?',
-          created_at: new Date().toISOString(),
-        },
-      ]);
+      // New chat - start with empty messages
+      setMessages([]);
     }
   }, [historyData, threadId]);
 

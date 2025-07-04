@@ -14,6 +14,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 import AuditCard from '@/components/AuditCard';
 import ShopifyErrorModal from '@/components/ShopifyErrorModal';
+import { useNavigation } from '@/contexts/NavigationContext';
 import { useChat, useChatUI } from '@/hooks/useChat';
 import { ChatIntent, AgentSpecification } from '@/types/chat';
 import { useLocalStorage, ConnectionStatus } from '@/hooks/useLocalStorage';
@@ -61,6 +62,7 @@ interface ApiConnectionStatus {
 function ChatShell() {
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const { setShowLogo } = useNavigation();
   const [currentThreadId, setCurrentThreadId] = useState<string | undefined>();
   const [message, setMessage] = useState('');
   const [isConnectingShopify, setIsConnectingShopify] = useState(false);
@@ -99,6 +101,12 @@ function ChatShell() {
   });
 
   const { storedData } = useLocalStorage();
+
+  // Control navigation logo visibility based on message count
+  useEffect(() => {
+    const hasUserMessages = messages.some(m => m.role === 'user');
+    setShowLogo(hasUserMessages);
+  }, [messages, setShowLogo]);
 
   // Load dismissed states from localStorage on mount
   useEffect(() => {
@@ -199,13 +207,13 @@ function ChatShell() {
     return hasSchedules || hasAlerts;
   }, [userDataLoading, userData, storedData?.schedules, storedData?.alerts]);
 
-  // Show onboarding buttons logic
+  // Show onboarding buttons logic - only for empty chats
   const showOnboardingButtons = useMemo(() => {
     // Don't show anything while loading
     if (userDataLoading) return false;
     
-    // Only show for new chat sessions
-    if (messages.length > 1) return false;
+    // Only show for completely empty chats (no messages at all)
+    if (messages.length > 0) return false;
     
     // Show if user hasn't connected Shopify (and not dismissed) OR hasn't run audit (and not dismissed)
     const showShopifyConnect = !hasConnectedShopify && !dismissedShopify;
@@ -213,6 +221,11 @@ function ChatShell() {
     
     return showShopifyConnect || showAuditButton;
   }, [userDataLoading, messages.length, hasConnectedShopify, hasRunAudit, dismissedShopify, dismissedAudit]);
+
+  // Check if we have user messages to determine layout
+  const hasUserMessages = useMemo(() => {
+    return messages.some(m => m.role === 'user');
+  }, [messages]);
 
   // Dismiss handlers
   const handleDismissShopify = useCallback(() => {
@@ -351,11 +364,59 @@ function ChatShell() {
     return connectedServices;
   }, [fivetranConnections]);
 
+  // Utility function to parse thread's last message for display (using same logic as messages)
+  const parseThreadLastMessage = useCallback((lastMessage: string | null | undefined): string => {
+    if (!lastMessage) return '';
+    
+    // Use the same parsing logic as messages
+    try {
+      // Clean up the string - remove leading/trailing whitespace and newlines
+      let content = lastMessage.trim();
+      
+      // Handle double-escaped JSON (from database storage)
+      if (content.startsWith('"{') && content.endsWith('}"')) {
+        content = JSON.parse(content);
+      }
+      
+      // Check if it starts with { and try to find the first complete JSON object
+      if (content.startsWith('{')) {
+        // If there are multiple JSON objects concatenated, try to extract the first one
+        let braceCount = 0;
+        let firstJsonEnd = -1;
+        
+        for (let i = 0; i < content.length; i++) {
+          if (content[i] === '{') braceCount++;
+          else if (content[i] === '}') {
+            braceCount--;
+            if (braceCount === 0) {
+              firstJsonEnd = i;
+              break;
+            }
+          }
+        }
+        
+        if (firstJsonEnd > -1) {
+          const firstJsonStr = content.substring(0, firstJsonEnd + 1);
+          const parsedResponse = JSON.parse(firstJsonStr);
+          
+          if (parsedResponse.message && typeof parsedResponse.message === 'string') {
+            return parsedResponse.message;
+          }
+        }
+      }
+    } catch (error) {
+      // If parsing fails, return the original message
+    }
+    
+    // If parsing fails or no JSON found, return original content
+    return lastMessage;
+  }, []);
+
   return (
     <ErrorBoundary>
       <div className="flex flex-col h-full">
-        {/* Top-left controls: History & New chat (flipped order) */}
-        <div className="absolute top-4 left-4 lg:left-[280px] flex items-center gap-3 z-30">
+        {/* Top controls - positioned differently based on active chat */}
+        <div className={`absolute top-4 left-4 lg:left-[280px] flex items-center gap-3 z-30 ${hasUserMessages ? 'opacity-90' : ''}`}>
           <div className="relative">
             <select
               className="bg-[#2A2D2E] hover:bg-[#3A3D3E] text-white text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none transition-colors border border-gray-600/30 hover:border-purple-400/50 appearance-none -webkit-appearance-none"
@@ -364,11 +425,17 @@ function ChatShell() {
               style={{ backgroundImage: 'none' }}
             >
               <option value="" className="bg-[#2A2D2E] text-white">Chat History</option>
-              {threads.map((thread) => (
-                <option key={thread.thread_id} value={thread.thread_id} className="bg-[#2A2D2E] text-white">
-                  {thread.display_name || thread.last_message?.slice(0, 30) || 'Conversation'}
-                </option>
-              ))}
+              {threads.map((thread) => {
+                const cleanedMessage = parseThreadLastMessage(thread.last_message);
+                const displayText = thread.display_name || 
+                  (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) || 
+                  'Conversation';
+                return (
+                  <option key={thread.thread_id} value={thread.thread_id} className="bg-[#2A2D2E] text-white">
+                    {displayText}
+                  </option>
+                );
+              })}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
           </div>
@@ -382,31 +449,33 @@ function ChatShell() {
           </button>
         </div>
 
-        {/* Chat Messages Area */}
-        <div className="flex-1 flex flex-col justify-center items-center px-4 py-16">
-          {/* Centered Logo */}
-          <div className="mb-12">
-            <Image
-              src="/thinkr-logo-white.png"
-              alt="thinkr logo"
-              width={320}
-              height={96}
-              priority
-              className="w-auto h-24"
-            />
-          </div>
+        {/* Chat Content Area */}
+        <div className={`flex-1 flex flex-col ${hasUserMessages ? 'justify-start pt-16 px-6' : 'justify-center items-center px-4 py-16'}`}>
+          {/* Logo - only show when no user messages */}
+          {!hasUserMessages && (
+            <div className="mb-12">
+              <Image
+                src="/thinkr-logo-white.png"
+                alt="thinkr logo"
+                width={320}
+                height={96}
+                priority
+                className="w-auto h-24"
+              />
+            </div>
+          )}
 
-          {/* Content container with max width */}
-          <div className="w-full max-w-4xl mx-auto">
+          {/* Content container - wider for active chats */}
+          <div className={`w-full mx-auto ${hasUserMessages ? 'max-w-6xl' : 'max-w-4xl'}`}>
             {/* Messages */}
-            {messages.length > 1 ? (
-              <div className="mb-8">
+            {hasUserMessages ? (
+              <div className="mb-8 flex-1">
                 <MessageList
                   messages={messages}
                   isLoading={isLoading}
                   error={error}
                   onErrorDismiss={clearError}
-                  className="max-h-96 overflow-y-auto"
+                  className="min-h-[60vh] overflow-y-auto"
                 />
               </div>
             ) : (
@@ -472,57 +541,59 @@ function ChatShell() {
               </div>
             )}
 
-            {/* Input area & actions - wider input */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex-1 bg-[#2A2D2E] rounded-2xl p-4">
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="I want to monitor growth of my store"
-                  disabled={isLoading}
-                  rows={1}
-                  className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-lg"
-                  style={{ minHeight: '24px' }}
+            {/* Input area & actions - positioned at bottom for active chats */}
+            <div className={`${hasUserMessages ? 'sticky bottom-0 bg-[#141718] pt-4 pb-6' : ''}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex-1 bg-[#2A2D2E] rounded-2xl p-4">
+                  <textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="I want to monitor growth of my store"
+                    disabled={isLoading}
+                    rows={1}
+                    className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-lg"
+                    style={{ minHeight: '24px' }}
+                  />
+                </div>
+
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!message.trim() || isLoading}
+                  className="w-10 h-10 bg-[#7B6EF6] hover:bg-[#6A5ACD] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <ArrowUp className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Mode selector underneath input */}
+              <div className="flex justify-center mb-8">
+                <SegmentedModeSelector
+                  mode={mode}
+                  onChange={setMode}
+                  disabled={isLoading || intentLocked}
+                  connections={connections}
+                  hasShopifyConnection={hasConnectedShopify}
                 />
               </div>
 
-              <button
-                onClick={handleSendMessage}
-                disabled={!message.trim() || isLoading}
-                className="w-10 h-10 bg-[#7B6EF6] hover:bg-[#6A5ACD] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors"
-              >
-                <ArrowUp className="h-5 w-5" />
-              </button>
+              {/* Agent Type Suggestions (only show for Agents mode and empty chat) */}
+              {mode === 'agent_builder' && !hasUserMessages && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {AGENT_TYPES.map((agentType) => (
+                    <button
+                      key={agentType.name}
+                      onClick={() => handleAgentTypeClick(agentType.name)}
+                      className="p-4 bg-[#2A2D2E] hover:bg-[#3A3D3E] rounded-xl transition-colors text-center"
+                    >
+                      <div className="text-white mb-3 flex justify-center">{agentType.icon}</div>
+                      <div className="text-white font-medium text-sm mb-1">{agentType.name}</div>
+                      <div className="text-gray-400 text-xs">{agentType.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-
-            {/* Mode selector underneath input */}
-            <div className="flex justify-center mb-8">
-              <SegmentedModeSelector
-                mode={mode}
-                onChange={setMode}
-                disabled={isLoading || intentLocked}
-                connections={connections}
-                hasShopifyConnection={hasConnectedShopify}
-              />
-            </div>
-
-            {/* Agent Type Suggestions (only show for Agents mode and new chat) */}
-            {mode === 'agent_builder' && messages.length <= 1 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {AGENT_TYPES.map((agentType) => (
-                  <button
-                    key={agentType.name}
-                    onClick={() => handleAgentTypeClick(agentType.name)}
-                    className="p-4 bg-[#2A2D2E] hover:bg-[#3A3D3E] rounded-xl transition-colors text-center"
-                  >
-                    <div className="text-white mb-3 flex justify-center">{agentType.icon}</div>
-                    <div className="text-white font-medium text-sm mb-1">{agentType.name}</div>
-                    <div className="text-gray-400 text-xs">{agentType.desc}</div>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
