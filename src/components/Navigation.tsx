@@ -14,8 +14,16 @@ export default function Navigation() {
   const router = useRouter();
   const authFetch = useAuthFetch();
   const { logout } = useAuth();
-  const { showLogo } = useNavigation();
   const [storeName, setStoreName] = useState<string | null>(null);
+  
+  // Make navigation context optional - only use if available
+  let showLogo = false;
+  try {
+    const navigation = useNavigation();
+    showLogo = navigation.showLogo;
+  } catch (error) {
+    // NavigationProvider not available, that's fine
+  }
 
   useEffect(() => {
     // Get store name from localStorage
