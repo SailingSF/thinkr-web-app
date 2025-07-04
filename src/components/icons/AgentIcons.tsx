@@ -6,7 +6,9 @@ interface IconProps {
 
 export const InventoryIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 9h.01M9 12h.01M9 15h.01M15 9h.01M15 12h.01M15 15h.01" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 9V7a2 2 0 012-2h8a2 2 0 012 2v2" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6M9 16h6" />
   </svg>
 );
 
@@ -37,6 +39,15 @@ export const TopCustomersIcon: React.FC<IconProps> = ({ className = "w-6 h-6" })
 export const RevenueIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+  </svg>
+);
+
+export const FunnelIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 7h14l-2 4h-10l-2-4z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11h10l-2 4h-6l-2-4z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 15h6l-1 2h-4l-1-2z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17h2v2h-2v-2z" />
   </svg>
 );
 
@@ -78,4 +89,9 @@ export const AGENT_TYPES: AgentType[] = [
     name: 'Revenue',
     desc: 'Track revenue trends and growth'
   },
+  {
+    icon: <FunnelIcon />,
+    name: 'Conversion Funnel',
+    desc: 'Analyze conversion with connected Google Analytics'
+  }
 ]; 
