@@ -441,107 +441,78 @@ function ChatShell() {
           </div>
         </div>
 
-        {/* Chat Content Area */}
-        <div className={`flex-1 flex flex-col ${hasUserMessages ? 'justify-start pt-16 px-6' : 'justify-center items-center px-4 py-16'}`}>
-          {/* Logo - only show when no user messages */}
-          {!hasUserMessages && (
-            <div className="mb-12">
-              <Image
-                src="/thinkr-logo-white.png"
-                alt="thinkr logo"
-                width={320}
-                height={96}
-                priority
-                className="w-auto h-24"
-              />
-            </div>
-          )}
-
-          {/* Content container - wider for active chats */}
-          <div className="flex justify-center w-full">
-            <div className="bg-[#181A1B] rounded-2xl pt-8 pb-3 px-8 shadow border border-[#232425] w-[77%] mx-auto">
-              {/* Messages */}
-              {hasUserMessages ? (
-                <div className="mb-8 flex-1">
-                  <MessageList
-                    messages={messages}
-                    isLoading={isLoading}
-                    error={error}
-                    onErrorDismiss={clearError}
-                    className="min-h-[60vh] overflow-y-auto"
-                  />
-                </div>
-              ) : (
-                <div className="mb-8">
-                  <h1 className="text-white text-2xl font-normal mb-6 text-left">
-                    {greeting},{userName ? ` ${userName}` : ''}
-                  </h1>
-                  {/* Onboarding Cards for New Users */}
-                  {showOnboardingButtons && (
-                    <div className="mb-8 space-y-6">
-                      {/* Shopify Connection Card */}
-                      {!hasConnectedShopify && !dismissedShopify && (
-                        <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
-                          <button
-                            onClick={handleDismissShopify}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                            title="Dismiss this suggestion"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                          <div className="mb-6 lg:mb-8 pr-8">
-                            <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
-                            <h3 className="text-[32px] font-inter font-normal text-white">Connect your Shopify store</h3>
-                            <p className="text-sm lg:text-base text-gray-400 mt-2">
-                              Connect your store to start receiving AI-powered analytics and recommendations
-                            </p>
-                          </div>
-                          <ShopifyConnectButton
-                            onClick={handleShopifyConnect}
-                            isLoading={isConnectingShopify}
-                          />
-                        </div>
-                      )}
-                      {/* Store Audit Card */}
-                      {hasConnectedShopify && !hasRunAudit && !dismissedAudit && (
-                        <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
-                          <button
-                            onClick={handleDismissAudit}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                            title="Dismiss this suggestion"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                          <div className="pr-8">
-                            <AuditCard
-                              onTriggerAudit={handleTriggerAudit}
-                              isLoading={isGeneratingAudit}
-                            />
-                          </div>
-                        </div>
-                      )}
+        {/* Content container - two states: centered or full height */}
+        { !hasUserMessages ? (
+          // State 1: Centered card and input
+          <div className="flex flex-1 items-center justify-center w-full h-[100vh]">
+            <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-[77%] max-w-4xl flex flex-col items-center px-8 pt-8 pb-8" style={{ minHeight: '320px' }}>
+              <h1 className="text-white text-2xl font-normal mb-6 text-left w-full">
+                {greeting},{userName ? ` ${userName}` : ''}
+              </h1>
+              {/* Onboarding Cards for New Users */}
+              {showOnboardingButtons && (
+                <div className="mb-8 space-y-6 w-full">
+                  {/* Shopify Connection Card */}
+                  {!hasConnectedShopify && !dismissedShopify && (
+                    <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
+                      <button
+                        onClick={handleDismissShopify}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                        title="Dismiss this suggestion"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                      <div className="mb-6 lg:mb-8 pr-8">
+                        <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
+                        <h3 className="text-[32px] font-inter font-normal text-white">Connect your Shopify store</h3>
+                        <p className="text-sm lg:text-base text-gray-400 mt-2">
+                          Connect your store to start receiving AI-powered analytics and recommendations
+                        </p>
+                      </div>
+                      <ShopifyConnectButton
+                        onClick={handleShopifyConnect}
+                        isLoading={isConnectingShopify}
+                      />
                     </div>
                   )}
-                  {/* Loading indicator while fetching user data */}
-                  {userDataLoading && (
-                    <div className="mb-8 text-center">
-                      <div className="text-gray-400">Loading your profile...</div>
+                  {/* Store Audit Card */}
+                  {hasConnectedShopify && !hasRunAudit && !dismissedAudit && (
+                    <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
+                      <button
+                        onClick={handleDismissAudit}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                        title="Dismiss this suggestion"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                      <div className="pr-8">
+                        <AuditCard
+                          onTriggerAudit={handleTriggerAudit}
+                          isLoading={isGeneratingAudit}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
               )}
-              {/* Input area & actions - positioned at bottom for active chats */}
-              <div className={`${hasUserMessages ? 'sticky bottom-0 bg-[#141718] pt-4 pb-6' : ''} relative`}>
-                <div className="flex flex-col gap-2 mb-0">
+              {/* Loading indicator while fetching user data */}
+              {userDataLoading && (
+                <div className="mb-8 text-center w-full">
+                  <div className="text-gray-400">Loading your profile...</div>
+                </div>
+              )}
+              {/* Input area - centered, not fixed */}
+              <div className="w-full mt-4">
+                <div className="bg-[#141718] rounded-2xl px-6 pt-4 pb-6 border-t border-[#232425] shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
                   <div className="bg-[#2A2D2E] rounded-2xl p-4 flex items-center">
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder="I want to monitor growth of my store"
+                      placeholder="Create an Agent or ask anything..."
                       disabled={isLoading}
                       rows={1}
-                      className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-lg"
+                      className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-base"
                       style={{ minHeight: '24px' }}
                     />
                   </div>
@@ -566,25 +537,57 @@ function ChatShell() {
               </div>
             </div>
           </div>
-          {/* Agent grid below the main card */}
-          <div className="w-[77%] mx-auto min-h-[320px] flex flex-col">
-            {mode === 'agent_builder' && !hasUserMessages ? (
-              <div className="mt-6 max-h-[400px] overflow-y-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-                {AGENT_TYPES.map((agentType) => (
-                  <button
-                    key={agentType.name}
-                    onClick={() => handleAgentTypeClick(agentType.name)}
-                    className="p-4 bg-[#2A2D2E] hover:bg-[#3A3D3E] rounded-xl transition-colors text-center"
-                  >
-                    <div className="text-white mb-3 flex justify-center">{agentType.icon}</div>
-                    <div className="text-white font-medium text-sm mb-1">{agentType.name}</div>
-                    <div className="text-gray-400 text-xs">{agentType.desc}</div>
-                  </button>
-                ))}
+        ) : (
+          // State 2: Full height card, input fixed to bottom
+          <div className="fixed inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'none' }}>
+            <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-[77%] max-w-4xl flex flex-col h-[calc(100vh-48px)] relative" style={{ minHeight: '500px', pointerEvents: 'auto' }}>
+              {/* Messages area - scrollable, fills space above input */}
+              <div className="flex-1 overflow-y-auto px-8 pt-8" style={{ paddingBottom: '112px' }}>
+                <MessageList
+                  messages={messages}
+                  isLoading={isLoading}
+                  error={error}
+                  onErrorDismiss={clearError}
+                  className="min-h-[60vh]"
+                />
               </div>
-            ) : null}
+              {/* Input area - fixed to bottom, always visible, never moves */}
+              <div className="absolute left-0 bottom-0 w-full px-0" style={{ pointerEvents: 'auto' }}>
+                <div className="bg-[#141718] rounded-b-2xl px-6 pt-4 pb-6 border-t border-[#232425] shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+                  <div className="bg-[#2A2D2E] rounded-2xl p-4 flex items-center">
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Create an Agent or ask anything..."
+                      disabled={isLoading}
+                      rows={1}
+                      className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-base"
+                      style={{ minHeight: '24px' }}
+                    />
+                  </div>
+                  <div className="flex items-center w-full mt-2">
+                    <SegmentedModeSelector
+                      mode={mode}
+                      onChange={setMode}
+                      disabled={isLoading || intentLocked}
+                      connections={connections}
+                      hasShopifyConnection={hasConnectedShopify}
+                      className="w-full"
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!message.trim() || isLoading}
+                      className="w-10 h-10 ml-4 bg-[#B7A9F7] hover:bg-[#A594F9] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors shadow-none border-none"
+                    >
+                      <ArrowUp className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Agent Preview Drawer */}
         <AgentPreviewDrawer
