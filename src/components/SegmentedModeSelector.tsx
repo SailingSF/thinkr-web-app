@@ -19,6 +19,7 @@ interface SegmentedModeSelectorProps {
   disabled?: boolean;
   connections?: Connection[];
   hasShopifyConnection?: boolean;
+  className?: string;
 }
 
 const modes = [
@@ -52,7 +53,8 @@ export default function SegmentedModeSelector({
   onChange, 
   disabled = false,
   connections = [],
-  hasShopifyConnection = false
+  hasShopifyConnection = false,
+  className = ''
 }: SegmentedModeSelectorProps) {
   const [showIntegrations, setShowIntegrations] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -100,19 +102,19 @@ export default function SegmentedModeSelector({
   const hasConnections = connectedIntegrations.length > 0;
 
   return (
-    <div className="flex items-center gap-4">
-      {/* Mode Selector */}
-      <div className="flex bg-[#2A2D2E] rounded-lg p-1">
+    <div className={`flex items-center gap-0 w-full ${className}`}>
+      {/* Mode Selector - left aligned */}
+      <div className="flex bg-transparent p-1">
         {modes.map((modeOption) => (
           <button
             key={modeOption.value}
             onClick={() => onChange(modeOption.value)}
             disabled={disabled}
             className={`
-              px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 min-w-[80px]
+              px-4 py-2 text-sm font-medium transition-all duration-200 min-w-[80px] rounded-lg
               ${mode === modeOption.value 
-                ? 'bg-[#7B6EF6] text-white shadow-sm' 
-                : 'text-gray-300 hover:text-white hover:bg-[#3A3D3E]'
+                ? 'bg-[#7366FF] text-white shadow-sm' 
+                : 'bg-transparent text-gray-300 hover:text-white hover:bg-[#232425]'
               }
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
@@ -121,18 +123,17 @@ export default function SegmentedModeSelector({
           </button>
         ))}
       </div>
-
-             {/* Integrations Section */}
-       <div className="relative" ref={dropdownRef}>
+      {/* Integrations Section - right aligned */}
+      <div className="relative ml-auto">
         <button
           onClick={() => setShowIntegrations(!showIntegrations)}
-          className="flex items-center gap-2 px-3 py-2 bg-[#2A2D2E] hover:bg-[#3A3D3E] text-gray-300 hover:text-white rounded-lg text-sm transition-colors"
+          className="flex items-center gap-2 px-3 py-2 bg-[#232425] hover:bg-[#232425]/80 text-gray-300 hover:text-white rounded-lg text-sm transition-colors border-l border-[#232425]"
         >
           <Settings className="h-4 w-4" />
           <span>Integrations</span>
-                     {hasConnections && (
-             <span className="flex gap-1">
-               {connectedIntegrations.slice(0, 3).map((connection) => (
+          {hasConnections && (
+            <span className="flex gap-1">
+              {connectedIntegrations.slice(0, 3).map((connection) => (
                 <div
                   key={connection.id}
                   className="relative w-5 h-5 rounded-full bg-[#1A1B1C] border border-[#3A3D3E] flex items-center justify-center overflow-hidden"
@@ -155,7 +156,6 @@ export default function SegmentedModeSelector({
           )}
           <ChevronDown className={`h-3 w-3 transition-transform ${showIntegrations ? 'rotate-180' : ''}`} />
         </button>
-
         {/* Integrations Dropdown */}
         {showIntegrations && (
           <div className="absolute top-full mt-2 right-0 w-80 bg-[#2A2D2E] border border-[#3A3D3E] rounded-lg shadow-lg z-50">
@@ -168,7 +168,6 @@ export default function SegmentedModeSelector({
                   </button>
                 </Link>
               </div>
-              
               {hasConnections ? (
                 <div className="space-y-2">
                   {connectedIntegrations.map((connection) => (
@@ -200,12 +199,6 @@ export default function SegmentedModeSelector({
                   </Link>
                 </div>
               )}
-              
-              <div className="mt-3 pt-3 border-t border-[#3A3D3E]">
-                <p className="text-xs text-gray-500 text-center">
-                  Connect your data sources to get AI insights across Ask, Research, and Agents
-                </p>
-              </div>
             </div>
           </div>
         )}

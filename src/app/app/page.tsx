@@ -439,14 +439,6 @@ function ChatShell() {
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
           </div>
-
-          <button
-            onClick={() => setCurrentThreadId(undefined)}
-            className="flex items-center gap-2 px-3 py-2 bg-[#2A2D2E] hover:bg-[#3A3D3E] text-purple-400 rounded-lg text-sm transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            <span>New Chat</span>
-          </button>
         </div>
 
         {/* Chat Content Area */}
@@ -466,134 +458,131 @@ function ChatShell() {
           )}
 
           {/* Content container - wider for active chats */}
-          <div className={`w-full mx-auto ${hasUserMessages ? 'max-w-6xl' : 'max-w-4xl'}`}>
-            {/* Messages */}
-            {hasUserMessages ? (
-              <div className="mb-8 flex-1">
-                <MessageList
-                  messages={messages}
-                  isLoading={isLoading}
-                  error={error}
-                  onErrorDismiss={clearError}
-                  className="min-h-[60vh] overflow-y-auto"
-                />
-              </div>
-            ) : (
-              <div className="mb-8">
-                <h1 className="text-white text-2xl font-normal mb-6 text-center">
-                  {greeting}{userName ? `, ${userName}` : ''}
-                </h1>
-                
-                {/* Onboarding Cards for New Users */}
-                {showOnboardingButtons && (
-                  <div className="mb-8 space-y-6">
-                    {/* Shopify Connection Card */}
-                    {!hasConnectedShopify && !dismissedShopify && (
-                      <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
-                        <button
-                          onClick={handleDismissShopify}
-                          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                          title="Dismiss this suggestion"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                        <div className="mb-6 lg:mb-8 pr-8">
-                          <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
-                          <h3 className="text-[32px] font-inter font-normal text-white">Connect your Shopify store</h3>
-                          <p className="text-sm lg:text-base text-gray-400 mt-2">
-                            Connect your store to start receiving AI-powered analytics and recommendations
-                          </p>
-                        </div>
-                        <ShopifyConnectButton
-                          onClick={handleShopifyConnect}
-                          isLoading={isConnectingShopify}
-                        />
-                      </div>
-                    )}
-
-                    {/* Store Audit Card */}
-                    {hasConnectedShopify && !hasRunAudit && !dismissedAudit && (
-                      <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
-                        <button
-                          onClick={handleDismissAudit}
-                          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                          title="Dismiss this suggestion"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                        <div className="pr-8">
-                          <AuditCard
-                            onTriggerAudit={handleTriggerAudit}
-                            isLoading={isGeneratingAudit}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Loading indicator while fetching user data */}
-                {userDataLoading && (
-                  <div className="mb-8 text-center">
-                    <div className="text-gray-400">Loading your profile...</div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Input area & actions - positioned at bottom for active chats */}
-            <div className={`${hasUserMessages ? 'sticky bottom-0 bg-[#141718] pt-4 pb-6' : ''}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex-1 bg-[#2A2D2E] rounded-2xl p-4">
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="I want to monitor growth of my store"
-                    disabled={isLoading}
-                    rows={1}
-                    className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-lg"
-                    style={{ minHeight: '24px' }}
+          <div className="flex justify-center w-full">
+            <div className="bg-[#181A1B] rounded-2xl pt-8 pb-3 px-8 shadow border border-[#232425] w-[77%] mx-auto">
+              {/* Messages */}
+              {hasUserMessages ? (
+                <div className="mb-8 flex-1">
+                  <MessageList
+                    messages={messages}
+                    isLoading={isLoading}
+                    error={error}
+                    onErrorDismiss={clearError}
+                    className="min-h-[60vh] overflow-y-auto"
                   />
                 </div>
-
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!message.trim() || isLoading}
-                  className="w-10 h-10 bg-[#7B6EF6] hover:bg-[#6A5ACD] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors"
-                >
-                  <ArrowUp className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Mode selector underneath input */}
-              <div className="flex justify-center mb-8">
-                <SegmentedModeSelector
-                  mode={mode}
-                  onChange={setMode}
-                  disabled={isLoading || intentLocked}
-                  connections={connections}
-                  hasShopifyConnection={hasConnectedShopify}
-                />
-              </div>
-
-              {/* Agent Type Suggestions (only show for Agents mode and empty chat) */}
-              {mode === 'agent_builder' && !hasUserMessages && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {AGENT_TYPES.map((agentType) => (
-                    <button
-                      key={agentType.name}
-                      onClick={() => handleAgentTypeClick(agentType.name)}
-                      className="p-4 bg-[#2A2D2E] hover:bg-[#3A3D3E] rounded-xl transition-colors text-center"
-                    >
-                      <div className="text-white mb-3 flex justify-center">{agentType.icon}</div>
-                      <div className="text-white font-medium text-sm mb-1">{agentType.name}</div>
-                      <div className="text-gray-400 text-xs">{agentType.desc}</div>
-                    </button>
-                  ))}
+              ) : (
+                <div className="mb-8">
+                  <h1 className="text-white text-2xl font-normal mb-6 text-left">
+                    {greeting},{userName ? ` ${userName}` : ''}
+                  </h1>
+                  {/* Onboarding Cards for New Users */}
+                  {showOnboardingButtons && (
+                    <div className="mb-8 space-y-6">
+                      {/* Shopify Connection Card */}
+                      {!hasConnectedShopify && !dismissedShopify && (
+                        <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
+                          <button
+                            onClick={handleDismissShopify}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                            title="Dismiss this suggestion"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                          <div className="mb-6 lg:mb-8 pr-8">
+                            <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
+                            <h3 className="text-[32px] font-inter font-normal text-white">Connect your Shopify store</h3>
+                            <p className="text-sm lg:text-base text-gray-400 mt-2">
+                              Connect your store to start receiving AI-powered analytics and recommendations
+                            </p>
+                          </div>
+                          <ShopifyConnectButton
+                            onClick={handleShopifyConnect}
+                            isLoading={isConnectingShopify}
+                          />
+                        </div>
+                      )}
+                      {/* Store Audit Card */}
+                      {hasConnectedShopify && !hasRunAudit && !dismissedAudit && (
+                        <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
+                          <button
+                            onClick={handleDismissAudit}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                            title="Dismiss this suggestion"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                          <div className="pr-8">
+                            <AuditCard
+                              onTriggerAudit={handleTriggerAudit}
+                              isLoading={isGeneratingAudit}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* Loading indicator while fetching user data */}
+                  {userDataLoading && (
+                    <div className="mb-8 text-center">
+                      <div className="text-gray-400">Loading your profile...</div>
+                    </div>
+                  )}
                 </div>
               )}
+              {/* Input area & actions - positioned at bottom for active chats */}
+              <div className={`${hasUserMessages ? 'sticky bottom-0 bg-[#141718] pt-4 pb-6' : ''} relative`}>
+                <div className="flex flex-col gap-2 mb-0">
+                  <div className="bg-[#2A2D2E] rounded-2xl p-4 flex items-center">
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="I want to monitor growth of my store"
+                      disabled={isLoading}
+                      rows={1}
+                      className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-lg"
+                      style={{ minHeight: '24px' }}
+                    />
+                  </div>
+                  <div className="flex items-center w-full mt-2">
+                    <SegmentedModeSelector
+                      mode={mode}
+                      onChange={setMode}
+                      disabled={isLoading || intentLocked}
+                      connections={connections}
+                      hasShopifyConnection={hasConnectedShopify}
+                      className="w-full"
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!message.trim() || isLoading}
+                      className="w-10 h-10 ml-4 bg-[#B7A9F7] hover:bg-[#A594F9] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors shadow-none border-none"
+                    >
+                      <ArrowUp className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+          {/* Agent grid below the main card */}
+          <div className="w-[77%] mx-auto min-h-[320px] flex flex-col">
+            {mode === 'agent_builder' && !hasUserMessages ? (
+              <div className="mt-6 max-h-[400px] overflow-y-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+                {AGENT_TYPES.map((agentType) => (
+                  <button
+                    key={agentType.name}
+                    onClick={() => handleAgentTypeClick(agentType.name)}
+                    className="p-4 bg-[#2A2D2E] hover:bg-[#3A3D3E] rounded-xl transition-colors text-center"
+                  >
+                    <div className="text-white mb-3 flex justify-center">{agentType.icon}</div>
+                    <div className="text-white font-medium text-sm mb-1">{agentType.name}</div>
+                    <div className="text-gray-400 text-xs">{agentType.desc}</div>
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
 
