@@ -30,7 +30,7 @@ export default function LoginForm() {
           <h2 className="text-[40px] text-white font-normal mb-1">
             Welcome back.
           </h2>
-          <p className="text-[#8C74FF] text-lg">
+          <p className="text-white text-lg">
             Sign in to your account.
           </p>
         </div>
