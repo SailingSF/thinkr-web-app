@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Plus, ArrowUp, X, ChevronDown, Bot, MessageCircle, Hexagon } from 'lucide-react';
@@ -459,247 +460,69 @@ function ChatShell() {
 
   return (
     <ErrorBoundary>
-      <div className="flex flex-col h-full">
-        {/* Top controls - positioned differently based on active chat */}
-        <div className={`absolute top-4 left-4 lg:left-[280px] flex items-center gap-3 z-30 ${hasUserMessages ? 'opacity-90' : ''}`}>
-          <div className="relative" ref={dropdownRef}>
-            <button
-              className="flex items-center gap-2 bg-[#2A2D2E] hover:bg-[#3A3D3E] text-white text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none transition-colors border border-gray-600/30 hover:border-purple-400/50 min-w-[180px] shadow-sm"
-              onClick={() => setDropdownOpen((open) => !open)}
-              aria-haspopup="listbox"
-              aria-expanded={dropdownOpen}
-              type="button"
-            >
-              <span className="truncate flex-1 text-left">
-                {currentThreadId
-                  ? (threads.find(t => t.thread_id === currentThreadId)?.display_name || 'Conversation')
-                  : 'Chat History'}
-              </span>
-              <ChevronDown className="h-4 w-4 text-gray-400" />
-            </button>
-            {dropdownOpen && (
-              <div className="absolute left-0 mt-2 w-[260px] max-h-[80vh] bg-[#232425] border border-[#3A3D3E] rounded-lg shadow-lg z-50 overflow-y-auto animate-fade-in">
-                <div className="py-2">
-                  {/* Search bar replaces the second 'Chat History' label */}
-                  <div className="px-4 pb-2">
-                    <input
-                      type="text"
-                      value={chatSearch}
-                      onChange={e => setChatSearch(e.target.value)}
-                      placeholder="Search chats..."
-                      className="w-full px-3 py-2 rounded-md bg-[#181A1B] text-sm text-white placeholder-gray-400 border border-[#2A2D2E] focus:outline-none focus:border-gray-500 transition"
-                    />
-                  </div>
-                  {/* Filtered chat list */}
-                  {filteredThreads.length === 0 && (
-                    <div className="px-4 py-2 text-gray-500 text-sm">No conversations found</div>
-                  )}
-                  {filteredThreads.map((thread) => {
-                    const cleanedMessage = parseThreadLastMessage(thread.last_message);
-                    const displayText = thread.display_name ||
-                      (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) ||
-                      'Untitled Chat';
-                    const isSelected = currentThreadId === thread.thread_id;
-                    const type = thread.intent || 'ask';
-                    const isAgent = type === 'agent_builder';
-                    const typeIcon = isAgent
-                      ? <Hexagon className="w-4 h-4 text-[#60A5FA]" />
-                      : <ChatBubbleLeftRightIcon className="w-4 h-4 text-[#B7A9F7]" />;
-                    const typeLabel = isAgent
-                      ? <span className="text-xs font-medium text-[#60A5FA]">Agent</span>
-                      : <span className="text-xs font-medium text-[#B7A9F7]">Ask</span>;
-                    // Format date (fallback to empty if not available)
-                    const date = thread.created_at ? new Date(thread.created_at).toLocaleDateString() : '';
-                    return (
-                      <button
-                        key={thread.thread_id}
-                        className={`w-full text-left px-4 py-3 rounded-md flex flex-col gap-1 transition-colors text-sm ${isSelected ? 'bg-[#7B6EF6]/20 text-[#B7A9F7]' : 'hover:bg-[#2A2D2E] text-white'}`}
-                        onClick={() => {
-                          handleThreadSelect(thread.thread_id);
-                          setDropdownOpen(false);
-                        }}
-                        tabIndex={0}
-                        aria-selected={isSelected}
-                      >
-                        {/* Top row: icon + type label */}
-                        <span className="flex items-center gap-2 mb-1">
-                          {typeIcon}
-                          {typeLabel}
-                        </span>
-                        {/* Title */}
-                        <span className="font-semibold text-base truncate">{displayText}</span>
-                        {/* Message */}
-                        {cleanedMessage && (
-                          <span className="block text-xs text-gray-400 truncate">{cleanedMessage}</span>
-                        )}
-                        {/* Date */}
-                        {date && (
-                          <span className="block text-[11px] text-gray-500 mt-1">{date}</span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+      <div className="h-screen flex flex-col items-center justify-between bg-[#111314] overflow-hidden">
+        {/* Centered main content: greeting and agent cards */}
+        <div className="flex flex-col items-center justify-center w-full" style={{ flex: '1 0 auto' }}>
+          <h1 className="text-white text-3xl font-normal text-center w-[77%] max-w-4xl mb-8">
+            {greeting},{userName ? ` ${userName}` : ''}
+          </h1>
+          {mode === 'agent_builder' && (
+            <div className="w-[77%] max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#181A1B] rounded-2xl p-4 border border-[#232425]">
+              {AGENT_TYPES.map((agent) => (
+                <button
+                  key={agent.name}
+                  onClick={() => handleAgentTypeClick(agent.name)}
+                  className="flex flex-col items-center justify-center bg-[#232425] hover:bg-[#2C2D32] rounded-lg p-3 transition-colors border border-[#232425] hover:border-[#7B6EF6] shadow group focus:outline-none min-h-[110px]"
+                >
+                  <span className="mb-2 text-white group-hover:text-[#7B6EF6]">
+                    {React.cloneElement(agent.icon as React.ReactElement, { className: 'w-5 h-5' })}
+                  </span>
+                  <span className="text-[13px] font-semibold text-white mb-0.5 text-center leading-tight">{agent.name}</span>
+                  <span className="text-[11px] text-gray-400 text-center leading-tight">{agent.desc}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Content container - two states: centered or full height */}
-        { !hasUserMessages ? (
-          // State 1: Centered card and input
-          <div className="flex flex-1 items-center justify-center w-full h-[100vh]">
-            <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-[77%] max-w-4xl flex flex-col items-center px-8 pt-8 pb-8" style={{ minHeight: '320px' }}>
-              <h1 className="text-white text-2xl font-normal mb-6 text-left w-full">
-                    {greeting},{userName ? ` ${userName}` : ''}
-                  </h1>
-                  {/* Onboarding Cards for New Users */}
-                  {showOnboardingButtons && (
-                <div className="mb-8 space-y-6 w-full">
-                      {/* Shopify Connection Card */}
-                      {!hasConnectedShopify && !dismissedShopify && (
-                        <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
-                          <button
-                            onClick={handleDismissShopify}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                            title="Dismiss this suggestion"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                          <div className="mb-6 lg:mb-8 pr-8">
-                            <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
-                            <h3 className="text-[32px] font-inter font-normal text-white">Connect your Shopify store</h3>
-                            <p className="text-sm lg:text-base text-gray-400 mt-2">
-                              Connect your store to start receiving AI-powered analytics and recommendations
-                            </p>
-                          </div>
-                          <ShopifyConnectButton
-                            onClick={handleShopifyConnect}
-                            isLoading={isConnectingShopify}
-                          />
-                        </div>
-                      )}
-                      {/* Store Audit Card */}
-                      {hasConnectedShopify && !hasRunAudit && !dismissedAudit && (
-                        <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
-                          <button
-                            onClick={handleDismissAudit}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                            title="Dismiss this suggestion"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                          <div className="pr-8">
-                            <AuditCard
-                              onTriggerAudit={handleTriggerAudit}
-                              isLoading={isGeneratingAudit}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {/* Loading indicator while fetching user data */}
-                  {userDataLoading && (
-                <div className="mb-8 text-center w-full">
-                      <div className="text-gray-400">Loading your profile...</div>
-                </div>
-              )}
-              {/* Input area - centered, not fixed */}
-              <div className="w-full mt-4">
-                <div className="bg-chat-dark rounded-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
-                  <div className="bg-chat-input rounded-2xl p-4 flex items-center">
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Create an Agent or ask anything..."
-                      disabled={isLoading}
-                      rows={1}
-                      className="w-full bg-transparent text-chat-text placeholder-chat-icon resize-none focus:outline-none text-base"
-                      style={{ minHeight: '24px' }}
-                    />
-                  </div>
-                  <div className="flex items-center w-full mt-2">
-                    <SegmentedModeSelector
-                      mode={mode}
-                      onChange={setMode}
-                      disabled={isLoading || intentLocked}
-                      connections={connections}
-                      hasShopifyConnection={hasConnectedShopify}
-                      className="w-full"
-                    />
-                    <button
-                      onClick={handleSendMessage}
-                      disabled={!message.trim() || isLoading}
-                      className={`w-10 h-10 ml-4 text-chat-text rounded-lg flex items-center justify-center transition-colors shadow-none border-none ${
-                        !message.trim() || isLoading 
-                          ? 'bg-enter-inactive opacity-50 cursor-not-allowed' 
-                          : 'bg-enter-active hover:bg-purple-400'
-                      }`}
-                    >
-                      <ArrowUp className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+        {/* Chat input area - always at the bottom, centered */}
+        <div className="w-full flex justify-center mb-6" style={{ flex: '0 0 auto' }}>
+          <div className="bg-chat-dark rounded-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-[77%] max-w-4xl flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+            <div className="bg-chat-input rounded-2xl p-4 flex items-center">
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Create an Agent or ask anything..."
+                disabled={isLoading}
+                rows={1}
+                className="w-full bg-transparent text-chat-text placeholder-chat-icon resize-none focus:outline-none text-base"
+                style={{ minHeight: '24px' }}
+              />
+            </div>
+            <div className="flex items-center w-full mt-2">
+              <SegmentedModeSelector
+                mode={mode}
+                onChange={setMode}
+                disabled={isLoading || intentLocked}
+                connections={connections}
+                hasShopifyConnection={hasConnectedShopify}
+                className="w-full"
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!message.trim() || isLoading}
+                className={`w-10 h-10 ml-4 text-chat-text rounded-lg flex items-center justify-center transition-colors shadow-none border-none ${
+                  !message.trim() || isLoading 
+                    ? 'bg-enter-inactive opacity-50 cursor-not-allowed' 
+                    : 'bg-enter-active hover:bg-purple-400'
+                }`}
+              >
+                <ArrowUp className="h-5 w-5" />
+              </button>
             </div>
           </div>
-        ) : (
-          // State 2: Full height card, input fixed to bottom
-          <div className="fixed inset-0 flex flex-col items-center justify-center z-10" style={{ pointerEvents: 'none' }}>
-            <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-[77%] max-w-4xl flex flex-col h-[calc(100vh-48px)] relative" style={{ minHeight: '500px', pointerEvents: 'auto' }}>
-              {/* Messages area - scrollable, fills space above input */}
-              <div className="flex-1 overflow-y-auto px-8 pt-8" style={{ paddingBottom: '112px' }}>
-                <MessageList
-                  messages={messages}
-                  isLoading={isLoading}
-                  error={error}
-                  onErrorDismiss={clearError}
-                  className="min-h-[60vh]"
-                />
-              </div>
-              {/* Input area - fixed to bottom, always visible, never moves */}
-              <div className="absolute left-0 bottom-0 w-full px-0" style={{ pointerEvents: 'auto' }}>
-                <div className="bg-chat-dark rounded-b-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
-                  <div className="bg-chat-input rounded-2xl p-4 flex items-center">
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Create an Agent or ask anything..."
-                      disabled={isLoading}
-                      rows={1}
-                      className="w-full bg-transparent text-chat-text placeholder-chat-icon resize-none focus:outline-none text-base"
-                      style={{ minHeight: '24px' }}
-                    />
-                  </div>
-                  <div className="flex items-center w-full mt-2">
-                    <SegmentedModeSelector
-                      mode={mode}
-                      onChange={setMode}
-                      disabled={isLoading || intentLocked}
-                      connections={connections}
-                      hasShopifyConnection={hasConnectedShopify}
-                      className="w-full"
-                    />
-                  <button
-                      onClick={handleSendMessage}
-                      disabled={!message.trim() || isLoading}
-                      className={`w-10 h-10 ml-4 text-chat-text rounded-lg flex items-center justify-center transition-colors shadow-none border-none ${
-                        !message.trim() || isLoading 
-                          ? 'bg-enter-inactive opacity-50 cursor-not-allowed' 
-                          : 'bg-enter-active hover:bg-purple-400'
-                      }`}
-                    >
-                      <ArrowUp className="h-5 w-5" />
-                  </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* Agent Preview Drawer */}
         <AgentPreviewDrawer
