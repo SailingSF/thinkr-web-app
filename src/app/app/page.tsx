@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Plus, ArrowUp, X, ChevronDown } from 'lucide-react';
+import { Plus, ArrowUp, X, ChevronDown, Bot, MessageCircle, Hexagon } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
 import SegmentedModeSelector from '@/components/SegmentedModeSelector';
 import { Connection } from '@/components/SegmentedModeSelector';
@@ -102,6 +103,25 @@ function ChatShell() {
   });
 
   const { storedData } = useLocalStorage();
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Add state for search
+  const [chatSearch, setChatSearch] = useState('');
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [dropdownOpen]);
 
   // Control navigation logo visibility based on message count
   useEffect(() => {
@@ -424,32 +444,104 @@ function ChatShell() {
     return () => window.removeEventListener('thinkr:new-chat', handler);
   }, [resetChat]);
 
+  // Compute filtered threads for search
+  const filteredThreads = threads.filter(thread => {
+    const cleanedMessage = parseThreadLastMessage(thread.last_message);
+    const displayText = thread.display_name ||
+      (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) ||
+      'Untitled Chat';
+    const search = chatSearch.toLowerCase();
+    return (
+      displayText.toLowerCase().includes(search) ||
+      (cleanedMessage && cleanedMessage.toLowerCase().includes(search))
+    );
+  });
+
   return (
     <ErrorBoundary>
       <div className="flex flex-col h-full">
         {/* Top controls - positioned differently based on active chat */}
         <div className={`absolute top-4 left-4 lg:left-[280px] flex items-center gap-3 z-30 ${hasUserMessages ? 'opacity-90' : ''}`}>
-          <div className="relative">
-            <select
-              className="bg-[#2A2D2E] hover:bg-[#3A3D3E] text-white text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none transition-colors border border-gray-600/30 hover:border-purple-400/50 appearance-none -webkit-appearance-none"
-              value={currentThreadId || ''}
-              onChange={(e) => handleThreadSelect(e.target.value)}
-              style={{ backgroundImage: 'none' }}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              className="flex items-center gap-2 bg-[#2A2D2E] hover:bg-[#3A3D3E] text-white text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none transition-colors border border-gray-600/30 hover:border-purple-400/50 min-w-[180px] shadow-sm"
+              onClick={() => setDropdownOpen((open) => !open)}
+              aria-haspopup="listbox"
+              aria-expanded={dropdownOpen}
+              type="button"
             >
-              <option value="" className="bg-[#2A2D2E] text-white">Chat History</option>
-              {threads.map((thread) => {
-                const cleanedMessage = parseThreadLastMessage(thread.last_message);
-                const displayText = thread.display_name || 
-                  (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) || 
-                  'Conversation';
-                return (
-                  <option key={thread.thread_id} value={thread.thread_id} className="bg-[#2A2D2E] text-white">
-                    {displayText}
-                  </option>
-                );
-              })}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              <span className="truncate flex-1 text-left">
+                {currentThreadId
+                  ? (threads.find(t => t.thread_id === currentThreadId)?.display_name || 'Conversation')
+                  : 'Chat History'}
+              </span>
+              <ChevronDown className="h-4 w-4 text-gray-400" />
+            </button>
+            {dropdownOpen && (
+              <div className="absolute left-0 mt-2 w-[260px] max-h-[80vh] bg-[#232425] border border-[#3A3D3E] rounded-lg shadow-lg z-50 overflow-y-auto animate-fade-in">
+                <div className="py-2">
+                  {/* Search bar replaces the second 'Chat History' label */}
+                  <div className="px-4 pb-2">
+                    <input
+                      type="text"
+                      value={chatSearch}
+                      onChange={e => setChatSearch(e.target.value)}
+                      placeholder="Search chats..."
+                      className="w-full px-3 py-2 rounded-md bg-[#181A1B] text-sm text-white placeholder-gray-400 border border-[#2A2D2E] focus:outline-none focus:border-gray-500 transition"
+                    />
+                  </div>
+                  {/* Filtered chat list */}
+                  {filteredThreads.length === 0 && (
+                    <div className="px-4 py-2 text-gray-500 text-sm">No conversations found</div>
+                  )}
+                  {filteredThreads.map((thread) => {
+                    const cleanedMessage = parseThreadLastMessage(thread.last_message);
+                    const displayText = thread.display_name ||
+                      (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) ||
+                      'Untitled Chat';
+                    const isSelected = currentThreadId === thread.thread_id;
+                    const type = thread.intent || 'ask';
+                    const isAgent = type === 'agent_builder';
+                    const typeIcon = isAgent
+                      ? <Hexagon className="w-4 h-4 text-[#60A5FA]" />
+                      : <ChatBubbleLeftRightIcon className="w-4 h-4 text-[#B7A9F7]" />;
+                    const typeLabel = isAgent
+                      ? <span className="text-xs font-medium text-[#60A5FA]">Agent</span>
+                      : <span className="text-xs font-medium text-[#B7A9F7]">Ask</span>;
+                    // Format date (fallback to empty if not available)
+                    const date = thread.created_at ? new Date(thread.created_at).toLocaleDateString() : '';
+                    return (
+                      <button
+                        key={thread.thread_id}
+                        className={`w-full text-left px-4 py-3 rounded-md flex flex-col gap-1 transition-colors text-sm ${isSelected ? 'bg-[#7B6EF6]/20 text-[#B7A9F7]' : 'hover:bg-[#2A2D2E] text-white'}`}
+                        onClick={() => {
+                          handleThreadSelect(thread.thread_id);
+                          setDropdownOpen(false);
+                        }}
+                        tabIndex={0}
+                        aria-selected={isSelected}
+                      >
+                        {/* Top row: icon + type label */}
+                        <span className="flex items-center gap-2 mb-1">
+                          {typeIcon}
+                          {typeLabel}
+                        </span>
+                        {/* Title */}
+                        <span className="font-semibold text-base truncate">{displayText}</span>
+                        {/* Message */}
+                        {cleanedMessage && (
+                          <span className="block text-xs text-gray-400 truncate">{cleanedMessage}</span>
+                        )}
+                        {/* Date */}
+                        {date && (
+                          <span className="block text-[11px] text-gray-500 mt-1">{date}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
