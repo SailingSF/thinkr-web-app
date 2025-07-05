@@ -515,7 +515,7 @@ function ChatShell() {
               )}
               {/* Input area - centered, not fixed */}
               <div className="w-full mt-4">
-                <div className="bg-[#141718] rounded-2xl px-6 pt-4 pb-6 border-t border-[#232425] shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+                <div className="bg-[#141718] rounded-2xl px-6 pt-4 pb-6 border border-gray-700 shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
                   <div className="bg-[#2A2D2E] rounded-2xl p-4 flex items-center">
                     <textarea
                       value={message}
@@ -565,7 +565,7 @@ function ChatShell() {
               </div>
               {/* Input area - fixed to bottom, always visible, never moves */}
               <div className="absolute left-0 bottom-0 w-full px-0" style={{ pointerEvents: 'auto' }}>
-                <div className="bg-[#141718] rounded-b-2xl px-6 pt-4 pb-6 border-t border-[#232425] shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+                <div className="bg-[#141718] rounded-b-2xl px-6 pt-4 pb-6 border border-gray-700 shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
                   <div className="bg-[#2A2D2E] rounded-2xl p-4 flex items-center">
                     <textarea
                       value={message}

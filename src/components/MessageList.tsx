@@ -17,9 +17,12 @@ const MessageBubble = memo(({ message }: MessageBubbleProps) => {
   return (
     <div className={`mb-4 flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] ${isUser ? 'text-right' : 'text-left'}`}>
+        {!isUser && (
+          <div className="text-xs text-gray-400 mb-1">thinkr</div>
+        )}
         <div
-          className={`inline-block p-3 rounded-lg shadow-md ${ 
-            isUser ? 'bg-[#7B6EF6] text-white' : 'bg-[#2A2D2E] text-gray-100'
+          className={`inline-block p-3 rounded-lg shadow-md ${
+            isUser ? 'bg-gray-700 text-white' : 'text-gray-100'
           } prose prose-sm prose-invert max-w-none`}
         >
           <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
