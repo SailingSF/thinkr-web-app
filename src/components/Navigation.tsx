@@ -65,13 +65,18 @@ export default function Navigation() {
           )}
         </div>
 
-        {/* Right side - Store name, Help, and Logout */}
+        {/* Store name (centered if present) */}
+        {storeName && (
+          <div className="px-4 py-2 text-gray-300 font-medium">
+            {storeName}
+          </div>
+        )}
+
+        {/* Spacer to push buttons to the right */}
+        <div className="flex-1" />
+
+        {/* Right side - Help and Logout */}
         <div className="flex items-center gap-4">
-          {storeName && (
-            <div className="px-4 py-2 text-gray-300 font-medium">
-              {storeName}
-            </div>
-          )}
           <Link
             href="/faq"
             className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
