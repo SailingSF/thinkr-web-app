@@ -65,7 +65,7 @@ export default function AppSidebar() {
                 <nav className="flex flex-col items-center space-y-4 w-full mt-4 flex-1">
                   <Link
                     href="/app"
-                    onClick={handleNav}
+                    onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); handleNav && handleNav(); }}
                     className={`flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors ${
                       isChat
                         ? "text-[#A78BFA] font-bold shadow-none"
@@ -144,7 +144,7 @@ export default function AppSidebar() {
                 <nav className="flex-1 flex flex-col space-y-2 px-4 mt-8">
                   <Link
                     href="/app"
-                    onClick={handleNav}
+                    onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); handleNav && handleNav(); }}
                     className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                       isChat
                         ? "text-[#A78BFA] font-bold shadow-none"
@@ -272,7 +272,7 @@ export default function AppSidebar() {
             <nav className="flex-1 flex flex-col space-y-2 px-4 mt-8">
               <Link
                 href="/app"
-                onClick={() => setIsCollapsed(false)}
+                onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); handleNav && handleNav(); }}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isChat
                     ? "text-[#A78BFA] font-bold shadow-none"
