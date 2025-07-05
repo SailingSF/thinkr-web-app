@@ -607,8 +607,8 @@ function ChatShell() {
               )}
               {/* Input area - centered, not fixed */}
               <div className="w-full mt-4">
-                <div className="bg-[#141718] rounded-2xl px-6 pt-4 pb-6 border border-gray-700 shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
-                  <div className="bg-[#2A2D2E] rounded-2xl p-4 flex items-center">
+                <div className="bg-chat-dark rounded-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+                  <div className="bg-chat-input rounded-2xl p-4 flex items-center">
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
@@ -616,7 +616,7 @@ function ChatShell() {
                       placeholder="Create an Agent or ask anything..."
                       disabled={isLoading}
                       rows={1}
-                      className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-base"
+                      className="w-full bg-transparent text-chat-text placeholder-chat-icon resize-none focus:outline-none text-base"
                       style={{ minHeight: '24px' }}
                     />
                   </div>
@@ -632,7 +632,11 @@ function ChatShell() {
                     <button
                       onClick={handleSendMessage}
                       disabled={!message.trim() || isLoading}
-                      className="w-10 h-10 ml-4 bg-[#B7A9F7] hover:bg-[#A594F9] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors shadow-none border-none"
+                      className={`w-10 h-10 ml-4 text-chat-text rounded-lg flex items-center justify-center transition-colors shadow-none border-none ${
+                        !message.trim() || isLoading 
+                          ? 'bg-enter-inactive opacity-50 cursor-not-allowed' 
+                          : 'bg-enter-active hover:bg-purple-400'
+                      }`}
                     >
                       <ArrowUp className="h-5 w-5" />
                     </button>
@@ -657,8 +661,8 @@ function ChatShell() {
               </div>
               {/* Input area - fixed to bottom, always visible, never moves */}
               <div className="absolute left-0 bottom-0 w-full px-0" style={{ pointerEvents: 'auto' }}>
-                <div className="bg-[#141718] rounded-b-2xl px-6 pt-4 pb-6 border border-gray-700 shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
-                  <div className="bg-[#2A2D2E] rounded-2xl p-4 flex items-center">
+                <div className="bg-chat-dark rounded-b-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+                  <div className="bg-chat-input rounded-2xl p-4 flex items-center">
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
@@ -666,7 +670,7 @@ function ChatShell() {
                       placeholder="Create an Agent or ask anything..."
                       disabled={isLoading}
                       rows={1}
-                      className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-base"
+                      className="w-full bg-transparent text-chat-text placeholder-chat-icon resize-none focus:outline-none text-base"
                       style={{ minHeight: '24px' }}
                     />
                   </div>
@@ -682,7 +686,11 @@ function ChatShell() {
                   <button
                       onClick={handleSendMessage}
                       disabled={!message.trim() || isLoading}
-                      className="w-10 h-10 ml-4 bg-[#B7A9F7] hover:bg-[#A594F9] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors shadow-none border-none"
+                      className={`w-10 h-10 ml-4 text-chat-text rounded-lg flex items-center justify-center transition-colors shadow-none border-none ${
+                        !message.trim() || isLoading 
+                          ? 'bg-enter-inactive opacity-50 cursor-not-allowed' 
+                          : 'bg-enter-active hover:bg-purple-400'
+                      }`}
                     >
                       <ArrowUp className="h-5 w-5" />
                   </button>

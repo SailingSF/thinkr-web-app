@@ -17,9 +17,9 @@ const MessageBubble = memo(({ message }: MessageBubbleProps) => {
   return (
     <div className={`mb-4 flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] flex flex-col ${isUser ? 'items-end text-right' : 'items-start text-left'}`}>
-        <div className={`rounded-lg shadow-md ${isUser ? 'bg-gray-700 text-white p-3' : 'text-gray-100 p-3'} prose prose-sm prose-invert max-w-none font-light`}>
+        <div className={`rounded-lg shadow-md ${isUser ? 'bg-gray-700 text-chat-text p-3' : 'text-chat-text p-3'} prose prose-sm prose-invert max-w-none font-light`}>
           {!isUser && (
-            <div className="text-xs text-gray-400 mb-1">thinkr</div>
+            <div className="text-xs text-chat-icon mb-1">thinkr</div>
           )}
           <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
           
@@ -37,10 +37,10 @@ MessageBubble.displayName = 'MessageBubble';
 
 const TypingIndicator = memo(() => (
   <div className="mb-6 ml-4 flex justify-start">
-    <div className="bg-[#2A2D2E] text-gray-100 rounded-lg p-3 shadow-md">
+    <div className="bg-chat-input text-chat-text rounded-lg p-3 shadow-md">
       <div className="flex items-center space-x-2">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm italic text-gray-400">
+        <Loader2 className="h-4 w-4 animate-spin text-chat-icon" />
+        <span className="text-sm italic text-chat-icon">
           Consulting your data...
         </span>
       </div>
@@ -76,7 +76,7 @@ export default function MessageList({
   }, [messages, isLoading]);
 
   return (
-    <div className={`flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800/50 hover:scrollbar-thumb-gray-500 ${className}`}>
+    <div className={`flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-chat-border scrollbar-track-chat-dark/50 hover:scrollbar-thumb-chat-icon ${className}`}>
       {messages.map((message, index) => (
         <MessageBubble 
           key={`${message.id || message.role}-${message.created_at}-${index}`} 
