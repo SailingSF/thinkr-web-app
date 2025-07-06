@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { ChatMessage } from '@/types/chat';
 import InlineAgentSpec from './InlineAgentSpec';
+import React from 'react';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -72,18 +73,73 @@ const MessageBubble = memo(({ message }: MessageBubbleProps) => {
 
 MessageBubble.displayName = 'MessageBubble';
 
-const TypingIndicator = memo(() => (
-  <div className="mb-6 ml-4 flex justify-start">
-    <div className="bg-chat-input text-chat-text rounded-lg p-3 shadow-md">
-      <div className="flex items-center space-x-2">
-        <Loader2 className="h-4 w-4 animate-spin text-chat-icon" />
+// Fix TypewriterText props typing
+interface TypewriterTextProps {
+  text: string;
+  speed?: number;
+  onDone?: () => void;
+}
+
+const TypewriterText: React.FC<TypewriterTextProps> = ({ text, speed = 50, onDone }) => {
+  const [displayed, setDisplayed] = useState("");
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayed(text.slice(0, i + 1));
+      i++;
+      if (i === text.length) {
+        clearInterval(interval);
+        if (onDone) onDone();
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed, onDone]);
+  return <span>{displayed}</span>;
+};
+
+const TypingIndicator = memo(() => {
+  const [showThinking, setShowThinking] = useState(false);
+  const [typewriterKey, setTypewriterKey] = useState(0);
+
+  // When the first typewriter finishes, show the second after 500ms
+  const handleTypewriterDone = () => {
+    setTimeout(() => setShowThinking(true), 500);
+  };
+
+  // When the second typewriter finishes, restart the animation after 500ms
+  const handleThinkingDone = () => {
+    setTimeout(() => {
+      setShowThinking(false);
+      setTypewriterKey((k) => k + 1);
+    }, 500);
+  };
+
+  return (
+    <div className="flex items-start space-x-2">
+      <Loader2 className="h-4 w-4 animate-spin text-chat-icon mt-1" />
+      <div className="flex flex-col">
         <span className="text-sm italic text-chat-icon">
-          Consulting your data...
+          <TypewriterText
+            key={typewriterKey}
+            text="Consulting your data..."
+            speed={50}
+            onDone={handleTypewriterDone}
+          />
         </span>
+        {showThinking && (
+          <span className="text-sm italic text-chat-icon mt-1">
+            <TypewriterText
+              key={typewriterKey + '-thinking'}
+              text="thinking...."
+              speed={50}
+              onDone={handleThinkingDone}
+            />
+          </span>
+        )}
       </div>
     </div>
-  </div>
-));
+  );
+});
 
 TypingIndicator.displayName = 'TypingIndicator';
 
