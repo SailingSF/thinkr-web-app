@@ -63,7 +63,7 @@ interface ApiConnectionStatus {
 function ChatShell() {
   const router = useRouter();
   const authFetch = useAuthFetch();
-  const { setShowLogo } = useNavigation();
+  const { setShowLogo, isSidebarCollapsed } = useNavigation();
   const [currentThreadId, setCurrentThreadId] = useState<string | undefined>();
   const [message, setMessage] = useState('');
   const [isConnectingShopify, setIsConnectingShopify] = useState(false);
@@ -466,7 +466,9 @@ function ChatShell() {
     <ErrorBoundary>
       <div className="flex flex-col h-full">
         {/* Top controls - positioned differently based on active chat */}
-        <div className={`absolute top-4 left-4 lg:left-4 flex items-center gap-3 z-30 ${hasUserMessages ? 'opacity-90' : ''} ml-16 lg:ml-64`}>
+        <div className={`absolute top-4 left-4 lg:left-4 flex items-center gap-3 z-30 ${hasUserMessages ? 'opacity-90' : ''} ml-16 transition-all duration-300 ${
+          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+        }`}>
           <div className="relative" ref={dropdownRef}>
             <button
               className="flex items-center gap-2 bg-[#2A2D2E] hover:bg-[#3A3D3E] text-white text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none transition-colors border border-gray-600/30 hover:border-purple-400/50 min-w-[180px] shadow-sm"
@@ -722,7 +724,9 @@ function ChatShell() {
           </div>
         ) : (
           // State 2: Full height card, input fixed to bottom
-          <div className="fixed inset-0 flex flex-col items-center justify-center z-10 px-4" style={{ pointerEvents: 'none' }}>
+          <div className={`fixed inset-0 flex flex-col items-center justify-center z-10 px-4 transition-all duration-300 ${
+            isSidebarCollapsed ? 'lg:left-20' : 'lg:left-64'
+          } lg:right-16`} style={{ pointerEvents: 'none' }}>
             <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col h-[calc(100vh-48px)] relative" style={{ minHeight: '500px', pointerEvents: 'auto' }}>
               {/* Messages area - scrollable, fills space above input */}
               <div className="flex-1 overflow-y-auto px-8 pt-8" style={{ paddingBottom: '112px' }}>
