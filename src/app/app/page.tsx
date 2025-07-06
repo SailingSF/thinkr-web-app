@@ -512,7 +512,7 @@ function ChatShell() {
                       : <ChatBubbleLeftRightIcon className="w-4 h-4 text-[#B7A9F7]" />;
                     const typeLabel = isAgent
                       ? <span className="text-xs font-medium text-[#60A5FA]">Agent</span>
-                      : <span className="text-xs font-medium text-[#B7A9F7]">Ask</span>;
+                      : <span className="text-xs font-medium text-[#B7A9F7]">Chat</span>;
                     // Format date (fallback to empty if not available)
                     const date = thread.created_at ? new Date(thread.created_at).toLocaleDateString() : '';
                     return (
@@ -555,57 +555,71 @@ function ChatShell() {
           // State 1: Centered layout with sections
           <div className="flex flex-col h-full w-full">
             {/* Section 1: Greeting */}
-            <div className={`flex-1 px-4 ${mode === 'ask' || mode === 'research' ? 'flex items-center justify-center' : ''}`}>
+            <div className="flex-1 flex items-center justify-center px-4">
               <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col px-8 pt-8 pb-8" style={{ minHeight: '320px' }}>
-                <h1 className="text-white text-2xl font-normal mb-6 text-center w-full">
-                  {greeting},{userName ? ` ${userName}` : ''}
-                </h1>
+              <h1 className="text-white text-2xl font-normal mb-6 text-center w-full">
+                    {greeting},{userName ? ` ${userName}` : ''}
+                  </h1>
                 
                 {/* Section 2: Agents (when mode is 'agent_builder') */}
                 {mode === 'agent_builder' && (
                   <div className="mb-8 w-full flex justify-center">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-5xl">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full max-w-5xl">
                       {/* Inventory */}
-                      <div className="bg-[#232425] p-4 rounded-lg flex flex-col items-center cursor-pointer hover:border-[#7B6EF6] border border-transparent transition-all" onClick={() => handleAgentCardClick('Inventory')}>
-                        <span className="mb-2 text-2xl"><svg width="24" height="24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2" strokeWidth="2"/></svg></span>
-                        <span className="font-semibold text-white text-base mb-1">Inventory</span>
-                        <span className="text-gray-400 text-xs text-center">Track and optimize inventory levels</span>
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Inventory Manager')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><rect x="2" y="2" width="14" height="14" rx="2" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Inventory Manager</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Track and optimize inventory levels</span>
                       </div>
                       {/* Price Optimization */}
-                      <div className="bg-[#232425] p-4 rounded-lg flex flex-col items-center cursor-pointer hover:border-[#7B6EF6] border border-transparent transition-all" onClick={() => handleAgentCardClick('Price Optimization')}>
-                        <span className="mb-2 text-2xl"><svg width="24" height="24" fill="none" stroke="currentColor"><path d="M12 17l-5-5h10l-5 5z" strokeWidth="2"/></svg></span>
-                        <span className="font-semibold text-white text-base mb-1">Price Optimization</span>
-                        <span className="text-gray-400 text-xs text-center">Optimize pricing strategies</span>
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Pricing Consultant')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><path d="M9 13l-4-4h8l-4 4z" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Pricing Consultant</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Optimize pricing strategies</span>
                       </div>
                       {/* Financial Metrics */}
-                      <div className="bg-[#232425] p-4 rounded-lg flex flex-col items-center cursor-pointer hover:border-[#7B6EF6] border border-transparent transition-all" onClick={() => handleAgentCardClick('Financial Metrics')}>
-                        <span className="mb-2 text-2xl"><svg width="24" height="24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="2"/><path d="M12 8v4l3 3" strokeWidth="2"/></svg></span>
-                        <span className="font-semibold text-white text-base mb-1">Financial Metrics</span>
-                        <span className="text-gray-400 text-xs text-center">Monitor financial performance</span>
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Financial Analyst')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><circle cx="9" cy="9" r="7" strokeWidth="2"/><path d="M9 6v3l2 2" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Financial Analyst</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Monitor financial performance</span>
                       </div>
                       {/* General Insights */}
-                      <div className="bg-[#232425] p-4 rounded-lg flex flex-col items-center cursor-pointer hover:border-[#7B6EF6] border border-transparent transition-all" onClick={() => handleAgentCardClick('General Insights')}>
-                        <span className="mb-2 text-2xl"><svg width="24" height="24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="2"/><path d="M12 16h.01" strokeWidth="2"/><path d="M12 8v4" strokeWidth="2"/></svg></span>
-                        <span className="font-semibold text-white text-base mb-1">General Insights</span>
-                        <span className="text-gray-400 text-xs text-center">Get comprehensive business insights</span>
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('General Advisor')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><circle cx="9" cy="9" r="7" strokeWidth="2"/><path d="M9 15h.01" strokeWidth="2"/><path d="M9 5v5" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">General Advisor</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Get comprehensive business insights</span>
                       </div>
                       {/* Top Customers */}
-                      <div className="bg-[#232425] p-4 rounded-lg flex flex-col items-center cursor-pointer hover:border-[#7B6EF6] border border-transparent transition-all" onClick={() => handleAgentCardClick('Top Customers')}>
-                        <span className="mb-2 text-2xl"><svg width="24" height="24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4" strokeWidth="2"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2" strokeWidth="2"/></svg></span>
-                        <span className="font-semibold text-white text-base mb-1">Top Customers</span>
-                        <span className="text-gray-400 text-xs text-center">Analyze customer behavior and value</span>
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Customer Support')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><circle cx="9" cy="6" r="3" strokeWidth="2"/><path d="M4 16v-1a5 5 0 015-5h0a5 5 0 015 5v1" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Customer Support</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Analyze customer behavior and value</span>
                       </div>
                       {/* Revenue */}
-                      <div className="bg-[#232425] p-4 rounded-lg flex flex-col items-center cursor-pointer hover:border-[#7B6EF6] border border-transparent transition-all" onClick={() => handleAgentCardClick('Revenue')}>
-                        <span className="mb-2 text-2xl"><svg width="24" height="24" fill="none" stroke="currentColor"><path d="M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" strokeWidth="2"/><path d="M16 11V7a4 4 0 00-8 0v4" strokeWidth="2"/><rect x="8" y="11" width="8" height="6" rx="2" strokeWidth="2"/></svg></span>
-                        <span className="font-semibold text-white text-base mb-1">Revenue</span>
-                        <span className="text-gray-400 text-xs text-center">Track revenue trends and growth</span>
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Revenue Officer')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><path d="M2 15v1a1 1 0 001 1h12a1 1 0 001-1v-1" strokeWidth="2"/><path d="M13 9V6a4 4 0 00-8 0v3" strokeWidth="2"/><rect x="6" y="9" width="6" height="5" rx="1" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Revenue Officer</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Track revenue trends and growth</span>
                       </div>
-                      {/* Conversion Funnel */}
-                      <div className="bg-[#232425] p-4 rounded-lg flex flex-col items-center cursor-pointer hover:border-[#7B6EF6] border border-transparent transition-all" onClick={() => handleAgentCardClick('Conversion Funnel')}>
-                        <span className="mb-2 text-2xl"><svg width="24" height="24" fill="none" stroke="currentColor"><path d="M3 4h18l-7 8v6l-4 2v-8L3 4z" strokeWidth="2"/></svg></span>
-                        <span className="font-semibold text-white text-base mb-1">Conversion Funnel</span>
-                        <span className="text-gray-400 text-xs text-center">Analyze conversion with connected Google Analytics</span>
+                      {/* Conversion Analyst */}
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Conversion Analyst')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><path d="M2 4h14l-6 7v5l-2 1v-6L2 4z" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Conversion Analyst</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Understand conversion metrics</span>
                       </div>
                     </div>
                   </div>
