@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
@@ -13,19 +13,56 @@ interface MessageBubbleProps {
 
 const MessageBubble = memo(({ message }: MessageBubbleProps) => {
   const isUser = message.role === 'user';
-  
+  const [copied, setCopied] = useState(false);
+
+  // Helper to strip markdown for copying (simple fallback)
+  function stripMarkdown(md: string) {
+    return md.replace(/[#*_`>\-\[\]()!]/g, '').replace(/\n{2,}/g, '\n');
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(stripMarkdown(message.content));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  };
+
   return (
     <div className={`mb-2 sm:mb-4 flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[90vw] sm:max-w-[80%] flex flex-col ${isUser ? 'items-end text-right' : 'items-start text-left'}`}>
-        <div className={`rounded-lg shadow-md ${isUser ? 'bg-gray-700 text-chat-text p-2 sm:p-3' : 'text-chat-text p-2 sm:p-3'} prose prose-xs sm:prose-sm prose-invert max-w-none font-light`}>
+        <div className={`rounded-lg shadow-md ${isUser ? 'bg-gray-700 text-chat-text p-2 sm:p-3' : 'text-chat-text p-2 sm:p-3'} prose prose-xs sm:prose-sm prose-invert max-w-none font-light relative`}>
           {!isUser && (
-            <div className="text-xs text-chat-icon mb-1">thinkr</div>
+            <div className="relative group w-fit inline-block align-middle">
+              <div className="text-xs text-chat-icon mb-1 inline-block align-middle">thinkr</div>
+              <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 text-xs bg-[#232425] rounded px-2 py-1 border border-gray-700 whitespace-nowrap text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-75 pointer-events-none z-10">
+                Hey! How can I help you?
+              </span>
+            </div>
           )}
           <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
           
           {/* Show agent specification inline for assistant messages */}
           {!isUser && message.agent_specification && (
             <InlineAgentSpec specification={message.agent_specification} />
+          )}
+          {/* Copy button for assistant messages */}
+          {!isUser && (
+            <div className="relative group w-fit inline-block align-middle">
+              <button
+                onClick={handleCopy}
+                className="p-0 m-0 bg-transparent border-none shadow-none text-chat-icon hover:text-white transition-colors inline-block align-middle"
+                style={{ zIndex: 2 }}
+                title=""
+                aria-label="Copy response"
+              >
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 16 16">
+                  <rect x="4" y="4" width="8" height="8" rx="2"/>
+                  <path d="M6 2h4a2 2 0 0 1 2 2v8"/>
+                </svg>
+              </button>
+              <span className="absolute left-full top-1/2 -translate-y-1/2 ml-2 text-xs bg-[#232425] rounded px-2 py-1 border border-gray-700 whitespace-nowrap text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-75 pointer-events-none z-10">
+                {copied ? 'Copied!' : 'Copy response'}
+              </span>
+            </div>
           )}
         </div>
       </div>
