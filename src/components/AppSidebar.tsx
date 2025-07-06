@@ -32,7 +32,7 @@ export default function AppSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block fixed top-0 left-0 h-screen z-20">
+      <div className="hidden lg:block fixed top-0 left-0 h-screen w-64 z-30">
         <div className={`transition-all duration-300 ${
           isSidebarCollapsed ? "w-16" : "w-64"
         } bg-black border-r border-black p-0 flex flex-col h-full`}>
@@ -205,7 +205,8 @@ export default function AppSidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-black lg:hidden"
+        className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-black lg:hidden md:left-4 md:right-auto md:top-4 md:block"
+        style={{ left: undefined, right: undefined }}
       >
         <svg
           className="w-5 h-5 text-white"
@@ -265,34 +266,44 @@ export default function AppSidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsSidebarCollapsed(false)}
-                className="hover:bg-gray-700 hover:text-white"
+                className="hover:bg-gray-700 hover:text-white md:hidden"
               >
                 <ChevronLeft className="h-4 w-4 text-white" />
               </Button>
             </div>
-            <nav className="flex-1 flex flex-col space-y-2 px-4 mt-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="hidden md:flex fixed top-8 right-4 z-50 bg-black hover:bg-gray-700 hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4 text-white" />
+            </Button>
+            <nav className={`flex-1 flex flex-col space-y-2 px-4 mt-8 ${
+              'md:items-center md:space-y-4 md:w-full md:mt-4 md:flex-1'
+            }`}>
               <Link
                 href="/app"
                 onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); setIsSidebarCollapsed(false); }}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isChat
-                    ? "bg-gray-700 text-white"
-                    : "text-white hover:bg-gray-700 hover:text-white"
+                    ? "md:text-[#A78BFA] md:font-bold md:shadow-none text-white bg-gray-700 md:bg-transparent"
+                    : "md:text-[#A78BFA] md:font-medium md:hover:bg-[#A78BFA] md:hover:text-white text-white hover:bg-gray-700 hover:text-white"
                 }`}
               >
-                <Plus className={`h-5 w-5 ${isChat ? "text-white" : ""}`} />
-                <span>New Chat</span>
+                <Plus className={`h-5 w-5 ${isChat ? "md:text-[#A78BFA] text-white" : "md:text-[#A78BFA] text-white"}`} />
+                <span className={isChat ? "md:font-bold font-medium" : "md:font-medium font-medium"}>New Chat</span>
               </Link>
               <Link
                 href="/app/scheduler"
                 onClick={() => setIsSidebarCollapsed(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isAgents
-                    ? "bg-gray-700 text-white"
-                    : "text-white hover:bg-gray-700 hover:text-white"
+                    ? "md:bg-gray-700 md:text-white bg-gray-700 text-white"
+                    : "md:text-white md:hover:bg-gray-700 md:hover:text-white text-white hover:bg-gray-700 hover:text-white"
                 }`}
               >
-                <Hexagon className={`h-5 w-5 ${isAgents ? "text-white" : ""}`} />
+                <Hexagon className={`h-5 w-5 ${isAgents ? "md:text-white text-white" : "md:text-white text-white"}`} />
                 <span>Agents</span>
               </Link>
               <Link
@@ -300,8 +311,8 @@ export default function AppSidebar() {
                 onClick={() => setIsSidebarCollapsed(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isIntegrations
-                    ? "bg-gray-700 text-white"
-                    : "text-white hover:bg-gray-700 hover:text-white"
+                    ? "md:bg-gray-700 md:text-white bg-gray-700 text-white"
+                    : "md:text-white md:hover:bg-gray-700 md:hover:text-white text-white hover:bg-gray-700 hover:text-white"
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,11 +327,11 @@ export default function AppSidebar() {
                 onClick={() => setIsSidebarCollapsed(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isSettings
-                    ? "bg-gray-700 text-white"
-                    : "text-white hover:bg-gray-700 hover:text-white"
+                    ? "md:bg-gray-700 md:text-white bg-gray-700 text-white"
+                    : "md:text-white md:hover:bg-gray-700 md:hover:text-white text-white hover:bg-gray-700 hover:text-white"
                 }`}
               >
-                <Settings className={`h-5 w-5 ${isSettings ? "text-white" : ""}`} />
+                <Settings className={`h-5 w-5 ${isSettings ? "md:text-white text-white" : "md:text-white text-white"}`} />
                 <span>Settings</span>
               </Link>
             </div>
