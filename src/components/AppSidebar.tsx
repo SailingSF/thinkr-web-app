@@ -51,7 +51,7 @@ export default function AppSidebar() {
                   <div className="h-10 w-10 mx-auto mb-6 cursor-pointer flex items-center justify-center">
                     {!imageError ? (
                       <Image
-                        src="/Logo Square thinkr.png"
+                        src="/thinkr-icon-latest.png"
                         alt="Logo Icon"
                         width={40}
                         height={40}
