@@ -9,6 +9,8 @@ export interface User {
   store_shop_name: string | null;
   store_primary_domain_url: string | null;
   peaka_project_id: string | null;
+  phone?: string;
+  timezone?: string;
 }
 
 export interface ConnectionStatus {
