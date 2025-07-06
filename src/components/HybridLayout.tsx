@@ -9,7 +9,7 @@ interface HybridLayoutProps {
 export default function HybridLayout({ children }: HybridLayoutProps) {
   return (
     <ShopifyAppBridgeProvider>
-      <div className={`min-h-screen ${isShopifyEmbedded() ? '' : 'bg-[#1a1b1e] text-white'}`}>
+      <div className={`min-h-screen ${isShopifyEmbedded() ? '' : 'bg-[#16141C] text-white'}`}>
         {/* Only show navigation in standalone mode */}
         {!isShopifyEmbedded() && <Navigation />}
         
