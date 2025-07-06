@@ -5,15 +5,23 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 interface NavigationContextType {
   showLogo: boolean;
   setShowLogo: (show: boolean) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [showLogo, setShowLogo] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
-    <NavigationContext.Provider value={{ showLogo, setShowLogo }}>
+    <NavigationContext.Provider value={{ 
+      showLogo, 
+      setShowLogo, 
+      isSidebarCollapsed, 
+      setIsSidebarCollapsed 
+    }}>
       {children}
     </NavigationContext.Provider>
   );

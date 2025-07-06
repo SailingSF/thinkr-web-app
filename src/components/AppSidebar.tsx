@@ -4,10 +4,11 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Settings, Plus, Hexagon } from 'lucide-react';
 import { Button } from './ui/button';
+import { useNavigation } from '@/contexts/NavigationContext';
 
 export default function AppSidebar() {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isSidebarCollapsed, setIsSidebarCollapsed } = useNavigation();
   const [isMounted, setIsMounted] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -33,15 +34,15 @@ export default function AppSidebar() {
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed top-0 left-0 h-screen z-20">
         <div className={`transition-all duration-300 ${
-          isCollapsed ? "w-16" : "w-64"
+          isSidebarCollapsed ? "w-16" : "w-64"
         } bg-black border-r border-black p-0 flex flex-col h-full`}>
           <div className="flex flex-col h-full w-full">
-            {isCollapsed ? (
+            {isSidebarCollapsed ? (
               <>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                   className="hover:bg-gray-700 hover:text-white mt-6 mb-6 mx-auto"
                 >
                   <ChevronRight className="h-6 w-6 text-white" />
@@ -135,7 +136,7 @@ export default function AppSidebar() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     className="hover:bg-gray-700 hover:text-white"
                   >
                     <ChevronLeft className="h-4 w-4 text-white" />
@@ -203,7 +204,7 @@ export default function AppSidebar() {
 
       {/* Mobile Menu Button */}
       <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-black lg:hidden"
       >
         <svg
@@ -212,7 +213,7 @@ export default function AppSidebar() {
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          {isCollapsed ? (
+          {isSidebarCollapsed ? (
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -233,18 +234,18 @@ export default function AppSidebar() {
       {/* Mobile Sidebar */}
       <div
         className={`fixed inset-0 z-40 lg:hidden ${
-          isCollapsed ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          isSidebarCollapsed ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         } transition-opacity duration-300`}
       >
-        <div className="absolute inset-0 bg-black/50" onClick={() => setIsCollapsed(false)} />
+        <div className="absolute inset-0 bg-black/50" onClick={() => setIsSidebarCollapsed(false)} />
         <div
           className={`absolute left-0 top-0 h-full w-64 bg-black transform transition-transform duration-300 ${
-            isCollapsed ? 'translate-x-0' : '-translate-x-full'
+            isSidebarCollapsed ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex flex-col h-full w-full">
             <div className="flex items-center justify-between w-full px-4 pt-6 pb-4">
-              <Link href="/app" onClick={() => setIsCollapsed(false)}>
+              <Link href="/app" onClick={() => setIsSidebarCollapsed(false)}>
                 {!imageError ? (
                   <div className="flex items-center h-14">
                     <Image
@@ -263,7 +264,7 @@ export default function AppSidebar() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsCollapsed(false)}
+                onClick={() => setIsSidebarCollapsed(false)}
                 className="hover:bg-gray-700 hover:text-white"
               >
                 <ChevronLeft className="h-4 w-4 text-white" />
@@ -272,19 +273,19 @@ export default function AppSidebar() {
             <nav className="flex-1 flex flex-col space-y-2 px-4 mt-8">
               <Link
                 href="/app"
-                onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); handleNav && handleNav(); }}
+                onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); setIsSidebarCollapsed(false); }}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isChat
-                    ? "text-[#A78BFA] font-bold shadow-none"
-                    : "text-[#A78BFA] font-medium hover:bg-[#A78BFA] hover:text-white"
+                    ? "bg-gray-700 text-white"
+                    : "text-white hover:bg-gray-700 hover:text-white"
                 }`}
               >
-                <Plus className={`h-5 w-5 ${isChat ? "text-[#A78BFA] font-bold" : "text-[#A78BFA]"}`} />
-                <span className={isChat ? "font-bold" : "font-medium"}>New chat</span>
+                <Plus className={`h-5 w-5 ${isChat ? "text-white" : ""}`} />
+                <span>New Chat</span>
               </Link>
               <Link
                 href="/app/scheduler"
-                onClick={() => setIsCollapsed(false)}
+                onClick={() => setIsSidebarCollapsed(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isAgents
                     ? "bg-gray-700 text-white"
@@ -296,7 +297,7 @@ export default function AppSidebar() {
               </Link>
               <Link
                 href="/app/integrations"
-                onClick={() => setIsCollapsed(false)}
+                onClick={() => setIsSidebarCollapsed(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isIntegrations
                     ? "bg-gray-700 text-white"
@@ -312,7 +313,7 @@ export default function AppSidebar() {
             <div className="w-full px-4 pb-6 mt-auto">
               <Link
                 href="/app/profile"
-                onClick={() => setIsCollapsed(false)}
+                onClick={() => setIsSidebarCollapsed(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isSettings
                     ? "bg-gray-700 text-white"
