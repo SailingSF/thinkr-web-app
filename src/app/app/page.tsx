@@ -694,8 +694,8 @@ function ChatShell() {
                       placeholder="Create an Agent or ask anything..."
                       disabled={isLoading}
                       rows={1}
-                      className="w-full bg-transparent text-chat-text placeholder-chat-icon resize-none focus:outline-none text-base"
-                      style={{ minHeight: '24px' }}
+                      className="w-full h-16 bg-transparent text-chat-text placeholder-chat-icon focus:outline-none text-base overflow-y-auto whitespace-pre-wrap break-words"
+                      style={{ minHeight: '64px', maxHeight: '64px', resize: 'none' }}
                     />
                   </div>
                   <div className="flex items-center w-full mt-2">
@@ -749,8 +749,8 @@ function ChatShell() {
                       placeholder="Create an Agent or ask anything..."
                       disabled={isLoading}
                       rows={1}
-                      className="w-full bg-transparent text-chat-text placeholder-chat-icon resize-none focus:outline-none text-base"
-                      style={{ minHeight: '24px' }}
+                      className="w-full h-16 bg-transparent text-chat-text placeholder-chat-icon focus:outline-none text-base overflow-y-auto whitespace-pre-wrap break-words"
+                      style={{ minHeight: '64px', maxHeight: '64px', resize: 'none' }}
                     />
                   </div>
                   <div className="flex items-center w-full mt-2">
