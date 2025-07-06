@@ -555,11 +555,11 @@ function ChatShell() {
           // State 1: Centered layout with sections
           <div className="flex flex-col h-full w-full">
             {/* Section 1: Greeting */}
-            <div className="flex-1 flex items-center justify-center px-4">
+            <div className={`flex-1 px-4 ${mode === 'ask' || mode === 'research' ? 'flex items-center justify-center' : ''}`}>
               <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col px-8 pt-8 pb-8" style={{ minHeight: '320px' }}>
-              <h1 className="text-white text-2xl font-normal mb-6 text-center w-full">
-                    {greeting},{userName ? ` ${userName}` : ''}
-                  </h1>
+                <h1 className="text-white text-2xl font-normal mb-6 text-center w-full">
+                  {greeting},{userName ? ` ${userName}` : ''}
+                </h1>
                 
                 {/* Section 2: Agents (when mode is 'agent_builder') */}
                 {mode === 'agent_builder' && (

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChatIntent } from '@/types/chat';
-import { Settings, ChevronDown } from 'lucide-react';
+import { Settings, ChevronDown, Database } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -25,7 +25,7 @@ interface SegmentedModeSelectorProps {
 const modes = [
   {
     value: 'ask' as ChatIntent,
-    label: 'Ask',
+    label: '+ Ask',
   },
   {
     value: 'research' as ChatIntent,
@@ -129,8 +129,8 @@ export default function SegmentedModeSelector({
           onClick={() => setShowIntegrations(!showIntegrations)}
           className="flex items-center gap-2 px-3 py-2 bg-[#232425] hover:bg-[#232425]/80 text-gray-300 hover:text-white rounded-lg text-sm transition-colors border-l border-[#232425]"
         >
-          <Settings className="h-4 w-4" />
           <span>Integrations</span>
+          <Database className="h-4 w-4" />
           {hasConnections && (
             <span className="flex gap-1">
               {connectedIntegrations.slice(0, 3).map((connection) => (
@@ -154,11 +154,11 @@ export default function SegmentedModeSelector({
               )}
             </span>
           )}
-          <ChevronDown className={`h-3 w-3 transition-transform ${showIntegrations ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-3 w-3 transition-transform ${showIntegrations ? '' : 'rotate-180'}`} />
         </button>
         {/* Integrations Dropdown */}
         {showIntegrations && (
-          <div className="absolute top-full mt-2 right-0 w-80 bg-[#2A2D2E] border border-[#3A3D3E] rounded-lg shadow-lg z-50">
+          <div className="absolute bottom-full mb-2 right-0 w-80 bg-[#2A2D2E] border border-[#3A3D3E] rounded-lg shadow-lg z-50">
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-white font-medium">Connected Data Sources</h3>
