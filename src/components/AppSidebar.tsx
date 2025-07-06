@@ -67,13 +67,13 @@ export default function AppSidebar() {
                   <Link
                     href="/app"
                     onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); handleNav && handleNav(); }}
-                    className={`flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors ${
+                    className={`flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors text-[#A78BFA] ${
                       isChat
-                        ? "text-[#A78BFA] font-bold shadow-none"
-                        : "text-[#A78BFA] font-medium hover:bg-[#A78BFA] hover:text-white"
+                        ? "font-bold shadow-none hover:bg-[#A78BFA]/10 hover:font-bold"
+                        : "font-medium hover:font-bold hover:bg-[#A78BFA]/10"
                     }`}
                   >
-                    <Plus className={`h-6 w-6 ${isChat ? "text-[#A78BFA] font-bold" : "text-[#A78BFA]"}`} />
+                    <Plus className="h-6 w-6 text-[#A78BFA]" />
                   </Link>
                   <Link
                     href="/app/scheduler"
@@ -146,14 +146,14 @@ export default function AppSidebar() {
                   <Link
                     href="/app"
                     onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); handleNav && handleNav(); }}
-                    className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
+                    className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors text-[#A78BFA] ${
                       isChat
-                        ? "text-[#A78BFA] font-bold shadow-none"
-                        : "text-[#A78BFA] font-medium hover:bg-[#A78BFA] hover:text-white"
+                        ? "font-bold shadow-none hover:bg-[#A78BFA]/10 hover:font-bold"
+                        : "font-medium hover:font-bold hover:bg-[#A78BFA]/10"
                     }`}
                   >
-                    <Plus className={`h-5 w-5 ${isChat ? "text-[#A78BFA] font-bold" : "text-[#A78BFA]"}`} />
-                    <span className={isChat ? "font-bold" : "font-medium"}>New chat</span>
+                    <Plus className="h-5 w-5 text-[#A78BFA]" />
+                    <span className="font-bold">New chat</span>
                   </Link>
                   <Link
                     href="/app/scheduler"
@@ -284,15 +284,15 @@ export default function AppSidebar() {
             }`}>
               <Link
                 href="/app"
-                onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); setIsSidebarCollapsed(false); }}
-                className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
+                onClick={() => { window.dispatchEvent(new Event('thinkr:new-chat')); handleNav && handleNav(); }}
+                className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors text-[#A78BFA] ${
                   isChat
-                    ? "md:text-[#A78BFA] md:font-bold md:shadow-none text-white bg-gray-700 md:bg-transparent"
-                    : "md:text-[#A78BFA] md:font-medium md:hover:bg-[#A78BFA] md:hover:text-white text-white hover:bg-gray-700 hover:text-white"
+                    ? "font-bold shadow-none hover:bg-[#A78BFA]/10 hover:font-bold"
+                    : "font-medium hover:font-bold hover:bg-[#A78BFA]/10"
                 }`}
               >
-                <Plus className={`h-5 w-5 ${isChat ? "md:text-[#A78BFA] text-white" : "md:text-[#A78BFA] text-white"}`} />
-                <span className={isChat ? "md:font-bold font-medium" : "md:font-medium font-medium"}>New Chat</span>
+                <Plus className="h-5 w-5 text-[#A78BFA]" />
+                <span className="font-bold">New chat</span>
               </Link>
               <Link
                 href="/app/scheduler"

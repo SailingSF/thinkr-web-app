@@ -479,7 +479,7 @@ function ChatShell() {
             >
               <span className="truncate flex-1 text-left">
                 {currentThreadId
-                  ? (threads.find(t => t.thread_id === currentThreadId)?.display_name || 'Conversation')
+                  ? (threads.find(t => t.thread_id === currentThreadId)?.display_name || 'Recents')
                   : 'Chat History'}
               </span>
               <ChevronDown className="h-4 w-4 text-gray-400" />

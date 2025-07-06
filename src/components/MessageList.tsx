@@ -15,9 +15,9 @@ const MessageBubble = memo(({ message }: MessageBubbleProps) => {
   const isUser = message.role === 'user';
   
   return (
-    <div className={`mb-4 flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[80%] flex flex-col ${isUser ? 'items-end text-right' : 'items-start text-left'}`}>
-        <div className={`rounded-lg shadow-md ${isUser ? 'bg-gray-700 text-chat-text p-3' : 'text-chat-text p-3'} prose prose-sm prose-invert max-w-none font-light`}>
+    <div className={`mb-2 sm:mb-4 flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-[90vw] sm:max-w-[80%] flex flex-col ${isUser ? 'items-end text-right' : 'items-start text-left'}`}>
+        <div className={`rounded-lg shadow-md ${isUser ? 'bg-gray-700 text-chat-text p-2 sm:p-3' : 'text-chat-text p-2 sm:p-3'} prose prose-xs sm:prose-sm prose-invert max-w-none font-light`}>
           {!isUser && (
             <div className="text-xs text-chat-icon mb-1">thinkr</div>
           )}
@@ -76,7 +76,7 @@ export default function MessageList({
   }, [messages, isLoading]);
 
   return (
-    <div className={`flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-chat-border scrollbar-track-chat-dark/50 hover:scrollbar-thumb-chat-icon ${className}`}>
+    <div className={`flex-1 overflow-y-auto p-2 sm:p-6 space-y-2 sm:space-y-4 scrollbar-thin scrollbar-thumb-chat-border scrollbar-track-chat-dark/50 hover:scrollbar-thumb-chat-icon ${className}`}>
       {messages.map((message, index) => (
         <MessageBubble 
           key={`${message.id || message.role}-${message.created_at}-${index}`} 
@@ -85,8 +85,8 @@ export default function MessageList({
       ))}
       
       {error && (
-        <div className="my-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-sm flex items-center gap-2 shadow-md">
-          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+        <div className="my-2 sm:my-4 p-2 sm:p-3 bg-red-900/30 border border-red-700/50 rounded-lg text-red-300 text-xs sm:text-sm flex items-center gap-2 shadow-md">
+          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
           <span className="break-all flex-1">Error: {error}</span>
           {onErrorDismiss && (
             <button
