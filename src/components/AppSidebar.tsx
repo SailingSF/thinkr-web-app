@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Settings, Plus, Hexagon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Settings, Plus, Hexagon, FileText } from 'lucide-react';
 import { Button } from './ui/button';
 import { useNavigation } from '@/contexts/NavigationContext';
 
@@ -102,6 +102,12 @@ export default function AppSidebar() {
                 </nav>
                 <div className="w-full flex flex-col items-center pb-6 mt-auto">
                   <Link
+                    href="/app/agent-templates"
+                    className="flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors text-white hover:bg-gray-700 hover:text-white mb-2"
+                  >
+                    <FileText className="h-6 w-6" />
+                  </Link>
+                  <Link
                     href="/app/profile"
                     onClick={handleNav}
                     className={`flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors ${
@@ -183,6 +189,13 @@ export default function AppSidebar() {
                   </Link>
                 </nav>
                 <div className="w-full px-4 pb-6 mt-auto">
+                  <Link
+                    href="/app/agent-templates"
+                    className="flex items-center gap-3 p-2 rounded-lg w-full transition-colors text-white hover:bg-gray-700 hover:text-white mb-2"
+                  >
+                    <FileText className="h-5 w-5" />
+                    <span>Templates</span>
+                  </Link>
                   <Link
                     href="/app/profile"
                     onClick={handleNav}
@@ -323,8 +336,15 @@ export default function AppSidebar() {
             </nav>
             <div className="w-full px-4 pb-6 mt-auto">
               <Link
+                href="/app/agent-templates"
+                className="flex items-center gap-3 p-2 rounded-lg w-full transition-colors text-white hover:bg-gray-700 hover:text-white mb-2"
+              >
+                <FileText className="h-5 w-5" />
+                <span>Templates</span>
+              </Link>
+              <Link
                 href="/app/profile"
-                onClick={() => setIsSidebarCollapsed(false)}
+                onClick={handleNav}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isSettings
                     ? "md:bg-gray-700 md:text-white bg-gray-700 text-white"

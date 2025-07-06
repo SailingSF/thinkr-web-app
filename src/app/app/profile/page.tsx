@@ -85,6 +85,8 @@ export default function Profile() {
           <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
             Profile Settings
           </h1>
+          <span className="text-sm text-[#7B7B7B] mt-1">
+                      </span>
         </div>
 
         {error && (
