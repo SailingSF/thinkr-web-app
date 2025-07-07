@@ -1,8 +1,7 @@
 'use client';
 
 import Navigation from "@/components/Navigation";
-import AppSidebar from "@/components/AppSidebar";
-import { useNavigation } from '@/contexts/NavigationContext';
+import Footer from "@/components/Footer";
 
 const faqs = [
   {
@@ -32,17 +31,12 @@ const faqs = [
 ];
 
 export default function FAQ() {
-  const { isSidebarCollapsed } = useNavigation();
-
   return (
-    <div className="h-screen bg-[#141718] overflow-hidden">
+    <div className="min-h-screen bg-[#141718] text-white flex flex-col">
       <Navigation />
-      <AppSidebar />
       
-      <main className={`pt-16 p-4 h-[calc(100vh-1rem)] overflow-auto transition-all duration-300 ${
-        isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
-      }`}>
-        <div className="max-w-3xl mx-auto py-8 lg:py-12">
+      <main className="container mx-auto px-4 py-8 lg:py-12 flex-grow">
+        <div className="max-w-3xl mx-auto">
           <div className="flex flex-col gap-1 mb-8">
             <h1 className="text-[35px] text-[#FFFFFF] font-normal m-0">
               Frequently Asked Questions
@@ -72,6 +66,8 @@ export default function FAQ() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 } 
