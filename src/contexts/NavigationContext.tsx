@@ -30,7 +30,14 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 export function useNavigation() {
   const context = useContext(NavigationContext);
   if (context === undefined) {
-    throw new Error('useNavigation must be used within a NavigationProvider');
+    // Return safe fallback values instead of throwing error
+    console.warn('useNavigation must be used within a NavigationProvider, using fallback values');
+    return {
+      showLogo: false,
+      setShowLogo: () => {},
+      isSidebarCollapsed: false,
+      setIsSidebarCollapsed: () => {}
+    };
   }
   return context;
 } 
