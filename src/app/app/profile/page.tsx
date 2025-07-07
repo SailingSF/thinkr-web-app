@@ -104,20 +104,22 @@ export default function Profile() {
         <div>
           <label className="block text-base font-bold text-white mb-1">Name</label>
           <div className="text-sm text-[#A0A0A0] mb-1">The name associated with this account</div>
-          <input
-            className="w-full rounded-lg bg-[#232425] text-white px-4 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8C74FF] font-medium"
-            name="first_name"
-            value={editUser?.first_name || ''}
-            onChange={handleInputChange}
-            placeholder="First Name"
-          />
-          <input
-            className="w-full rounded-lg bg-[#232425] text-white px-4 py-2 border border-gray-700 mt-1 focus:outline-none focus:ring-2 focus:ring-[#8C74FF] font-medium"
-            name="last_name"
-            value={editUser?.last_name || ''}
-            onChange={handleInputChange}
-            placeholder="Last Name"
-          />
+          <div className="flex gap-3 w-full">
+            <input
+              className="w-1/2 rounded-lg bg-[#232425] text-white px-4 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8C74FF] font-medium"
+              name="first_name"
+              value={editUser?.first_name || ''}
+              onChange={handleInputChange}
+              placeholder="First Name"
+            />
+            <input
+              className="w-1/2 rounded-lg bg-[#232425] text-white px-4 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8C74FF] font-medium"
+              name="last_name"
+              value={editUser?.last_name || ''}
+              onChange={handleInputChange}
+              placeholder="Last Name"
+            />
+          </div>
         </div>
         <div>
           <label className="block text-base font-bold text-white mb-1">Email address</label>
