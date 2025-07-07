@@ -26,7 +26,7 @@ export default function HomeLoginForm() {
     <div className="w-[385px] max-w-full flex flex-col items-start justify-start gap-[45px] leading-[normal] tracking-[normal]">
       <section className="flex flex-col items-start justify-start py-0 pl-0 pr-5 box-border gap-2 max-w-full text-left">
         <h1 className="relative text-[47.5px] text-white">Welcome back.</h1>
-        <p className="self-stretch relative text-[21.5px] text-[#8c74ff]">
+        <p className="self-stretch relative text-[21.5px] text-white">
           Sign in to your account.
         </p>
       </section>

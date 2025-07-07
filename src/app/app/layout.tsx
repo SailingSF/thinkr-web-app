@@ -3,7 +3,7 @@
 import AppSidebar from "@/components/AppSidebar";
 import Navigation from "@/components/Navigation";
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { NavigationProvider } from '@/contexts/NavigationContext';
+import { NavigationProvider, useNavigation } from '@/contexts/NavigationContext';
 
 function AppLayoutContent({
   children,
@@ -11,6 +11,7 @@ function AppLayoutContent({
   children: React.ReactNode;
 }) {
   const { isLoading } = useAuth();
+  const { isSidebarOpen } = useNavigation();
 
   if (isLoading) {
     return (
@@ -24,7 +25,9 @@ function AppLayoutContent({
     <div className="flex flex-col h-screen bg-[#141718]">
       <Navigation />
       <AppSidebar />
-      <main className="flex-1 lg:pl-[336px] p-4 overflow-auto dark-scrollbar">
+      <main className={`flex-1 p-4 overflow-auto dark-scrollbar transition-all duration-300 ${
+        isSidebarOpen ? 'lg:pl-64' : 'lg:pl-20'
+      }`}>
         {children}
       </main>
     </div>

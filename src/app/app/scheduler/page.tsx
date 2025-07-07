@@ -112,6 +112,7 @@ export default function Scheduler() {
   const [hideWeekends, setHideWeekends] = useState(false);
   const [expandedTimeSlots, setExpandedTimeSlots] = useState<Set<string>>(new Set());
   const [showAllHours, setShowAllHours] = useState(false);
+  const [alertSearch, setAlertSearch] = useState('');
 
   // Ensure alerts is always an array and filter out deactivated alerts
   const safeAlerts = (alerts || []).filter(alert => alert.is_active);
@@ -714,18 +715,6 @@ export default function Scheduler() {
             </div>
           </div>
         </div>
-        
-        {schedules.length > 0 && (
-          <div className="mt-8 pt-8 border-t border-[#8C74FF]/10 flex justify-center">
-            <button
-              onClick={handleUnsubscribeAll}
-              disabled={isDeletingAll}
-              className="w-full lg:w-auto px-6 py-2.5 text-red-400 bg-red-400/5 hover:bg-red-400/10 disabled:bg-red-400/5 disabled:text-red-400/50 disabled:cursor-not-allowed rounded-lg transition-all duration-200 text-sm font-medium ring-1 ring-red-400/20"
-            >
-              {isDeletingAll ? 'Unsubscribing...' : 'Unsubscribe from All Analyses'}
-            </button>
-          </div>
-        )}
       </div>
     );
   };
@@ -800,16 +789,6 @@ export default function Scheduler() {
                 </div>
               ))}
             </div>
-
-            <div className="mt-8 pt-8 border-t border-[#8C74FF]/10 flex justify-center">
-              <button
-                onClick={handleUnsubscribeAll}
-                disabled={isDeletingAll}
-                className="w-full lg:w-auto px-6 py-2.5 text-red-400 bg-red-400/5 hover:bg-red-400/10 disabled:bg-red-400/5 disabled:text-red-400/50 disabled:cursor-not-allowed rounded-lg transition-all duration-200 text-sm font-medium ring-1 ring-red-400/20"
-              >
-                {isDeletingAll ? 'Unsubscribing...' : 'Unsubscribe from All Analyses'}
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -831,268 +810,135 @@ export default function Scheduler() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-4 lg:py-6 font-inter">
-      <div className="h-full overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#2C2D32]/20 [&::-webkit-scrollbar-thumb]:bg-[#2C2D32] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#3C3D42] scrollbar-thin scrollbar-track-[#2C2D32]/20 scrollbar-thumb-[#2C2D32] hover:scrollbar-thumb-[#3C3D42]">
-        <div className="container mx-auto px-4 lg:px-8">
-          {/* Title Section */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
-                  Automation Hub
-                </h1>
-                <p className="text-[22px] text-white font-normal">
-                  Manage your analysis schedules and alert agents.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                {activeSection === 'alerts' && (
-                  <button
-                    onClick={() => setIsAlertModalOpen(true)}
-                    className="px-6 py-3 bg-[#FF9800] hover:bg-[#FF9800]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#FF9800]/20 hover:shadow-lg hover:shadow-[#FF9800]/30"
-                  >
-                    Create Alert
-                  </button>
-                )}
-                {activeSection === 'schedules' && (
-                  <button
-                    onClick={() => setIsScheduleModalOpen(true)}
-                    className="px-6 py-3 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#8B5CF6]/20 hover:shadow-lg hover:shadow-[#8B5CF6]/30"
-                  >
-                    Add Schedule
-                  </button>
-                )}
-              </div>
-            </div>
-            <hr className="border-t border-white mb-4" />
-            <span className="text-sm text-[#7B7B7B] block mb-4">
-              All times are shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
-            </span>
+    <div className="min-h-[calc(100vh-64px)] bg-[#141718] pt-0 px-2 sm:px-4 md:px-8 lg:px-10 font-inter overflow-x-hidden">
+      <div className="w-full px-0 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl sm:text-3xl md:text-[35px] text-white font-light mb-2 mt-0">
+          Agents
+        </h1>
+        <button
+          className="mt-2 sm:mt-0 px-6 py-2 bg-[#8C74FF] hover:bg-[#7B5FFF] text-white rounded-lg font-semibold shadow transition-all duration-200 text-base"
+          onClick={() => router.push('/app')}
+        >
+          <span className="mr-2 text-lg font-bold align-middle">+</span> Create Agent
+        </button>
+      </div>
+      <div className="mb-4">
+        <div className="flex items-start mb-4">
+          <div className="flex-1">
           </div>
-
-          {error && (
-            <div className="mb-4 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
-              {error}
-            </div>
-          )}
-
-          <div className="bg-[#141718] rounded-2xl p-6 shadow-lg">
-            {/* Section Tabs */}
-            <div className="flex items-center gap-8 mb-6 border-b border-[#2C2D32] pb-4">
+          <div className="flex gap-3 mt-2">
+            {activeSection === 'alerts' && (
               <button
-                onClick={() => setActiveSection('schedules')}
-                className={`text-lg font-semibold transition-colors pb-2 relative ${
-                  activeSection === 'schedules' 
-                    ? 'text-[#8B5CF6]' 
-                    : 'text-[#7B7B7B] hover:text-white'
-                }`}
+                onClick={() => setIsAlertModalOpen(true)}
+                className="px-6 py-3 bg-[#FF9800] hover:bg-[#FF9800]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#FF9800]/20 hover:shadow-lg hover:shadow-[#FF9800]/30"
               >
-                Analysis Schedules
-                {safeSchedules.length > 0 && (
-                  <span className="ml-2 px-2 py-0.5 text-xs bg-[#8B5CF6]/20 text-[#8B5CF6] rounded-full">
-                    {safeSchedules.length}
-                  </span>
-                )}
-                {activeSection === 'schedules' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B5CF6]" />
-                )}
+                Create Alert
               </button>
-              <button
-                onClick={() => setActiveSection('alerts')}
-                className={`text-lg font-semibold transition-colors pb-2 relative ${
-                  activeSection === 'alerts' 
-                    ? 'text-[#FF9800]' 
-                    : 'text-[#7B7B7B] hover:text-white'
-                }`}
-              >
-                Alert Agents
+            )}
+            {activeSection === 'schedules' && null}
+          </div>
+        </div>
+        <hr className="border-t border-white mb-4" />
+      </div>
+
+      {error && (
+        <div className="mb-4 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="bg-[#141718] rounded-2xl p-6 shadow-lg">
+        <div className="mb-8">
+          <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
+            Reporting Schedules
+            {safeSchedules.length > 0 && (
+              <span className="ml-2 px-2 py-0.5 text-xs bg-[#8B5CF6]/20 text-[#8B5CF6] rounded-full">
+                {safeSchedules.length}
+              </span>
+            )}
+          </h2>
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          {/* Only show Kanban view, no view switcher UI */}
+        </div>
+
+        {/* Analysis Schedules Content */}
+        {activeSection === 'schedules' && (
+          <>
+            {renderKanbanView()}
+          </>
+        )}
+
+        {/* Render Alert Agents below Analysis Schedules */}
+        <hr className="border-t border-[#2C2D32] my-12" />
+        <div className="mt-20">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+            <div className="flex items-center gap-2 mb-2 sm:mb-0">
+              <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
+                Alerts
                 {safeAlerts.length > 0 && (
                   <span className="ml-2 px-2 py-0.5 text-xs bg-[#FF9800]/20 text-[#FF9800] rounded-full">
                     {safeAlerts.length}
                   </span>
                 )}
-                {activeSection === 'alerts' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF9800]" />
-                )}
-              </button>
+              </h2>
             </div>
-
-            {/* Content based on active section */}
-            {activeSection === 'alerts' ? (
-              renderAlertsView()
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-6">
-                    <button
-                      onClick={() => setViewMode('kanban')}
-                      className={`text-lg font-semibold transition-colors ${
-                        viewMode === 'kanban' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
-                      }`}
-                    >
-                      Kanban View
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={`text-lg font-semibold transition-colors ${
-                        viewMode === 'list' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
-                      }`}
-                    >
-                      List View
-                    </button>
-                    <button
-                      onClick={() => setViewMode('weekly')}
-                      className={`text-lg font-semibold transition-colors ${
-                        viewMode === 'weekly' ? 'text-white' : 'text-[#7B7B7B] hover:text-white'
-                      }`}
-                    >
-                      Weekly View
-                    </button>
-                  </div>
-                  {(viewMode === 'weekly' || viewMode === 'kanban') && (
-                    <div className="flex items-center gap-3" title={hasWeekendSchedules ? "Can't hide weekends when schedules exist on weekends" : "Toggle weekend visibility"}>
-                      <span className="text-sm text-[#7B7B7B]">Show Weekends</span>
-                      <button
-                        onClick={() => setHideWeekends(!hideWeekends)}
-                        disabled={hasWeekendSchedules}
-                        className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#338452]/50 focus:ring-offset-2 focus:ring-offset-[#141718] disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: hideWeekends ? '#282C2D' : '#338452' }}
-                      >
-                        <span
-                          className={`${
-                            hideWeekends ? 'translate-x-1' : 'translate-x-6'
-                          } inline-block h-4 w-4 transform rounded-full bg-[#1C1C1C] shadow-lg transition duration-200 ease-in-out`}
-                        />
-                      </button>
-                      {hasWeekendSchedules && (
-                        <span className="text-xs bg-[#2C2D32] px-2 py-0.5 rounded text-[#7B7B7B]">
-                          Weekend schedules exist
-                        </span>
-                      )}
+            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto md:items-center md:justify-end">
+              <input
+                type="text"
+                placeholder="Search alerts..."
+                className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none focus:ring-2 focus:ring-[#FF9800]/30 w-full md:w-64 text-base md:text-sm"
+                value={alertSearch}
+                onChange={e => setAlertSearch(e.target.value)}
+              />
+              <select className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none w-full md:w-36 min-w-0 text-base md:text-sm">
+                <option value="">Any status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <select className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none w-full md:w-40 min-w-0 text-base md:text-sm">
+                <option value="">Date created</option>
+                <option value="recent">Most recent</option>
+                <option value="oldest">Oldest</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {safeAlerts
+              .filter(alert => alert.name.toLowerCase().includes(alertSearch.toLowerCase()))
+              .map(alert => (
+                <div key={alert.id} className="bg-[#181A1B] rounded-2xl p-6 shadow-lg border border-[#FF9800]/10 flex flex-col justify-between min-h-[220px] transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-[#FF9800]/40">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getMetricColor(alert.metric) }} />
+                      <h3 className="font-semibold text-white text-lg">{alert.name}</h3>
                     </div>
-                  )}
-                </div>
-
-                {viewMode === 'list' ? (
-                  <div className="space-y-4">
-                    {safeSchedules.length > 0 ? (
-                      <div className="space-y-4">
-                        {safeSchedules.map((schedule) => {
-                          const { dayLabel, timeLabel } = formatScheduleTime(schedule);
-                          const analysisLabel = formatAnalysisType(schedule.analysis_type);
-
-                          return (
-                            <div
-                              key={schedule.id}
-                              className="p-4 lg:p-5 bg-[#141718] rounded-xl border border-[#8C74FF]/10 hover:border-[#8C74FF]/30 transition-all duration-200"
-                            >
-                              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                                <div className="space-y-3">
-                                  <div className="flex flex-wrap items-center gap-3">
-                                    <div className="flex justify-between items-center">
-                                      <h3 className="font-semibold text-white mr-2">
-                                        {analysisLabel}
-                                      </h3>
-                                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                                        schedule.is_active 
-                                          ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20' 
-                                          : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
-                                      }`}>
-                                        {schedule.is_active ? 'Active' : 'Inactive'}
-                                      </span>
-                                    </div>
-                                    <div className="text-sm text-[#7B7B7B] whitespace-nowrap mt-2">
-                                      {formatScheduleTime(schedule).dayLabel}, {formatScheduleTime(schedule).timeLabel}
-                                    </div>
-                                  </div>
-                                  <p className="text-sm text-[#7B7B7B] leading-relaxed">
-                                    {schedule.description || `Weekly analysis on ${dayLabel} at ${timeLabel}`}
-                                  </p>
-                                  <div className="text-xs space-y-2 text-[#7B7B7B]/80">
-                                    {schedule.last_run && (
-                                      <p className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-[#7B7B7B]/30"></span>
-                                        Last run: {new Date(schedule.last_run).toLocaleString()}
-                                      </p>
-                                    )}
-                                    {schedule.next_run && (
-                                      <p className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-[#8C74FF]/30"></span>
-                                        Next run: {new Date(schedule.next_run).toLocaleString()}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-3">
-                                  <span className="text-sm text-[#7B7B7B] whitespace-nowrap">
-                                    {dayLabel}, {timeLabel}
-                                  </span>
-                                  <button
-                                    onClick={() => handleDeleteSchedule(schedule.id)}
-                                    disabled={isDeletingSchedule === schedule.id}
-                                    className="text-sm text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-                                  >
-                                    {isDeletingSchedule === schedule.id ? 'Deleting...' : 'Delete Schedule'}
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                        <div className="mt-8 pt-8 border-t border-[#8C74FF]/10 flex justify-center">
-                          <button
-                            onClick={handleUnsubscribeAll}
-                            disabled={isDeletingAll}
-                            className="w-full lg:w-auto px-6 py-2.5 text-red-400 bg-red-400/5 hover:bg-red-400/10 disabled:bg-red-400/5 disabled:text-red-400/50 disabled:cursor-not-allowed rounded-lg transition-all duration-200 text-sm font-medium ring-1 ring-red-400/20"
-                          >
-                            {isDeletingAll ? 'Unsubscribing...' : 'Unsubscribe from All Analyses'}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 lg:py-16 px-4">
-                        <div className="w-16 h-16 lg:w-20 lg:h-20 bg-[#8C74FF]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 ring-1 ring-[#8C74FF]/20">
-                          <svg className="w-8 h-8 lg:w-10 lg:h-10 text-[#8C74FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                        </div>
-                        <h3 className="text-xl lg:text-2xl font-bold mb-3 text-white">No schedules yet</h3>
-                        <p className="text-base text-[#7B7B7B] mb-8 max-w-md mx-auto">
-                          Add your first analysis schedule to start receiving automated reports
-                        </p>
-                        <button
-                          onClick={() => setIsScheduleModalOpen(true)}
-                          className="px-8 py-3 bg-[#8C74FF] hover:bg-[#8C74FF]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#8C74FF]/20 hover:shadow-lg hover:shadow-[#8C74FF]/30"
-                        >
-                          Add Schedule
-                        </button>
-                      </div>
-                    )}
+                    <button
+                      onClick={() => {/* toggle logic here */}}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#FF9800]/50 focus:ring-offset-2 focus:ring-offset-[#141718] ${alert.is_active ? 'bg-green-500' : 'bg-[#2C2D32]'}`}
+                    >
+                      <span
+                        className={`${alert.is_active ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out`}
+                      />
+                    </button>
                   </div>
-                ) : viewMode === 'kanban' ? (
-                  renderKanbanView()
-                ) : (
-                  renderWeeklyView()
-                )}
-              </>
-            )}
+                  <p className="text-[#7B7B7B] text-sm mb-2">{alert.instructions}</p>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <span className="bg-[#23272b] text-white px-3 py-1 rounded-full text-xs">{formatMetricType(alert.metric)}</span>
+                    <span className="bg-[#23272b] text-white px-3 py-1 rounded-full text-xs">{alert.frequency}</span>
+                  </div>
+                  <div className="text-xs text-[#7B7B7B] mb-2">Last checked: {alert.last_evaluated ? new Date(alert.last_evaluated).toLocaleString() : 'N/A'}</div>
+                  <div className="flex gap-2 mt-auto">
+                    <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">Edit</button>
+                    <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">Run</button>
+                    <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">...</button>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       </div>
-      
-      <ScheduleModal
-        isOpen={isScheduleModalOpen}
-        onClose={() => setIsScheduleModalOpen(false)}
-        onScheduleAdd={handleScheduleAdd}
-      />
-
-      <AlertModal
-        isOpen={isAlertModalOpen}
-        onClose={() => setIsAlertModalOpen(false)}
-        onAlertAdd={handleAlertAdd}
-        usageStatus={safeUsageStatus || undefined}
-      />
     </div>
   );
 }

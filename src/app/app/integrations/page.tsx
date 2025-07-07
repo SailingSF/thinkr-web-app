@@ -249,7 +249,7 @@ function AdvancedIntegrationsContent() {
 
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#141718] py-8 lg:py-12 font-inter">
+    <div className="bg-[#141718] pt-0 px-2 sm:px-4 md:px-8 lg:px-10 font-inter overflow-x-hidden">
        {/* Loading Overlay (Optional but good UX) */}
        {showLoadingIndicator && (
            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -263,119 +263,120 @@ function AdvancedIntegrationsContent() {
            </div>
        )}
 
-      <div className="container mx-auto px-sm sm:px-md lg:px-lg">
+      <div className="w-full px-0">
         {/* Title Section */}
         <div className="mb-8">
            <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h1 className="text-[35px] text-[#8B5CF6] font-normal mb-2">
+                  <h1 className="text-2xl sm:text-3xl md:text-[35px] text-white font-light mb-2 mt-0">
                     Advanced Integrations
                   </h1>
-                  <p className="text-[22px] text-white font-normal">
-                    Connect and manage your data sources via Fivetran.
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                   <button
-                    onClick={() => { setCallbackStatus(null); fetchConnections(); }} // Manual refresh also clears status
-                    className="px-4 py-2 bg-[#8B5CF6] text-white font-medium rounded-lg hover:bg-[#7B63EE] transition-colors disabled:opacity-50"
-                    disabled={isLoadingConnections || isProcessing}
-                    title="Refresh connections list"
-                  >
-                    {isLoadingConnections ? 'Loading...' : 'Refresh'}
-                  </button>
-                  <button
-                    onClick={() => router.back()}
-                    className="px-4 py-2 bg-[#343536] text-white font-medium rounded-lg hover:bg-[#424344] transition-colors"
-                    title="Go back to previous page"
-                  >
-                    Back
-                  </button>
                 </div>
               </div>
           <hr className="border-t border-white mb-8" />
         </div>
+        <div className="mb-10" />
 
-        {/* Callback Status Messages */}
-        {callbackStatus && (
-          <div className={`mb-6 p-4 rounded-md ${callbackStatus.type === 'success' ? 'bg-green-900 text-green-100' : 'bg-red-900 text-red-100'}`}>
-            {callbackStatus.message}
-          </div>
-        )}
-
-        {/* General Error Messages */}
-        {error && !callbackStatus /* Don't show general error if a specific callback error/success is shown */ && (
-          <div className="mb-6 p-4 rounded-md bg-red-900 text-red-100">
-            Error: {error}
-          </div>
-        )}
-
-        {/* Connected Integrations */}
-        <div className="mb-12">
-          <h2 className="text-2xl text-white font-semibold mb-4">Connected Sources</h2>
-          {connections.length === 0 && !isLoadingConnections && (
-            <p className="text-gray-400">No data sources connected yet.</p>
+        <div className="pb-16">
+          {/* Callback Status Messages */}
+          {callbackStatus && (
+            <div className={`mb-6 p-4 rounded-md ${callbackStatus.type === 'success' ? 'bg-green-900 text-green-100' : 'bg-red-900 text-red-100'}`}>
+              {callbackStatus.message}
+            </div>
           )}
-           {connections.length === 0 && isLoadingConnections && !isProcessing && (
-                <p className="text-gray-400">Loading connected sources...</p> // Show loading text if initial load
-           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {connections.map(conn => {
-               const serviceInfo = AVAILABLE_SERVICES.find(s => s.id === conn.service);
-              return (
-                <div key={conn.fivetran_connector_id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px]"> {/* Ensure minimum height */}
-                   <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      {serviceInfo?.icon && <img src={serviceInfo.icon} alt={serviceInfo.name} className="w-6 h-6 object-contain"/>}
-                      <h3 className="text-lg text-white font-medium">{serviceInfo?.name || conn.service}</h3>
-                    </div>
-                     {/* Display Status more prominently */}
-                     <p className="text-sm text-gray-300 mb-2">Status: <span className={`font-semibold ${conn.status?.toUpperCase() === 'ACTIVE' ? 'text-green-400' : 'text-yellow-400'}`}>{conn.status || 'Unknown'}</span></p>
-                     <p className="text-xs text-gray-400">Connector ID: {conn.fivetran_connector_id}</p>
-                     <p className="text-xs text-gray-400">Connected: {new Date(conn.created_at).toLocaleString()}</p>
-                     <p className="text-xs text-gray-400">Last Updated: {new Date(conn.updated_at).toLocaleString()}</p>
-                   </div>
+
+          {/* General Error Messages */}
+          {error && !callbackStatus /* Don't show general error if a specific callback error/success is shown */ && (
+            <div className="mb-6 p-4 rounded-md bg-red-900 text-red-100">
+              Error: {error}
+            </div>
+          )}
+
+          {/* Connected Integrations */}
+          <div className="bg-[#141718] rounded-2xl p-6 shadow-lg mb-12">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
+                Connected Sources
+                {connections.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-[#8B5CF6]/20 text-[#8B5CF6] rounded-full">
+                    {connections.length}
+                  </span>
+                )}
+              </h2>
+            </div>
+            {connections.length === 0 && !isLoadingConnections && (
+              <p className="text-gray-400">No data sources connected yet.</p>
+            )}
+             {connections.length === 0 && isLoadingConnections && !isProcessing && (
+                  <p className="text-gray-400">Loading connected sources...</p> // Show loading text if initial load
+             )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {connections.map(conn => {
+                 const serviceInfo = AVAILABLE_SERVICES.find(s => s.id === conn.service);
+                return (
+                  <div key={conn.fivetran_connector_id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px] transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-[#8B5CF6] border border-transparent group cursor-pointer">
+                     <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        {serviceInfo?.icon && <img src={serviceInfo.icon} alt={serviceInfo.name} className="w-6 h-6 object-contain"/>}
+                        <h3 className="text-lg text-white font-medium">{serviceInfo?.name || conn.service}</h3>
+                      </div>
+                       {/* Display Status more prominently */}
+                       <p className="text-sm text-gray-300 mb-2">Status: <span className={`font-semibold ${conn.status?.toUpperCase() === 'ACTIVE' ? 'text-green-400' : 'text-yellow-400'}`}>{conn.status || 'Unknown'}</span></p>
+                       <p className="text-xs text-gray-400">Connector ID: {conn.fivetran_connector_id}</p>
+                       <p className="text-xs text-gray-400">Connected: {new Date(conn.created_at).toLocaleString()}</p>
+                       <p className="text-xs text-gray-400">Last Updated: {new Date(conn.updated_at).toLocaleString()}</p>
+                     </div>
+                    <button
+                      onClick={() => handleDeleteConnection(conn.fivetran_connector_id, serviceInfo?.name || conn.service)}
+                      disabled={isProcessing}
+                      className="mt-4 w-full px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {isProcessing ? 'Deleting...' : 'Delete Connection'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Available Integrations */}
+          <div className="bg-[#141718] rounded-2xl p-6 shadow-lg">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
+                Available Sources
+                {availableToConnect.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-[#8B5CF6]/20 text-[#8B5CF6] rounded-full">
+                    {availableToConnect.length}
+                  </span>
+                )}
+              </h2>
+            </div>
+            {availableToConnect.length === 0 && !isLoadingConnections && connections.length > 0 && (
+               <p className="text-gray-400">All available sources are connected.</p>
+            )}
+             {availableToConnect.length === 0 && isLoadingConnections && !isProcessing && (
+                  <p className="text-gray-400">Loading available sources...</p> // Show loading text if initial load
+             )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {availableToConnect.map(service => (
+                <div key={service.id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px] transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-[#8B5CF6] border border-transparent group cursor-pointer">
+                  <div>
+                     <div className="flex items-center gap-3 mb-2">
+                         {service.icon && <img src={service.icon} alt={service.name} className="w-6 h-6 object-contain"/>}
+                         <h3 className="text-lg text-white font-medium">{service.name}</h3>
+                      </div>
+                    <p className="text-sm text-gray-400 mb-4">{service.description}</p>
+                  </div>
                   <button
-                    onClick={() => handleDeleteConnection(conn.fivetran_connector_id, serviceInfo?.name || conn.service)}
+                    onClick={() => handleInitiateConnection(service.id)}
                     disabled={isProcessing}
-                    className="mt-4 w-full px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="mt-4 w-full px-4 py-2 bg-[#8C74FF] text-white text-sm font-medium rounded hover:bg-[#7B63EE] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    {isProcessing ? 'Deleting...' : 'Delete Connection'}
+                    {isProcessing ? 'Processing...' : 'Connect'}
                   </button>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Available Integrations */}
-        <div>
-          <h2 className="text-2xl text-white font-semibold mb-4">Available Sources</h2>
-          {availableToConnect.length === 0 && !isLoadingConnections && connections.length > 0 && (
-             <p className="text-gray-400">All available sources are connected.</p>
-          )}
-           {availableToConnect.length === 0 && isLoadingConnections && !isProcessing && (
-                <p className="text-gray-400">Loading available sources...</p> // Show loading text if initial load
-           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {availableToConnect.map(service => (
-              <div key={service.id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px]"> {/* Ensure minimum height */}
-                <div>
-                   <div className="flex items-center gap-3 mb-2">
-                       {service.icon && <img src={service.icon} alt={service.name} className="w-6 h-6 object-contain"/>}
-                       <h3 className="text-lg text-white font-medium">{service.name}</h3>
-                    </div>
-                  <p className="text-sm text-gray-400 mb-4">{service.description}</p>
-                </div>
-                <button
-                  onClick={() => handleInitiateConnection(service.id)}
-                  disabled={isProcessing}
-                  className="mt-4 w-full px-4 py-2 bg-[#8C74FF] text-white text-sm font-medium rounded hover:bg-[#7B63EE] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isProcessing ? 'Processing...' : 'Connect'}
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

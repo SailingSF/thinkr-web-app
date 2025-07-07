@@ -56,7 +56,7 @@ export default function Composer({
   }, []);
 
   return (
-    <div className={`p-3 sm:p-4 border-t border-[#252829] bg-[#1A1C1D] ${className}`}>
+    <div className={`p-3 sm:p-4 border-t border-chat-border bg-chat-dark ${className}`}>
       <form onSubmit={handleSubmit} className="flex items-end gap-2 sm:gap-3">
         <textarea
           ref={textareaRef}
@@ -66,13 +66,17 @@ export default function Composer({
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
-          className="flex-1 bg-[#252829] text-white placeholder-gray-500 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#7B6EF6] focus:border-transparent text-sm sm:text-base resize-none min-h-[42px] max-h-[120px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent"
+          className="flex-1 bg-chat-input text-chat-text placeholder-chat-icon rounded-lg px-4 py-2.5 focus:outline-none focus:border-transparent text-sm sm:text-base resize-none min-h-[42px] max-h-[120px] overflow-y-auto scrollbar-thin scrollbar-thumb-chat-border scrollbar-track-transparent"
           style={{ height: 'auto' }}
         />
         <button
           type="submit"
           disabled={disabled || !message.trim()}
-          className="px-4 sm:px-6 py-2.5 rounded-lg bg-[#7B6EF6] hover:bg-[#6A5ACD] text-white font-medium transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#7B6EF6] focus:ring-offset-2 focus:ring-offset-[#1A1C1D] flex-shrink-0 min-h-[42px] flex items-center justify-center"
+          className={`px-4 sm:px-6 py-2.5 rounded-lg text-chat-text font-medium transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-chat-dark flex-shrink-0 min-h-[42px] flex items-center justify-center ${
+            disabled || !message.trim() 
+              ? 'bg-enter-inactive' 
+              : 'bg-enter-active hover:bg-purple-400'
+          }`}
         >
           {disabled ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -86,9 +90,9 @@ export default function Composer({
       </form>
       
       {/* Help text */}
-      <div className="text-xs text-gray-500 mt-2 text-center">
-        Press <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs">Enter</kbd> to send, 
-        <kbd className="px-1 py-0.5 bg-gray-700 rounded text-xs ml-1">Alt+Enter</kbd> for new line
+      <div className="text-xs text-chat-icon mt-2 text-center">
+        Press <kbd className="px-1 py-0.5 bg-chat-border rounded text-xs">Enter</kbd> to send, 
+        <kbd className="px-1 py-0.5 bg-chat-border rounded text-xs ml-1">Alt+Enter</kbd> for new line
       </div>
     </div>
   );

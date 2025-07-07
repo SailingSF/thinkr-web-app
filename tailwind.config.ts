@@ -50,6 +50,31 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        sidebar: {
+          background: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
+        // Thinkr Design Language Colors
+        chat: {
+          dark: "#121212",
+          input: "#1E1E1E", 
+          border: "#2A2A2A",
+          text: "#FFFFFF",
+          icon: "#8E8E8E",
+        },
+        enter: {
+          active: "#8C74FF",
+          inactive: "#B5A6FF",
+        },
+        purple: {
+          400: "#A78BFA",
+        },
       },
       spacing: {
         'xs': '0.25rem',    // 4px

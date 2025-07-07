@@ -50,40 +50,28 @@ export default function Navigation() {
 
   return (
     <nav className="sticky top-0 z-10 bg-[#141718]">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        {/* Left side - Logo (when in active chat) */}
-        <div className="flex items-center">
-          {showLogo && (
-            <Image
-              src="/thinkr-logo-white.png"
-              alt="thinkr logo"
-              width={160}
-              height={48}
-              priority
-              className="w-auto h-8"
-            />
-          )}
+      <div className="w-full px-4 py-4 flex items-center">
+        {/* Left: Chat History always left-aligned on mobile/tablet */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Chat History dropdown or any left-aligned controls should be here */}
+          {/* If Chat History is a component, it should be rendered here. */}
         </div>
-
-        {/* Right side - Store name, Help, and Logout */}
-        <div className="flex items-center gap-4">
-          {storeName && (
-            <div className="px-4 py-2 text-gray-300 font-medium">
-              {storeName}
-            </div>
-          )}
+        {/* Center: Store name if present */}
+        {storeName ? (
+          <div className="px-4 py-2 text-gray-300 font-medium text-center flex-1">
+            {storeName}
+          </div>
+        ) : (
+          <div className="flex-1" />
+        )}
+        {/* Right: Help link, always at far right on desktop */}
+        <div className="flex items-center gap-4 ml-auto" style={{ minWidth: '120px' }}>
           <Link
             href="/faq"
             className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
           >
             Help
           </Link>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-[#232627] rounded-lg text-gray-300 hover:text-white transition-colors"
-          >
-            Logout
-          </button>
         </div>
       </div>
     </nav>

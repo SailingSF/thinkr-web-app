@@ -25,12 +25,12 @@ export default function LoginForm() {
 
   return (
     <HybridLayout>
-      <div className="min-h-[calc(100vh-64px)] bg-[#1A1B1E] flex flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="bg-[#141718] w-full max-w-sm">
+        <div className="text-center mb-8">
           <h2 className="text-[40px] text-white font-normal mb-1">
             Welcome back.
           </h2>
-          <p className="text-[#8C74FF] text-lg">
+          <p className="text-white text-lg">
             Sign in to your account.
           </p>
         </div>

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Plus, ArrowUp, X, ChevronDown } from 'lucide-react';
+import { Plus, ArrowUp, X, ChevronDown, Bot, MessageCircle, Hexagon } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
 import SegmentedModeSelector from '@/components/SegmentedModeSelector';
 import { Connection } from '@/components/SegmentedModeSelector';
@@ -62,7 +63,7 @@ interface ApiConnectionStatus {
 function ChatShell() {
   const router = useRouter();
   const authFetch = useAuthFetch();
-  const { setShowLogo } = useNavigation();
+  const { setShowLogo, isSidebarOpen } = useNavigation();
   const [currentThreadId, setCurrentThreadId] = useState<string | undefined>();
   const [message, setMessage] = useState('');
   const [isConnectingShopify, setIsConnectingShopify] = useState(false);
@@ -94,6 +95,7 @@ function ChatShell() {
     createAgent,
     clearError,
     createAgentLoading,
+    resetChat,
   } = useChat({ 
     threadId: currentThreadId, 
     intent: mode,
@@ -101,6 +103,25 @@ function ChatShell() {
   });
 
   const { storedData } = useLocalStorage();
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Add state for search
+  const [chatSearch, setChatSearch] = useState('');
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [dropdownOpen]);
 
   // Control navigation logo visibility based on message count
   useEffect(() => {
@@ -115,6 +136,24 @@ function ChatShell() {
       setDismissedAudit(localStorage.getItem('dismissed_store_audit') === 'true');
     }
   }, []);
+
+  // Handle pre-filled agent prompt from template
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const prefillPrompt = localStorage.getItem('prefill_agent_prompt');
+      const prefillIntent = localStorage.getItem('prefill_agent_intent');
+      
+      if (prefillPrompt && prefillIntent) {
+        // Set the message and mode
+        setMessage(prefillPrompt);
+        setMode(prefillIntent as ChatIntent);
+        
+        // Clear the localStorage items
+        localStorage.removeItem('prefill_agent_prompt');
+        localStorage.removeItem('prefill_agent_intent');
+      }
+    }
+  }, [setMode]);
 
   // Fetch user data from /user/ endpoint on component mount
   useEffect(() => {
@@ -273,6 +312,11 @@ function ChatShell() {
     sendMessage(agentMessage, currentThreadId, 'agent_builder');
   }, [setMode, sendMessage, currentThreadId]);
 
+  const handleAgentCardClick = useCallback((agentName: string) => {
+    const agentMessage = `Create a ${agentName} agent`;
+    sendMessage(agentMessage, currentThreadId, 'agent_builder');
+  }, [sendMessage, currentThreadId]);
+
   const handleShopifyConnect = useCallback(async () => {
     setIsConnectingShopify(true);
     setShopifyError('');
@@ -412,190 +456,358 @@ function ChatShell() {
     return lastMessage;
   }, []);
 
+  // Listen for a custom event to reset chat from anywhere (e.g., sidebar)
+  useEffect(() => {
+    const handler = () => {
+      resetChat();
+      setCurrentThreadId(undefined);
+      setMessage('');
+    };
+    window.addEventListener('thinkr:new-chat', handler);
+    return () => window.removeEventListener('thinkr:new-chat', handler);
+  }, [resetChat]);
+
+  // Compute filtered threads for search
+  const filteredThreads = threads.filter(thread => {
+    const cleanedMessage = parseThreadLastMessage(thread.last_message);
+    const displayText = thread.display_name ||
+      (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) ||
+      'Untitled Chat';
+    const search = chatSearch.toLowerCase();
+    return (
+      displayText.toLowerCase().includes(search) ||
+      (cleanedMessage && cleanedMessage.toLowerCase().includes(search))
+    );
+  });
+
   return (
     <ErrorBoundary>
       <div className="flex flex-col h-full">
         {/* Top controls - positioned differently based on active chat */}
-        <div className={`absolute top-4 left-4 lg:left-[280px] flex items-center gap-3 z-30 ${hasUserMessages ? 'opacity-90' : ''}`}>
-          <div className="relative">
-            <select
-              className="bg-[#2A2D2E] hover:bg-[#3A3D3E] text-white text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none transition-colors border border-gray-600/30 hover:border-purple-400/50 appearance-none -webkit-appearance-none"
-              value={currentThreadId || ''}
-              onChange={(e) => handleThreadSelect(e.target.value)}
-              style={{ backgroundImage: 'none' }}
+        <div className={`absolute top-4 left-4 lg:left-4 flex items-center gap-3 z-30 ${hasUserMessages ? 'opacity-90' : ''} ml-16 transition-all duration-300 ${
+          isSidebarOpen ? 'lg:ml-64' : 'lg:ml-20'
+        }`}>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              className="flex items-center gap-2 bg-[#2A2D2E] hover:bg-[#3A3D3E] text-white text-sm rounded-lg pl-3 pr-8 py-2 focus:outline-none transition-colors border border-gray-600/30 hover:border-purple-400/50 min-w-[180px] shadow-sm"
+              onClick={() => setDropdownOpen((open) => !open)}
+              aria-haspopup="listbox"
+              aria-expanded={dropdownOpen}
+              type="button"
             >
-              <option value="" className="bg-[#2A2D2E] text-white">Chat History</option>
-              {threads.map((thread) => {
-                const cleanedMessage = parseThreadLastMessage(thread.last_message);
-                const displayText = thread.display_name || 
-                  (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) || 
-                  'Conversation';
-                return (
-                  <option key={thread.thread_id} value={thread.thread_id} className="bg-[#2A2D2E] text-white">
-                    {displayText}
-                  </option>
-                );
-              })}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              <span className="truncate flex-1 text-left">
+                {currentThreadId
+                  ? (threads.find(t => t.thread_id === currentThreadId)?.display_name || 'Recents')
+                  : 'Chat History'}
+              </span>
+              <ChevronDown className="h-4 w-4 text-gray-400" />
+            </button>
+            {dropdownOpen && (
+              <div className="absolute left-0 mt-2 w-[260px] max-h-[80vh] bg-[#232425] border border-[#3A3D3E] rounded-lg shadow-lg z-50 overflow-y-auto animate-fade-in">
+                <div className="py-2">
+                  {/* Search bar replaces the second 'Chat History' label */}
+                  <div className="px-4 pb-2">
+                    <input
+                      type="text"
+                      value={chatSearch}
+                      onChange={e => setChatSearch(e.target.value)}
+                      placeholder="Search chats..."
+                      className="w-full px-3 py-2 rounded-md bg-[#181A1B] text-sm text-white placeholder-gray-400 border border-[#2A2D2E] focus:outline-none focus:border-gray-500 transition"
+                    />
+                  </div>
+                  {/* Filtered chat list */}
+                  {filteredThreads.length === 0 && (
+                    <div className="px-4 py-2 text-gray-500 text-sm">No conversations found</div>
+                  )}
+                  {filteredThreads.map((thread) => {
+                    const cleanedMessage = parseThreadLastMessage(thread.last_message);
+                    const displayText = thread.display_name ||
+                      (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) ||
+                      'Untitled Chat';
+                    const isSelected = currentThreadId === thread.thread_id;
+                    const type = thread.intent || 'ask';
+                    const isAgent = type === 'agent_builder';
+                    const typeIcon = isAgent
+                      ? <Hexagon className="w-4 h-4 text-[#60A5FA]" />
+                      : <ChatBubbleLeftRightIcon className="w-4 h-4 text-[#B7A9F7]" />;
+                    const typeLabel = isAgent
+                      ? <span className="text-xs font-medium text-[#60A5FA]">Agent</span>
+                      : <span className="text-xs font-medium text-[#B7A9F7]">Chat</span>;
+                    // Format date (fallback to empty if not available)
+                    const date = thread.created_at ? new Date(thread.created_at).toLocaleDateString() : '';
+                    return (
+                      <button
+                        key={thread.thread_id}
+                        className={`w-full text-left px-4 py-3 rounded-md flex flex-col gap-1 transition-colors text-sm ${isSelected ? 'bg-[#7B6EF6]/20 text-[#B7A9F7]' : 'hover:bg-[#2A2D2E] text-white'}`}
+                        onClick={() => {
+                          handleThreadSelect(thread.thread_id);
+                          setDropdownOpen(false);
+                        }}
+                        tabIndex={0}
+                        aria-selected={isSelected}
+                      >
+                        {/* Top row: icon + type label */}
+                        <span className="flex items-center gap-2 mb-1">
+                          {typeIcon}
+                          {typeLabel}
+                        </span>
+                        {/* Title */}
+                        <span className="font-semibold text-base truncate">{displayText}</span>
+                        {/* Message */}
+                        {cleanedMessage && (
+                          <span className="block text-xs text-gray-400 truncate">{cleanedMessage}</span>
+                        )}
+                        {/* Date */}
+                        {date && (
+                          <span className="block text-[11px] text-gray-500 mt-1">{date}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-
-          <button
-            onClick={() => setCurrentThreadId(undefined)}
-            className="flex items-center gap-2 px-3 py-2 bg-[#2A2D2E] hover:bg-[#3A3D3E] text-purple-400 rounded-lg text-sm transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            <span>New Chat</span>
-          </button>
         </div>
 
-        {/* Chat Content Area */}
-        <div className={`flex-1 flex flex-col ${hasUserMessages ? 'justify-start pt-16 px-6' : 'justify-center items-center px-4 py-16'}`}>
-          {/* Logo - only show when no user messages */}
-          {!hasUserMessages && (
-            <div className="mb-12">
-              <Image
-                src="/thinkr-logo-white.png"
-                alt="thinkr logo"
-                width={320}
-                height={96}
-                priority
-                className="w-auto h-24"
-              />
-            </div>
-          )}
+        {/* Content container - restructured layout */}
+        { !hasUserMessages ? (
+          // State 1: Centered layout with sections
+          <div className="flex flex-col h-full w-full">
+            {/* Section 1: Greeting */}
+            <div className="flex-1 flex items-center justify-center px-4">
+              <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col px-8 pt-8 pb-8" style={{ minHeight: '320px' }}>
+                {/* Thinkr Logo */}
+                <div className="flex justify-center mb-8">
+                  <Image
+                    src="/thinkr-logo-white.png"
+                    alt="Thinkr"
+                    width={160}
+                    height={50}
+                    className="object-contain"
+                  />
+                </div>
+                
+                <h1 className="text-white text-2xl font-normal mb-6 text-center w-full">
+                    {greeting},{userName ? ` ${userName}` : ''}
+                  </h1>
+                
+                {/* Section 2: Agents (when mode is 'agent_builder') */}
+                {mode === 'agent_builder' && (
+                  <div className="mb-8 w-full flex justify-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full max-w-5xl">
+                      {/* Inventory */}
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Inventory Manager')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><rect x="2" y="2" width="14" height="14" rx="2" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Inventory Manager</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Track and optimize inventory levels</span>
+                      </div>
+                      {/* Price Optimization */}
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Pricing Consultant')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><path d="M9 13l-4-4h8l-4 4z" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Pricing Consultant</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Optimize pricing strategies</span>
+                      </div>
+                      {/* Financial Metrics */}
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Financial Analyst')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><circle cx="9" cy="9" r="7" strokeWidth="2"/><path d="M9 6v3l2 2" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Financial Analyst</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Monitor financial performance</span>
+                      </div>
+                      {/* General Insights */}
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('General Advisor')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><circle cx="9" cy="9" r="7" strokeWidth="2"/><path d="M9 15h.01" strokeWidth="2"/><path d="M9 5v5" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">General Advisor</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Get comprehensive business insights</span>
+                      </div>
+                      {/* Top Customers */}
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Customer Support')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><circle cx="9" cy="6" r="3" strokeWidth="2"/><path d="M4 16v-1a5 5 0 015-5h0a5 5 0 015 5v1" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Customer Support</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Analyze customer behavior and value</span>
+                      </div>
+                      {/* Revenue */}
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Revenue Officer')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><path d="M2 15v1a1 1 0 001 1h12a1 1 0 001-1v-1" strokeWidth="2"/><path d="M13 9V6a4 4 0 00-8 0v3" strokeWidth="2"/><rect x="6" y="9" width="6" height="5" rx="1" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Revenue Officer</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Track revenue trends and growth</span>
+                      </div>
+                      {/* Conversion Analyst */}
+                      <div className="border border-gray-700 bg-transparent px-3 py-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-[#7B6EF6] hover:bg-[#232425] transition-all shadow-sm min-h-[90px] h-[90px]" onClick={() => handleAgentCardClick('Conversion Analyst')}>
+                        <div className="flex items-center gap-2 mb-1 w-full justify-center">
+                          <span className="text-lg flex items-center justify-center"><svg width="18" height="18" fill="none" stroke="currentColor"><path d="M2 4h14l-6 7v5l-2 1v-6L2 4z" strokeWidth="2"/></svg></span>
+                          <span className="font-medium text-white text-sm text-center">Conversion Analyst</span>
+                        </div>
+                        <span className="text-gray-400 text-xs text-center leading-tight w-full">Understand conversion metrics</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-          {/* Content container - wider for active chats */}
-          <div className={`w-full mx-auto ${hasUserMessages ? 'max-w-6xl' : 'max-w-4xl'}`}>
-            {/* Messages */}
-            {hasUserMessages ? (
-              <div className="mb-8 flex-1">
+                {/* Onboarding Cards for New Users (only when not in agent mode) */}
+                {mode !== 'agent_builder' && showOnboardingButtons && (
+                <div className="mb-8 space-y-6 w-full">
+                      {/* Shopify Connection Card */}
+                      {!hasConnectedShopify && !dismissedShopify && (
+                        <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
+                          <button
+                            onClick={handleDismissShopify}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                            title="Dismiss this suggestion"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                          <div className="mb-6 lg:mb-8 pr-8">
+                            <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
+                            <h3 className="text-[32px] font-inter font-normal text-white">Connect your Shopify store</h3>
+                            <p className="text-sm lg:text-base text-gray-400 mt-2">
+                              Connect your store to start receiving AI-powered analytics and recommendations
+                            </p>
+                          </div>
+                          <ShopifyConnectButton
+                            onClick={handleShopifyConnect}
+                            isLoading={isConnectingShopify}
+                          />
+                        </div>
+                      )}
+                      {/* Store Audit Card */}
+                      {hasConnectedShopify && !hasRunAudit && !dismissedAudit && (
+                        <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
+                          <button
+                            onClick={handleDismissAudit}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                            title="Dismiss this suggestion"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                          <div className="pr-8">
+                            <AuditCard
+                              onTriggerAudit={handleTriggerAudit}
+                              isLoading={isGeneratingAudit}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                
+                  {/* Loading indicator while fetching user data */}
+                  {userDataLoading && (
+                <div className="mb-8 text-center w-full">
+                      <div className="text-gray-400">Loading your profile...</div>
+                </div>
+              )}
+              </div>
+            </div>
+
+            {/* Section 3: Input area - Fixed at bottom */}
+            <div className="w-full flex justify-center px-4 pb-8">
+              <div className="bg-chat-dark rounded-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full max-w-4xl flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+                  <div className="bg-chat-input rounded-2xl p-4 flex items-center">
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Create an Agent or ask anything..."
+                      disabled={isLoading}
+                      rows={1}
+                      className="w-full h-16 bg-transparent text-chat-text placeholder-chat-icon focus:outline-none text-base overflow-y-auto whitespace-pre-wrap break-words"
+                      style={{ minHeight: '64px', maxHeight: '64px', resize: 'none' }}
+                    />
+                  </div>
+                  <div className="flex items-center w-full mt-2">
+                    <SegmentedModeSelector
+                      mode={mode}
+                      onChange={setMode}
+                      disabled={isLoading || intentLocked}
+                      connections={connections}
+                      hasShopifyConnection={hasConnectedShopify}
+                      className="w-full"
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!message.trim() || isLoading}
+                      className={`w-10 h-10 ml-4 text-chat-text rounded-lg flex items-center justify-center transition-colors shadow-none border-none ${
+                        !message.trim() || isLoading 
+                          ? 'bg-enter-inactive opacity-50 cursor-not-allowed' 
+                          : 'bg-enter-active hover:bg-purple-400'
+                      }`}
+                    >
+                      <ArrowUp className="h-5 w-5" />
+                    </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // State 2: Full height card, input fixed to bottom
+          <div className={`fixed inset-0 flex flex-col items-center justify-center z-10 px-4 transition-all duration-300 ${
+            isSidebarOpen ? 'lg:left-64' : 'lg:left-20'
+          } lg:right-16`} style={{ pointerEvents: 'none' }}>
+            <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col h-[calc(100vh-48px)] relative" style={{ minHeight: '500px', pointerEvents: 'auto' }}>
+              {/* Messages area - scrollable, fills space above input */}
+              <div className="flex-1 overflow-y-auto px-8 pt-8" style={{ paddingBottom: '112px' }}>
                 <MessageList
                   messages={messages}
                   isLoading={isLoading}
                   error={error}
                   onErrorDismiss={clearError}
-                  className="min-h-[60vh] overflow-y-auto"
+                  className="min-h-[60vh]"
                 />
               </div>
-            ) : (
-              <div className="mb-8">
-                <h1 className="text-white text-2xl font-normal mb-6 text-center">
-                  {greeting}{userName ? `, ${userName}` : ''}
-                </h1>
-                
-                {/* Onboarding Cards for New Users */}
-                {showOnboardingButtons && (
-                  <div className="mb-8 space-y-6">
-                    {/* Shopify Connection Card */}
-                    {!hasConnectedShopify && !dismissedShopify && (
-                      <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
-                        <button
-                          onClick={handleDismissShopify}
-                          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                          title="Dismiss this suggestion"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                        <div className="mb-6 lg:mb-8 pr-8">
-                          <p className="text-[#8B5CF6] text-base lg:text-lg mb-2">Step 1:</p>
-                          <h3 className="text-[32px] font-inter font-normal text-white">Connect your Shopify store</h3>
-                          <p className="text-sm lg:text-base text-gray-400 mt-2">
-                            Connect your store to start receiving AI-powered analytics and recommendations
-                          </p>
-                        </div>
-                        <ShopifyConnectButton
-                          onClick={handleShopifyConnect}
-                          isLoading={isConnectingShopify}
-                        />
-                      </div>
-                    )}
-
-                    {/* Store Audit Card */}
-                    {hasConnectedShopify && !hasRunAudit && !dismissedAudit && (
-                      <div className="bg-[#2C2C2E] p-6 lg:p-8 rounded-lg relative">
-                        <button
-                          onClick={handleDismissAudit}
-                          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                          title="Dismiss this suggestion"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                        <div className="pr-8">
-                          <AuditCard
-                            onTriggerAudit={handleTriggerAudit}
-                            isLoading={isGeneratingAudit}
-                          />
-                        </div>
-                      </div>
-                    )}
+              {/* Input area - fixed to bottom, always visible, never moves */}
+              <div className="absolute left-0 bottom-0 w-full px-0" style={{ pointerEvents: 'auto' }}>
+                <div className="bg-chat-dark rounded-b-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+                  <div className="bg-chat-input rounded-2xl p-4 flex items-center">
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Create an Agent or ask anything..."
+                      disabled={isLoading}
+                      rows={1}
+                      className="w-full h-16 bg-transparent text-chat-text placeholder-chat-icon focus:outline-none text-base overflow-y-auto whitespace-pre-wrap break-words"
+                      style={{ minHeight: '64px', maxHeight: '64px', resize: 'none' }}
+                    />
                   </div>
-                )}
-
-                {/* Loading indicator while fetching user data */}
-                {userDataLoading && (
-                  <div className="mb-8 text-center">
-                    <div className="text-gray-400">Loading your profile...</div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Input area & actions - positioned at bottom for active chats */}
-            <div className={`${hasUserMessages ? 'sticky bottom-0 bg-[#141718] pt-4 pb-6' : ''}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex-1 bg-[#2A2D2E] rounded-2xl p-4">
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="I want to monitor growth of my store"
-                    disabled={isLoading}
-                    rows={1}
-                    className="w-full bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none text-lg"
-                    style={{ minHeight: '24px' }}
-                  />
-                </div>
-
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!message.trim() || isLoading}
-                  className="w-10 h-10 bg-[#7B6EF6] hover:bg-[#6A5ACD] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors"
-                >
-                  <ArrowUp className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Mode selector underneath input */}
-              <div className="flex justify-center mb-8">
-                <SegmentedModeSelector
-                  mode={mode}
-                  onChange={setMode}
-                  disabled={isLoading || intentLocked}
-                  connections={connections}
-                  hasShopifyConnection={hasConnectedShopify}
-                />
-              </div>
-
-              {/* Agent Type Suggestions (only show for Agents mode and empty chat) */}
-              {mode === 'agent_builder' && !hasUserMessages && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {AGENT_TYPES.map((agentType) => (
-                    <button
-                      key={agentType.name}
-                      onClick={() => handleAgentTypeClick(agentType.name)}
-                      className="p-4 bg-[#2A2D2E] hover:bg-[#3A3D3E] rounded-xl transition-colors text-center"
+                  <div className="flex items-center w-full mt-2">
+                    <SegmentedModeSelector
+                      mode={mode}
+                      onChange={setMode}
+                      disabled={isLoading || intentLocked}
+                      connections={connections}
+                      hasShopifyConnection={hasConnectedShopify}
+                      className="w-full"
+                    />
+                  <button
+                      onClick={handleSendMessage}
+                      disabled={!message.trim() || isLoading}
+                      className={`w-10 h-10 ml-4 text-chat-text rounded-lg flex items-center justify-center transition-colors shadow-none border-none ${
+                        !message.trim() || isLoading 
+                          ? 'bg-enter-inactive opacity-50 cursor-not-allowed' 
+                          : 'bg-enter-active hover:bg-purple-400'
+                      }`}
                     >
-                      <div className="text-white mb-3 flex justify-center">{agentType.icon}</div>
-                      <div className="text-white font-medium text-sm mb-1">{agentType.name}</div>
-                      <div className="text-gray-400 text-xs">{agentType.desc}</div>
-                    </button>
-                  ))}
+                      <ArrowUp className="h-5 w-5" />
+                  </button>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Agent Preview Drawer */}
         <AgentPreviewDrawer

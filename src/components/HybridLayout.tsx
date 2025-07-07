@@ -7,14 +7,14 @@ interface HybridLayoutProps {
 }
 
 export default function HybridLayout({ children }: HybridLayoutProps) {
+  const isEmbedded = isShopifyEmbedded();
   return (
     <ShopifyAppBridgeProvider>
-      <div className={`min-h-screen ${isShopifyEmbedded() ? '' : 'bg-[#1a1b1e] text-white'}`}>
+      <div className={`flex flex-col min-h-screen ${isEmbedded ? '' : 'bg-[#141718] text-white'} ${!isEmbedded ? 'overflow-hidden' : ''}`}>
         {/* Only show navigation in standalone mode */}
-        {!isShopifyEmbedded() && <Navigation />}
-        
+        {!isEmbedded && <Navigation />}
         {/* Main content */}
-        <main className={`${isShopifyEmbedded() ? 'p-4' : 'container mx-auto px-8 py-12'}`}>
+        <main className={`${isEmbedded ? 'p-4' : 'flex-1 flex items-center justify-center'}`} style={{ backgroundColor: !isEmbedded ? '#141718' : undefined }}>
           {children}
         </main>
       </div>
