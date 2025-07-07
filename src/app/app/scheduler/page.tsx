@@ -811,141 +811,134 @@ export default function Scheduler() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-[#141718] pt-0 px-2 sm:px-4 md:px-8 lg:px-10 font-inter overflow-x-hidden">
-      <div className="w-full px-0">
+      <div className="w-full px-0 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl sm:text-3xl md:text-[35px] text-white font-light mb-2 mt-0">
           Agents
         </h1>
-        <div className="mb-4">
-          <div className="flex items-start mb-4">
-            <div className="flex-1">
-            </div>
-            <div className="flex gap-3 mt-2">
-              {activeSection === 'alerts' && (
-                <button
-                  onClick={() => setIsAlertModalOpen(true)}
-                  className="px-6 py-3 bg-[#FF9800] hover:bg-[#FF9800]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#FF9800]/20 hover:shadow-lg hover:shadow-[#FF9800]/30"
-                >
-                  Create Alert
-                </button>
-              )}
-              {activeSection === 'schedules' && null}
-            </div>
+        <button
+          className="mt-2 sm:mt-0 px-6 py-2 bg-[#8C74FF] hover:bg-[#7B5FFF] text-white rounded-lg font-semibold shadow transition-all duration-200 text-base"
+          onClick={() => router.push('/app')}
+        >
+          Create Agent
+        </button>
+      </div>
+      <div className="mb-4">
+        <div className="flex items-start mb-4">
+          <div className="flex-1">
           </div>
-          <hr className="border-t border-white mb-4" />
+          <div className="flex gap-3 mt-2">
+            {activeSection === 'alerts' && (
+              <button
+                onClick={() => setIsAlertModalOpen(true)}
+                className="px-6 py-3 bg-[#FF9800] hover:bg-[#FF9800]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#FF9800]/20 hover:shadow-lg hover:shadow-[#FF9800]/30"
+              >
+                Create Alert
+              </button>
+            )}
+            {activeSection === 'schedules' && null}
+          </div>
+        </div>
+        <hr className="border-t border-white mb-4" />
+      </div>
+
+      {error && (
+        <div className="mb-4 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="bg-[#141718] rounded-2xl p-6 shadow-lg">
+        <div className="mb-8">
+          <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
+            Reporting Schedules
+            {safeSchedules.length > 0 && (
+              <span className="ml-2 px-2 py-0.5 text-xs bg-[#8B5CF6]/20 text-[#8B5CF6] rounded-full">
+                {safeSchedules.length}
+              </span>
+            )}
+          </h2>
         </div>
 
-        {error && (
-          <div className="mb-4 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 shadow-sm">
-            {error}
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          {/* Only show Kanban view, no view switcher UI */}
+        </div>
+
+        {/* Analysis Schedules Content */}
+        {activeSection === 'schedules' && (
+          <>
+            {renderKanbanView()}
+          </>
         )}
 
-        <div className="bg-[#141718] rounded-2xl p-6 shadow-lg">
-          <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
-              Reporting Schedules
-              {safeSchedules.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-[#8B5CF6]/20 text-[#8B5CF6] rounded-full">
-                  {safeSchedules.length}
-                </span>
-              )}
-            </h2>
-          </div>
-
-          <div className="flex items-center justify-between mb-4">
-            {/* Only show Kanban view, no view switcher UI */}
-          </div>
-
-          {/* Analysis Schedules Content */}
-          {activeSection === 'schedules' && (
-            <>
-              {renderKanbanView()}
-            </>
-          )}
-
-          {/* Render Alert Agents below Analysis Schedules */}
-          <hr className="border-t border-[#2C2D32] my-12" />
-          <div className="mt-20">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-              <div className="flex items-center gap-2 mb-2 sm:mb-0">
-                <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
-                  Alerts
-                  {safeAlerts.length > 0 && (
-                    <span className="ml-2 px-2 py-0.5 text-xs bg-[#FF9800]/20 text-[#FF9800] rounded-full">
-                      {safeAlerts.length}
-                    </span>
-                  )}
-                </h2>
-              </div>
-              <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:items-center sm:justify-end">
-                <input
-                  type="text"
-                  placeholder="Search alerts..."
-                  className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none focus:ring-2 focus:ring-[#FF9800]/30 w-full sm:w-64"
-                  value={alertSearch}
-                  onChange={e => setAlertSearch(e.target.value)}
-                />
-                <select className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none w-full sm:w-32 min-w-0">
-                  <option value="">Any status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-                <select className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none w-full sm:w-32 min-w-0">
-                  <option value="">Date created</option>
-                  <option value="recent">Most recent</option>
-                  <option value="oldest">Oldest</option>
-                </select>
-              </div>
+        {/* Render Alert Agents below Analysis Schedules */}
+        <hr className="border-t border-[#2C2D32] my-12" />
+        <div className="mt-20">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+            <div className="flex items-center gap-2 mb-2 sm:mb-0">
+              <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
+                Alerts
+                {safeAlerts.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-[#FF9800]/20 text-[#FF9800] rounded-full">
+                    {safeAlerts.length}
+                  </span>
+                )}
+              </h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {safeAlerts
-                .filter(alert => alert.name.toLowerCase().includes(alertSearch.toLowerCase()))
-                .map(alert => (
-                  <div key={alert.id} className="bg-[#181A1B] rounded-2xl p-6 shadow-lg border border-[#FF9800]/10 flex flex-col justify-between min-h-[220px] transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-[#FF9800]/40">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getMetricColor(alert.metric) }} />
-                        <h3 className="font-semibold text-white text-lg">{alert.name}</h3>
-                      </div>
-                      <button
-                        onClick={() => {/* toggle logic here */}}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#FF9800]/50 focus:ring-offset-2 focus:ring-offset-[#141718] ${alert.is_active ? 'bg-green-500' : 'bg-[#2C2D32]'}`}
-                      >
-                        <span
-                          className={`${alert.is_active ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out`}
-                        />
-                      </button>
+            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto md:items-center md:justify-end">
+              <input
+                type="text"
+                placeholder="Search alerts..."
+                className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none focus:ring-2 focus:ring-[#FF9800]/30 w-full md:w-64 text-base md:text-sm"
+                value={alertSearch}
+                onChange={e => setAlertSearch(e.target.value)}
+              />
+              <select className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none w-full md:w-36 min-w-0 text-base md:text-sm">
+                <option value="">Any status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <select className="bg-[#23272b] text-white px-4 py-2 rounded-lg border border-[#2C2D32] focus:outline-none w-full md:w-40 min-w-0 text-base md:text-sm">
+                <option value="">Date created</option>
+                <option value="recent">Most recent</option>
+                <option value="oldest">Oldest</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {safeAlerts
+              .filter(alert => alert.name.toLowerCase().includes(alertSearch.toLowerCase()))
+              .map(alert => (
+                <div key={alert.id} className="bg-[#181A1B] rounded-2xl p-6 shadow-lg border border-[#FF9800]/10 flex flex-col justify-between min-h-[220px] transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-[#FF9800]/40">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getMetricColor(alert.metric) }} />
+                      <h3 className="font-semibold text-white text-lg">{alert.name}</h3>
                     </div>
-                    <p className="text-[#7B7B7B] text-sm mb-2">{alert.instructions}</p>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      <span className="bg-[#23272b] text-white px-3 py-1 rounded-full text-xs">{formatMetricType(alert.metric)}</span>
-                      <span className="bg-[#23272b] text-white px-3 py-1 rounded-full text-xs">{alert.frequency}</span>
-                    </div>
-                    <div className="text-xs text-[#7B7B7B] mb-2">Last checked: {alert.last_evaluated ? new Date(alert.last_evaluated).toLocaleString() : 'N/A'}</div>
-                    <div className="flex gap-2 mt-auto">
-                      <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">Edit</button>
-                      <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">Run</button>
-                      <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">...</button>
-                    </div>
+                    <button
+                      onClick={() => {/* toggle logic here */}}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#FF9800]/50 focus:ring-offset-2 focus:ring-offset-[#141718] ${alert.is_active ? 'bg-green-500' : 'bg-[#2C2D32]'}`}
+                    >
+                      <span
+                        className={`${alert.is_active ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out`}
+                      />
+                    </button>
                   </div>
-                ))}
-            </div>
+                  <p className="text-[#7B7B7B] text-sm mb-2">{alert.instructions}</p>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <span className="bg-[#23272b] text-white px-3 py-1 rounded-full text-xs">{formatMetricType(alert.metric)}</span>
+                    <span className="bg-[#23272b] text-white px-3 py-1 rounded-full text-xs">{alert.frequency}</span>
+                  </div>
+                  <div className="text-xs text-[#7B7B7B] mb-2">Last checked: {alert.last_evaluated ? new Date(alert.last_evaluated).toLocaleString() : 'N/A'}</div>
+                  <div className="flex gap-2 mt-auto">
+                    <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">Edit</button>
+                    <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">Run</button>
+                    <button className="px-4 py-1.5 bg-[#23272b] text-white rounded-lg text-sm hover:bg-[#2C2D32] transition-colors">...</button>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       </div>
-      
-      <ScheduleModal
-        isOpen={isScheduleModalOpen}
-        onClose={() => setIsScheduleModalOpen(false)}
-        onScheduleAdd={handleScheduleAdd}
-      />
-
-      <AlertModal
-        isOpen={isAlertModalOpen}
-        onClose={() => setIsAlertModalOpen(false)}
-        onAlertAdd={handleAlertAdd}
-        usageStatus={safeUsageStatus || undefined}
-      />
     </div>
   );
 }
