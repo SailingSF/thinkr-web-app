@@ -559,7 +559,18 @@ function ChatShell() {
             {/* Section 1: Greeting */}
             <div className="flex-1 flex items-center justify-center px-4">
               <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col px-8 pt-8 pb-8" style={{ minHeight: '320px' }}>
-              <h1 className="text-white text-2xl font-normal mb-6 text-center w-full">
+                {/* Thinkr Logo */}
+                <div className="flex justify-center mb-8">
+                  <Image
+                    src="/thinkr-logo-white.png"
+                    alt="Thinkr"
+                    width={160}
+                    height={50}
+                    className="object-contain"
+                  />
+                </div>
+                
+                <h1 className="text-white text-2xl font-normal mb-6 text-center w-full">
                     {greeting},{userName ? ` ${userName}` : ''}
                   </h1>
                 
