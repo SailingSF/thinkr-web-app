@@ -51,16 +51,9 @@ export default function Navigation() {
   return (
     <nav className="sticky top-0 z-10 bg-[#141718]">
       <div className="w-full px-4 py-4 flex items-center">
-        {/* Left: Hamburger/Menu and Chat History always left-aligned on mobile/tablet */}
+        {/* Left: Chat History always left-aligned on mobile/tablet */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Hamburger/Menu button slot (if any) */}
-          {/* If you have a hamburger/menu button component, render it here. If not, this is a placeholder for your menu logic. */}
-          <button className="block lg:hidden p-2 rounded bg-black text-white" aria-label="Open menu">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          {/* Chat History dropdown or any left-aligned controls should be here, so they stay left-aligned with the menu button */}
+          {/* Chat History dropdown or any left-aligned controls should be here */}
           {/* If Chat History is a component, it should be rendered here. */}
         </div>
         {/* Center: Store name if present */}
