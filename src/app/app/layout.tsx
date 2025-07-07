@@ -11,7 +11,7 @@ function AppLayoutContent({
   children: React.ReactNode;
 }) {
   const { isLoading } = useAuth();
-  const { isSidebarCollapsed } = useNavigation();
+  const { isSidebarOpen } = useNavigation();
 
   if (isLoading) {
     return (
@@ -26,7 +26,7 @@ function AppLayoutContent({
       <Navigation />
       <AppSidebar />
       <main className={`flex-1 p-4 overflow-auto dark-scrollbar transition-all duration-300 ${
-        isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+        isSidebarOpen ? 'lg:pl-64' : 'lg:pl-20'
       }`}>
         {children}
       </main>

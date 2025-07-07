@@ -63,7 +63,7 @@ interface ApiConnectionStatus {
 function ChatShell() {
   const router = useRouter();
   const authFetch = useAuthFetch();
-  const { setShowLogo, isSidebarCollapsed } = useNavigation();
+  const { setShowLogo, isSidebarOpen } = useNavigation();
   const [currentThreadId, setCurrentThreadId] = useState<string | undefined>();
   const [message, setMessage] = useState('');
   const [isConnectingShopify, setIsConnectingShopify] = useState(false);
@@ -485,7 +485,7 @@ function ChatShell() {
       <div className="flex flex-col h-full">
         {/* Top controls - positioned differently based on active chat */}
         <div className={`absolute top-4 left-4 lg:left-4 flex items-center gap-3 z-30 ${hasUserMessages ? 'opacity-90' : ''} ml-16 transition-all duration-300 ${
-          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+          isSidebarOpen ? 'lg:ml-64' : 'lg:ml-20'
         }`}>
           <div className="relative" ref={dropdownRef}>
             <button
@@ -754,7 +754,7 @@ function ChatShell() {
         ) : (
           // State 2: Full height card, input fixed to bottom
           <div className={`fixed inset-0 flex flex-col items-center justify-center z-10 px-4 transition-all duration-300 ${
-            isSidebarCollapsed ? 'lg:left-20' : 'lg:left-64'
+            isSidebarOpen ? 'lg:left-64' : 'lg:left-20'
           } lg:right-16`} style={{ pointerEvents: 'none' }}>
             <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col h-[calc(100vh-48px)] relative" style={{ minHeight: '500px', pointerEvents: 'auto' }}>
               {/* Messages area - scrollable, fills space above input */}

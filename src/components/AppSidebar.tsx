@@ -8,7 +8,7 @@ import { useNavigation } from '@/contexts/NavigationContext';
 
 export default function AppSidebar() {
   const pathname = usePathname();
-  const { isSidebarCollapsed, setIsSidebarCollapsed } = useNavigation();
+  const { isSidebarOpen, setIsSidebarOpen } = useNavigation();
   const [isMounted, setIsMounted] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -35,15 +35,15 @@ export default function AppSidebar() {
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed top-0 left-0 h-screen w-64 z-30">
         <div className={`transition-all duration-300 ${
-          isSidebarCollapsed ? "w-16" : "w-64"
+          isSidebarOpen ? "w-64" : "w-16"
         } bg-black border-r border-black p-0 flex flex-col h-full`}>
           <div className="flex flex-col h-full w-full">
-            {isSidebarCollapsed ? (
+            {!isSidebarOpen ? (
               <>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                   className="hover:bg-gray-700 hover:text-white mt-6 mb-6 mx-auto"
                 >
                   <ChevronRight className="h-6 w-6 text-white" />
@@ -147,7 +147,7 @@ export default function AppSidebar() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     className="hover:bg-gray-700 hover:text-white"
                   >
                     <ChevronLeft className="h-4 w-4 text-white" />
@@ -226,7 +226,7 @@ export default function AppSidebar() {
 
       {/* Mobile Menu Button */}
       <button
-        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="fixed top-4 right-4 z-50 p-2 rounded-lg bg-black lg:hidden md:left-4 md:right-auto md:top-4 md:block"
         style={{ left: undefined, right: undefined }}
       >
@@ -236,7 +236,7 @@ export default function AppSidebar() {
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          {isSidebarCollapsed ? (
+          {isSidebarOpen ? (
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -257,18 +257,18 @@ export default function AppSidebar() {
       {/* Mobile Sidebar */}
       <div
         className={`fixed inset-0 z-40 lg:hidden ${
-          isSidebarCollapsed ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         } transition-opacity duration-300`}
       >
-        <div className="absolute inset-0 bg-black/50" onClick={() => setIsSidebarCollapsed(false)} />
+        <div className="absolute inset-0 bg-black/50" onClick={() => setIsSidebarOpen(false)} />
         <div
           className={`absolute left-0 top-0 h-full w-64 bg-black transform transition-transform duration-300 ${
-            isSidebarCollapsed ? 'translate-x-0' : '-translate-x-full'
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex flex-col h-full w-full">
             <div className="flex items-center justify-between w-full px-4 pt-6 pb-4">
-              <Link href="/app" onClick={() => setIsSidebarCollapsed(false)}>
+              <Link href="/app" onClick={() => setIsSidebarOpen(false)}>
                 {!imageError ? (
                   <div className="flex items-center h-14">
                     <Image
@@ -287,7 +287,7 @@ export default function AppSidebar() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsSidebarCollapsed(false)}
+                onClick={() => setIsSidebarOpen(false)}
                 className="hover:bg-gray-700 hover:text-white md:hidden"
               >
                 <ChevronLeft className="h-4 w-4 text-white" />
@@ -296,7 +296,7 @@ export default function AppSidebar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsSidebarCollapsed(false)}
+              onClick={() => setIsSidebarOpen(false)}
               className="hidden md:flex fixed top-8 right-4 z-50 bg-black hover:bg-gray-700 hover:text-white"
             >
               <ChevronLeft className="h-4 w-4 text-white" />
@@ -318,7 +318,7 @@ export default function AppSidebar() {
               </Link>
               <Link
                 href="/app/scheduler"
-                onClick={() => setIsSidebarCollapsed(false)}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isAgents
                     ? "md:bg-gray-700 md:text-white bg-gray-700 text-white"
@@ -330,7 +330,7 @@ export default function AppSidebar() {
               </Link>
               <Link
                 href="/app/integrations"
-                onClick={() => setIsSidebarCollapsed(false)}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isIntegrations
                     ? "md:bg-gray-700 md:text-white bg-gray-700 text-white"
