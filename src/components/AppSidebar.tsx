@@ -20,6 +20,7 @@ export default function AppSidebar() {
   const isChat = pathname === '/app';
   const isAgents = pathname === '/app/scheduler';
   const isIntegrations = pathname === '/app/integrations';
+  const isTemplates = pathname === '/app/agent-templates';
 
   const handleNav = () => {
     // Navigation handler if needed
@@ -103,7 +104,11 @@ export default function AppSidebar() {
                 <div className="w-full flex flex-col items-center pb-6 mt-auto">
                   <Link
                     href="/app/agent-templates"
-                    className="flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors text-white hover:bg-gray-700 hover:text-white mb-2"
+                    className={`flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors mb-2 ${
+                      isTemplates
+                        ? 'bg-gray-700 text-white'
+                        : 'text-white hover:bg-gray-700 hover:text-white'
+                    }`}
                   >
                     <FileText className="h-6 w-6" />
                   </Link>
@@ -191,7 +196,11 @@ export default function AppSidebar() {
                 <div className="w-full px-4 pb-6 mt-auto">
                   <Link
                     href="/app/agent-templates"
-                    className="flex items-center gap-3 p-2 rounded-lg w-full transition-colors text-white hover:bg-gray-700 hover:text-white mb-2"
+                    className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors mb-2 ${
+                      isTemplates
+                        ? 'bg-gray-700 text-white'
+                        : 'text-white hover:bg-gray-700 hover:text-white'
+                    }`}
                   >
                     <FileText className="h-5 w-5" />
                     <span>Templates</span>
@@ -337,7 +346,11 @@ export default function AppSidebar() {
             <div className="w-full px-4 pb-6 mt-auto">
               <Link
                 href="/app/agent-templates"
-                className="flex items-center gap-3 p-2 rounded-lg w-full transition-colors text-white hover:bg-gray-700 hover:text-white mb-2"
+                className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors mb-2 ${
+                  isTemplates
+                    ? 'bg-gray-700 text-white'
+                    : 'text-white hover:bg-gray-700 hover:text-white'
+                }`}
               >
                 <FileText className="h-5 w-5" />
                 <span>Templates</span>
