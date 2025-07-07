@@ -137,6 +137,24 @@ function ChatShell() {
     }
   }, []);
 
+  // Handle pre-filled agent prompt from template
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const prefillPrompt = localStorage.getItem('prefill_agent_prompt');
+      const prefillIntent = localStorage.getItem('prefill_agent_intent');
+      
+      if (prefillPrompt && prefillIntent) {
+        // Set the message and mode
+        setMessage(prefillPrompt);
+        setMode(prefillIntent as ChatIntent);
+        
+        // Clear the localStorage items
+        localStorage.removeItem('prefill_agent_prompt');
+        localStorage.removeItem('prefill_agent_intent');
+      }
+    }
+  }, [setMode]);
+
   // Fetch user data from /user/ endpoint on component mount
   useEffect(() => {
     const fetchUserData = async () => {

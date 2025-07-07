@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface TemplateModalProps {
   open: boolean;
@@ -14,14 +15,19 @@ interface TemplateModalProps {
 }
 
 export default function TemplateModal({ open, onClose, template }: TemplateModalProps) {
-  const [copied, setCopied] = useState(false);
+  const router = useRouter();
+  
   if (!open || !template) return null;
 
-  const handleCopy = async () => {
+  const handleMakeAgent = () => {
     if (template) {
-      await navigator.clipboard.writeText(template.prompt);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      // Store the prompt in localStorage to be picked up by the chat page
+      localStorage.setItem('prefill_agent_prompt', template.prompt);
+      localStorage.setItem('prefill_agent_intent', 'agent_builder');
+      
+      // Close modal and navigate to chat
+      onClose();
+      router.push('/app');
     }
   };
 
@@ -69,20 +75,23 @@ export default function TemplateModal({ open, onClose, template }: TemplateModal
           <p className="text-[#B0B0B0] text-sm">{template.kpi}</p>
         </div>
         {/* Prompt */}
-        <div className="mb-2">
+        <div className="mb-6">
           <h3 className="text-white text-base font-medium mb-1">Agent Prompt</h3>
-          <div className="relative group">
-            <pre className="bg-[#23262B] text-[#B0B0B0] text-xs p-3 rounded-lg whitespace-pre-wrap break-words">
+          <div className="bg-[#23262B] text-[#B0B0B0] text-xs p-3 rounded-lg">
+            <pre className="whitespace-pre-wrap break-words">
               {template.prompt}
             </pre>
-            <button
-              onClick={handleCopy}
-              className={`absolute top-2 right-2 px-3 py-1 rounded text-xs font-medium transition-opacity bg-[#23262B] border border-[#3A3D41] text-[#7B7B7B] hover:text-white hover:bg-[#23262B] focus:outline-none opacity-0 group-hover:opacity-100 ${copied ? '!opacity-100 bg-[#2A2D31] text-green-400 border-green-400' : ''}`}
-              style={{zIndex: 2}}
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
           </div>
+        </div>
+        
+        {/* Make This Agent Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleMakeAgent}
+            className="bg-[#7B6EF6] hover:bg-[#6B5EE6] text-white font-medium px-8 py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B6EF6] focus:ring-opacity-50"
+          >
+            Make This Agent
+          </button>
         </div>
       </div>
     </div>
