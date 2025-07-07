@@ -285,7 +285,7 @@ export default function AgentTemplatesPage() {
     <div className="min-h-[calc(100vh-64px)] bg-[#141718] pt-0 px-2 sm:px-4 md:px-8 lg:px-10 font-inter">
       {/* Header Section */}
       <div className="w-full px-0">
-        <h1 className="text-2xl sm:text-3xl md:text-[35px] text-white font-light mb-2 mt-0">Templates Library</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-[35px] text-white font-light mb-2 mt-0">Template Library</h1>
         <p className="text-lg text-[#7B7B7B] mb-10">Discover and deploy pre-built AI agents to automate growth, reporting, and operations.</p>
       </div>
 
