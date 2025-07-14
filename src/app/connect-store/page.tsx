@@ -250,9 +250,39 @@ export default function ConnectStore() {
               </div>
 
               <button
-                onClick={() => {
-                  const authUrl = `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/`;
-                  window.location.href = authUrl;
+                onClick={async () => {
+                  try {
+                    const token = getAuthToken();
+                    if (!token) {
+                      router.push('/login');
+                      return;
+                    }
+
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/oauth/start/`, {
+                      method: 'GET',
+                      credentials: 'include',
+                      headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Token ${token}`,
+                      },
+                    });
+
+                    if (!response.ok) {
+                      const errorData = await response.json().catch(() => ({}));
+                      throw new Error(errorData.error || `Failed to start OAuth flow`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.oauth_url) {
+                      window.location.href = data.oauth_url;
+                    } else {
+                      throw new Error('No OAuth URL received from server');
+                    }
+                  } catch (error) {
+                    console.error('OAuth start error:', error);
+                    setError(error instanceof Error ? error.message : 'Failed to start OAuth flow');
+                  }
                 }}
                 className="w-full py-4 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-colors text-lg font-medium"
               >

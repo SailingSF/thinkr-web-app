@@ -322,17 +322,30 @@ function ChatShell() {
     setShopifyError('');
     
     try {
-      // Redirect to Shopify OAuth
-      const authUrl = `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/`;
-      window.location.href = authUrl;
+      // Call authenticated API to get OAuth URL
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/oauth/start/`);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to start OAuth flow`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.oauth_url) {
+        // Redirect to Shopify OAuth URL
+        window.location.href = data.oauth_url;
+      } else {
+        throw new Error('No OAuth URL received from server');
+      }
     } catch (error) {
       console.error('Shopify connection error:', error);
       setShopifyError(error instanceof Error ? error.message : 'Failed to connect to Shopify');
       setShowShopifyErrorModal(true);
-    } finally {
       setIsConnectingShopify(false);
     }
-  }, []);
+    // Note: Don't set setIsConnectingShopify(false) here since we're redirecting
+  }, [authFetch]);
 
   const handleTriggerAudit = useCallback(async () => {
     setIsGeneratingAudit(true);
