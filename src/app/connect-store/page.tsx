@@ -251,7 +251,7 @@ export default function ConnectStore() {
 
               <button
                 onClick={() => {
-                  const authUrl = `${process.env.NEXT_PUBLIC_API_URL}/shopify/auth`;
+                  const authUrl = `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/`;
                   window.location.href = authUrl;
                 }}
                 className="w-full py-4 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-colors text-lg font-medium"

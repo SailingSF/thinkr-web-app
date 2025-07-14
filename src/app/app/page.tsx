@@ -323,7 +323,7 @@ function ChatShell() {
     
     try {
       // Redirect to Shopify OAuth
-      const authUrl = `${process.env.NEXT_PUBLIC_API_URL}/shopify/auth`;
+      const authUrl = `${process.env.NEXT_PUBLIC_API_URL}/oauth/start/`;
       window.location.href = authUrl;
     } catch (error) {
       console.error('Shopify connection error:', error);
