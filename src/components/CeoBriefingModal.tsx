@@ -10,13 +10,35 @@ interface CeoBriefingModalProps {
   onSave: (newCron: string) => Promise<void>;
 }
 
-// Helper function to convert local time to UTC for cron expression
-const convertToUTC = (localHour: number): number => {
+// Helper function to convert local time to UTC for cron expression **and** determine any day shift (-1, 0, +1)
+// Returns both the UTC hour **and** the day shift so we can correctly build the weekday portion of the cron expression.
+const convertToUTC = (
+  localHour: number
+): { utcHour: number; dayShift: number } => {
   const now = new Date();
+  // Create a date at today's date with the desired hour in the *local* timezone
   const localDate = new Date(
-    now.getFullYear(), now.getMonth(), now.getDate(), localHour, 0, 0
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    localHour,
+    0,
+    0
   );
-  return localDate.getUTCHours();
+
+  // Determine the corresponding UTC hour
+  const utcHour = localDate.getUTCHours();
+
+  // Calculate the day shift between the local day-of-week and the UTC day-of-week.
+  // This will be -1 (previous day), 0 (same day), or +1 (next day).
+  const localDay = localDate.getDay(); // 0-6 (Sun-Sat) in LOCAL time
+  const utcDay = localDate.getUTCDay(); // 0-6 (Sun-Sat) in UTC
+  let dayShift = utcDay - localDay;
+  // Normalise the result to -1, 0, or 1 (it should never exceed this range)
+  if (dayShift > 1) dayShift -= 7;
+  if (dayShift < -1) dayShift += 7;
+
+  return { utcHour, dayShift };
 };
 
 // Helper function to convert UTC to local time
@@ -66,11 +88,29 @@ export default function CeoBriefingModal({ isOpen, onClose, schedule, onSave }: 
     setError('');
     
     try {
-      // Convert local time to UTC for cron expression
-      const utcHour = convertToUTC(selectedHour);
-      // CEO briefing is always Monday-Friday (1-5)
-      const newCron = `0 ${utcHour} * * 1-5`;
-      
+      // Convert local time to UTC and capture any day shift so the weekday portion
+      // of the cron expression matches Monday-Friday **in the user's local timezone**.
+      const { utcHour, dayShift } = convertToUTC(selectedHour);
+
+      // Map local Monday-Friday (1-5) to the correct UTC weekdays after applying the day shift.
+      // Example: dayShift = -1  → local Mon-Fri = UTC Sun-Thu (0-4)
+      //          dayShift =  1  → local Mon-Fri = UTC Tue-Sat (2-6)
+      const mappedDays = [1, 2, 3, 4, 5].map(
+        (d) => (d + dayShift + 7) % 7
+      );
+
+      // Because the resulting days are always five consecutive integers, we can
+      // express them as a range in cron syntax. If, for any reason, they are not
+      // consecutive, fall back to a comma-separated list.
+      const isConsecutive =
+        mappedDays.every((d, idx) => idx === 0 || d === mappedDays[idx - 1] + 1);
+
+      const dayField = isConsecutive
+        ? `${mappedDays[0]}-${mappedDays[mappedDays.length - 1]}`
+        : mappedDays.join(',');
+
+      const newCron = `0 ${utcHour} * * ${dayField}`;
+
       await onSave(newCron);
       onClose();
     } catch (err) {
