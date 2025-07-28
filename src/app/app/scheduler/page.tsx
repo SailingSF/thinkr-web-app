@@ -4,6 +4,8 @@ import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import ScheduleModal from './ScheduleModal';
 import AlertModal from './AlertModal';
+import CeoBriefingCard from '@/components/CeoBriefingCard';
+import CeoBriefingModal from '@/components/CeoBriefingModal';
 import { useAuthFetch } from '@/utils/shopify';
 import { useLocalStorage, Schedule, Alert, UsageStatus } from '@/hooks/useLocalStorage';
 
@@ -113,21 +115,26 @@ export default function Scheduler() {
   const [expandedTimeSlots, setExpandedTimeSlots] = useState<Set<string>>(new Set());
   const [showAllHours, setShowAllHours] = useState(false);
   const [alertSearch, setAlertSearch] = useState('');
+  const [isCeoModalOpen, setIsCeoModalOpen] = useState(false);
 
   // Ensure alerts is always an array and filter out deactivated alerts
   const safeAlerts = (alerts || []).filter(alert => alert.is_active);
   const safeSchedules = schedules || [];
   
+  // Separate CEO briefing from other schedules
+  const ceoSchedule = safeSchedules.find(schedule => schedule.analysis_type === 'ceo_briefing') || null;
+  const otherSchedules = safeSchedules.filter(schedule => schedule.analysis_type !== 'ceo_briefing');
+  
   // Ensure usageStatus has safe nested properties
   const safeUsageStatus = usageStatus && usageStatus.alerts ? usageStatus : null;
 
   const hasWeekendSchedules = useMemo(() => {
-    return safeSchedules.some(schedule => {
+    return otherSchedules.some(schedule => {
       const [, , , , day] = schedule.cron_expression.split(' ');
       const dayNum = parseInt(day);
       return dayNum === 6 || dayNum === 0; // Saturday is 6, Sunday is 0
     });
-  }, [safeSchedules]);
+  }, [otherSchedules]);
 
   // Reset expanded state when view mode changes
   useEffect(() => {
@@ -328,6 +335,42 @@ export default function Scheduler() {
     }
   };
 
+  const handleUpdateCeoSchedule = async (newCron: string) => {
+    if (!ceoSchedule) {
+      throw new Error('CEO briefing schedule not found');
+    }
+
+    const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        schedule_id: ceoSchedule.id,
+        cron_expression: newCron,
+        is_active: ceoSchedule.is_active
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update CEO briefing schedule');
+    }
+
+    const updatedScheduleData = await response.json();
+    
+    // Update the schedule in state
+    setSchedules(prev => {
+      const updated = prev.map(schedule => 
+        schedule.id === ceoSchedule.id 
+          ? { ...schedule, cron_expression: newCron, next_run: updatedScheduleData.next_run }
+          : schedule
+      );
+      updateStoredData({ schedules: updated });
+      return updated;
+    });
+  };
+
   const handleDeleteAlert = async (alertId: number) => {
     setIsDeletingAlert(alertId);
     try {
@@ -383,7 +426,7 @@ export default function Scheduler() {
     setIsDeletingAll(true);
     try {
       await Promise.all(
-        safeSchedules.map(schedule =>
+        otherSchedules.map(schedule =>
           authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`, {
             method: 'DELETE',
             headers: {
@@ -394,8 +437,10 @@ export default function Scheduler() {
         )
       );
 
-      setSchedules([]);
-      updateStoredData({ schedules: [] });
+      // Keep CEO briefing, remove only other schedules
+      const updatedSchedules = ceoSchedule ? [ceoSchedule] : [];
+      setSchedules(updatedSchedules);
+      updateStoredData({ schedules: updatedSchedules });
     } catch (error) {
       console.error('Unsubscribe all error:', error);
       setError('Failed to delete all schedules. Please try again.');
@@ -532,7 +577,7 @@ export default function Scheduler() {
       : Array.from({ length: 17 }, (_, i) => i + 6); // 6 AM to 10 PM
 
     // Check if any schedules fall outside the default hours
-    const hasSchedulesOutsideDefaultHours = !showAllHours && safeSchedules.some(schedule => {
+    const hasSchedulesOutsideDefaultHours = !showAllHours && otherSchedules.some(schedule => {
       const { hour } = formatScheduleTime(schedule);
       return hour < 6 || hour > 22;
     });
@@ -578,7 +623,7 @@ export default function Scheduler() {
                     {formatHourToAMPM(hour)}
                   </div>
                   {weekDays.map(day => {
-                    const schedulesForTimeSlot = safeSchedules.filter(schedule => {
+                    const schedulesForTimeSlot = otherSchedules.filter(schedule => {
                       const { dayLabel, hour: localHour } = formatScheduleTime(schedule);
                       return localHour === hour && dayLabel === day;
                     });
@@ -723,7 +768,7 @@ export default function Scheduler() {
     const allWeekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const weekDays = hideWeekends ? allWeekDays.slice(0, 5) : allWeekDays;
     const schedulesByDay = weekDays.reduce((acc, day) => {
-      acc[day] = safeSchedules.filter(schedule => {
+      acc[day] = otherSchedules.filter(schedule => {
         const { dayLabel } = formatScheduleTime(schedule);
         return dayLabel === day;
       });
@@ -847,13 +892,21 @@ export default function Scheduler() {
         </div>
       )}
 
+      {/* CEO Briefing Section */}
+      {ceoSchedule && (
+        <CeoBriefingCard 
+          schedule={ceoSchedule} 
+          onEdit={() => setIsCeoModalOpen(true)} 
+        />
+      )}
+
       <div className="bg-[#141718] rounded-2xl p-6 shadow-lg">
         <div className="mb-8">
           <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
             Reporting Schedules
-            {safeSchedules.length > 0 && (
+            {otherSchedules.length > 0 && (
               <span className="ml-2 px-2 py-0.5 text-xs bg-[#8B5CF6]/20 text-[#8B5CF6] rounded-full">
-                {safeSchedules.length}
+                {otherSchedules.length}
               </span>
             )}
           </h2>
@@ -866,7 +919,27 @@ export default function Scheduler() {
         {/* Analysis Schedules Content */}
         {activeSection === 'schedules' && (
           <>
-            {renderKanbanView()}
+            {otherSchedules.length > 0 ? (
+              renderKanbanView()
+            ) : (
+              <div className="text-center py-12 lg:py-16 px-4">
+                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-[#8C74FF]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 ring-1 ring-[#8C74FF]/20">
+                  <svg className="w-8 h-8 lg:w-10 lg:h-10 text-[#8C74FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl lg:text-2xl font-bold mb-3 text-white">No reporting schedules yet</h3>
+                <p className="text-base text-[#7B7B7B] mb-8 max-w-md mx-auto">
+                  Create analysis schedules to get regular insights about your store's performance
+                </p>
+                <button
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className="px-8 py-3 bg-[#8C74FF] hover:bg-[#8C74FF]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#8C74FF]/20 hover:shadow-lg hover:shadow-[#8C74FF]/30"
+                >
+                  Create Schedule
+                </button>
+              </div>
+            )}
           </>
         )}
 
@@ -939,6 +1012,31 @@ export default function Scheduler() {
           </div>
         </div>
       </div>
+
+      {/* CEO Briefing Modal */}
+      {ceoSchedule && (
+        <CeoBriefingModal
+          isOpen={isCeoModalOpen}
+          onClose={() => setIsCeoModalOpen(false)}
+          schedule={ceoSchedule}
+          onSave={handleUpdateCeoSchedule}
+        />
+      )}
+
+      {/* Schedule Modal */}
+      <ScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onScheduleAdd={handleScheduleAdd}
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={isAlertModalOpen}
+        onClose={() => setIsAlertModalOpen(false)}
+        onAlertAdd={handleAlertAdd}
+        usageStatus={safeUsageStatus || undefined}
+      />
     </div>
   );
 }

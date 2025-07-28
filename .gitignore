@@ -48,3 +48,6 @@ next-env.d.ts
 .cursorrules
 .cursor
 .cursor/*
+
+# claude code
+CLAUDE.md
