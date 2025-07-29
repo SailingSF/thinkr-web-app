@@ -5,6 +5,8 @@ import { Schedule } from '@/hooks/useLocalStorage';
 interface CeoBriefingCardProps {
   schedule: Schedule;
   onEdit: () => void;
+  onToggleActive: (newStatus: boolean) => void;
+  isUpdating?: boolean;
 }
 
 // Helper function to convert UTC to local time for CEO briefing
@@ -28,7 +30,7 @@ const formatHourToAMPM = (hour: number): string => {
     `${hour} AM`;
 };
 
-export default function CeoBriefingCard({ schedule, onEdit }: CeoBriefingCardProps) {
+export default function CeoBriefingCard({ schedule, onEdit, onToggleActive, isUpdating }: CeoBriefingCardProps) {
   // Parse cron expression to get local time
   const [, utcHour] = schedule.cron_expression.split(' ');
   const localHour = convertFromUTC(parseInt(utcHour));
@@ -39,21 +41,16 @@ export default function CeoBriefingCard({ schedule, onEdit }: CeoBriefingCardPro
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-white">Daily CEO Briefing</h2>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[#7B7B7B]">Status:</span>
-            <div className="flex items-center gap-2">
-              <div 
-                className={`w-2 h-2 rounded-full ${
-                  schedule.is_active ? 'bg-[#22C55E]' : 'bg-[#7B7B7B]'
-                }`} 
-              />
-              <span className={`text-sm font-medium ${
-                schedule.is_active ? 'text-[#22C55E]' : 'text-[#7B7B7B]'
-              }`}>
-                {schedule.is_active ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-          </div>
+          {/* Toggle Switch */}
+          <button
+            onClick={() => onToggleActive(!schedule.is_active)}
+            disabled={isUpdating}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#8C74FF]/50 focus:ring-offset-2 focus:ring-offset-[#141718] ${schedule.is_active ? 'bg-green-500' : 'bg-[#2C2D32]'} ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <span
+              className={`${schedule.is_active ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out`}
+            />
+          </button>
           <div className="h-4 w-px bg-[#2C2D32]" />
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#7B7B7B]">Time:</span>
