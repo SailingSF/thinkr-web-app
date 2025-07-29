@@ -109,6 +109,7 @@ export default function Scheduler() {
   const [isDeletingSchedule, setIsDeletingSchedule] = useState<number | null>(null);
   const [isDeletingAlert, setIsDeletingAlert] = useState<number | null>(null);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [isTogglingCeo, setIsTogglingCeo] = useState(false);
   const [loading, setLoading] = useState(!storedData?.schedules && !storedData?.alerts);
   const [error, setError] = useState('');
   const [hideWeekends, setHideWeekends] = useState(false);
@@ -446,6 +447,46 @@ export default function Scheduler() {
       setError('Failed to delete all schedules. Please try again.');
     } finally {
       setIsDeletingAll(false);
+    }
+  };
+
+  const handleToggleCeoActive = async (newIsActive: boolean) => {
+    if (!ceoSchedule) return;
+    setIsTogglingCeo(true);
+    try {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/analysis-schedules/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          schedule_id: ceoSchedule.id,
+          is_active: newIsActive,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update CEO briefing status');
+      }
+
+      const updatedData = await response.json();
+
+      setSchedules(prev => {
+        const updated = prev.map(schedule =>
+          schedule.id === ceoSchedule.id
+            ? { ...schedule, is_active: newIsActive, next_run: updatedData.next_run }
+            : schedule
+        );
+        updateStoredData({ schedules: updated });
+        return updated;
+      });
+      setError('');
+    } catch (error) {
+      console.error('Toggle CEO schedule error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update CEO briefing status');
+    } finally {
+      setIsTogglingCeo(false);
     }
   };
 
@@ -897,6 +938,8 @@ export default function Scheduler() {
         <CeoBriefingCard 
           schedule={ceoSchedule} 
           onEdit={() => setIsCeoModalOpen(true)} 
+          onToggleActive={handleToggleCeoActive}
+          isUpdating={isTogglingCeo}
         />
       )}
 
