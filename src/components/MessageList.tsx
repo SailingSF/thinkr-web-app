@@ -161,7 +161,8 @@ export default function MessageList({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll to the very bottom but keep the last message comfortably above the input bar
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   };
 
   useEffect(() => {
@@ -197,6 +198,7 @@ export default function MessageList({
         <TypingIndicator />
       )}
       
+      {/* Spacer to ensure the last message isn't hidden behind the input bar */}
       <div ref={messagesEndRef} />
     </div>
   );

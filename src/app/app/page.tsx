@@ -771,7 +771,7 @@ function ChatShell() {
           } lg:right-16`} style={{ pointerEvents: 'none' }}>
             <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col h-[calc(100vh-48px)] relative" style={{ minHeight: '500px', pointerEvents: 'auto' }}>
               {/* Messages area - scrollable, fills space above input */}
-              <div className="flex-1 overflow-y-auto px-8 pt-8" style={{ paddingBottom: '112px' }}>
+              <div className="flex-1 overflow-y-auto px-8 pt-8">
                 <MessageList
                   messages={messages}
                   isLoading={isLoading}
@@ -780,9 +780,9 @@ function ChatShell() {
                   className="min-h-[60vh]"
                 />
               </div>
-              {/* Input area - fixed to bottom, always visible, never moves */}
-              <div className="absolute left-0 bottom-0 w-full px-0" style={{ pointerEvents: 'auto' }}>
-                <div className="bg-chat-dark rounded-b-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+              {/* Input area - sits below messages without overlapping */}
+              <div className="px-0">
+                <div className="bg-chat-dark rounded-b-2xl px-6 pt-4 pb-6 border-t border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2">
                   <div className="bg-chat-input rounded-2xl p-4 flex items-center">
                     <textarea
                       value={message}
