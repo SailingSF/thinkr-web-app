@@ -66,6 +66,12 @@ function ChatShell() {
   const { setShowLogo, isSidebarOpen } = useNavigation();
   const [currentThreadId, setCurrentThreadId] = useState<string | undefined>();
   const [message, setMessage] = useState('');
+  
+  // Keep a ref of the latest thread id so event handlers always use the current value
+  const currentThreadIdRef = useRef<string | undefined>(currentThreadId);
+  useEffect(() => {
+    currentThreadIdRef.current = currentThreadId;
+  }, [currentThreadId]);
   const [isConnectingShopify, setIsConnectingShopify] = useState(false);
   const [isGeneratingAudit, setIsGeneratingAudit] = useState(false);
   const [shopifyError, setShopifyError] = useState('');
@@ -283,8 +289,9 @@ function ChatShell() {
     
     const messageToSend = message.trim();
     setMessage('');
-    sendMessage(messageToSend, currentThreadId);
-  }, [message, isLoading, sendMessage, currentThreadId]);
+    // Use the ref to ensure we always send with the up-to-date thread id
+    sendMessage(messageToSend, currentThreadIdRef.current);
+  }, [message, isLoading, sendMessage]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
@@ -295,7 +302,12 @@ function ChatShell() {
 
   const handleThreadSelect = useCallback((threadId: string) => {
     setCurrentThreadId(threadId || undefined);
-  }, []);
+    // Ensure the chat intent/mode matches the selected thread
+    const selected = threads.find(t => t.thread_id === threadId);
+    if (selected?.intent) {
+      setMode(selected.intent);
+    }
+  }, [threads, setMode]);
 
   const handleAgentCreate = useCallback((specification: AgentSpecification) => {
     createAgent(specification);
@@ -309,13 +321,13 @@ function ChatShell() {
   const handleAgentTypeClick = useCallback((agentName: string) => {
     const agentMessage = `Create a ${agentName} agent`;
     setMode('agent_builder');
-    sendMessage(agentMessage, currentThreadId, 'agent_builder');
-  }, [setMode, sendMessage, currentThreadId]);
+    sendMessage(agentMessage, currentThreadIdRef.current, 'agent_builder');
+  }, [setMode, sendMessage]);
 
   const handleAgentCardClick = useCallback((agentName: string) => {
     const agentMessage = `Create a ${agentName} agent`;
-    sendMessage(agentMessage, currentThreadId, 'agent_builder');
-  }, [sendMessage, currentThreadId]);
+    sendMessage(agentMessage, currentThreadIdRef.current, 'agent_builder');
+  }, [sendMessage]);
 
   const handleShopifyConnect = useCallback(async () => {
     setIsConnectingShopify(true);
