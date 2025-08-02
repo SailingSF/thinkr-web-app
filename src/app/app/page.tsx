@@ -66,6 +66,12 @@ function ChatShell() {
   const { setShowLogo, isSidebarOpen } = useNavigation();
   const [currentThreadId, setCurrentThreadId] = useState<string | undefined>();
   const [message, setMessage] = useState('');
+  
+  // Keep a ref of the latest thread id so event handlers always use the current value
+  const currentThreadIdRef = useRef<string | undefined>(currentThreadId);
+  useEffect(() => {
+    currentThreadIdRef.current = currentThreadId;
+  }, [currentThreadId]);
   const [isConnectingShopify, setIsConnectingShopify] = useState(false);
   const [isGeneratingAudit, setIsGeneratingAudit] = useState(false);
   const [shopifyError, setShopifyError] = useState('');
@@ -283,8 +289,9 @@ function ChatShell() {
     
     const messageToSend = message.trim();
     setMessage('');
-    sendMessage(messageToSend, currentThreadId);
-  }, [message, isLoading, sendMessage, currentThreadId]);
+    // Use the ref to ensure we always send with the up-to-date thread id
+    sendMessage(messageToSend, currentThreadIdRef.current);
+  }, [message, isLoading, sendMessage]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
@@ -295,7 +302,12 @@ function ChatShell() {
 
   const handleThreadSelect = useCallback((threadId: string) => {
     setCurrentThreadId(threadId || undefined);
-  }, []);
+    // Ensure the chat intent/mode matches the selected thread
+    const selected = threads.find(t => t.thread_id === threadId);
+    if (selected?.intent) {
+      setMode(selected.intent);
+    }
+  }, [threads, setMode]);
 
   const handleAgentCreate = useCallback((specification: AgentSpecification) => {
     createAgent(specification);
@@ -309,13 +321,13 @@ function ChatShell() {
   const handleAgentTypeClick = useCallback((agentName: string) => {
     const agentMessage = `Create a ${agentName} agent`;
     setMode('agent_builder');
-    sendMessage(agentMessage, currentThreadId, 'agent_builder');
-  }, [setMode, sendMessage, currentThreadId]);
+    sendMessage(agentMessage, currentThreadIdRef.current, 'agent_builder');
+  }, [setMode, sendMessage]);
 
   const handleAgentCardClick = useCallback((agentName: string) => {
     const agentMessage = `Create a ${agentName} agent`;
-    sendMessage(agentMessage, currentThreadId, 'agent_builder');
-  }, [sendMessage, currentThreadId]);
+    sendMessage(agentMessage, currentThreadIdRef.current, 'agent_builder');
+  }, [sendMessage]);
 
   const handleShopifyConnect = useCallback(async () => {
     setIsConnectingShopify(true);
@@ -771,7 +783,7 @@ function ChatShell() {
           } lg:right-16`} style={{ pointerEvents: 'none' }}>
             <div className="bg-[#181A1B] rounded-2xl shadow border border-[#232425] w-full max-w-4xl flex flex-col h-[calc(100vh-48px)] relative" style={{ minHeight: '500px', pointerEvents: 'auto' }}>
               {/* Messages area - scrollable, fills space above input */}
-              <div className="flex-1 overflow-y-auto px-8 pt-8" style={{ paddingBottom: '112px' }}>
+              <div className="flex-1 overflow-y-auto px-8 pt-8">
                 <MessageList
                   messages={messages}
                   isLoading={isLoading}
@@ -780,9 +792,9 @@ function ChatShell() {
                   className="min-h-[60vh]"
                 />
               </div>
-              {/* Input area - fixed to bottom, always visible, never moves */}
-              <div className="absolute left-0 bottom-0 w-full px-0" style={{ pointerEvents: 'auto' }}>
-                <div className="bg-chat-dark rounded-b-2xl px-6 pt-4 pb-6 border border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2" style={{ boxSizing: 'border-box' }}>
+              {/* Input area - sits below messages without overlapping */}
+              <div className="px-0">
+                <div className="bg-chat-dark rounded-b-2xl px-6 pt-4 pb-6 border-t border-chat-border shadow-[0_-2px_8px_0_rgba(0,0,0,0.15)] w-full flex flex-col gap-2">
                   <div className="bg-chat-input rounded-2xl p-4 flex items-center">
                     <textarea
                       value={message}

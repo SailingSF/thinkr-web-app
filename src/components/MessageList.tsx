@@ -98,18 +98,11 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({ text, speed = 50, onDon
 };
 
 const TypingIndicator = memo(() => {
-  const [showThinking, setShowThinking] = useState(false);
   const [typewriterKey, setTypewriterKey] = useState(0);
 
-  // When the first typewriter finishes, show the second after 500ms
+  // When the typewriter finishes, restart the animation after 500ms
   const handleTypewriterDone = () => {
-    setTimeout(() => setShowThinking(true), 500);
-  };
-
-  // When the second typewriter finishes, restart the animation after 500ms
-  const handleThinkingDone = () => {
     setTimeout(() => {
-      setShowThinking(false);
       setTypewriterKey((k) => k + 1);
     }, 500);
   };
@@ -126,16 +119,6 @@ const TypingIndicator = memo(() => {
             onDone={handleTypewriterDone}
           />
         </span>
-        {showThinking && (
-          <span className="text-sm italic text-chat-icon mt-1">
-            <TypewriterText
-              key={typewriterKey + '-thinking'}
-              text="thinking...."
-              speed={50}
-              onDone={handleThinkingDone}
-            />
-          </span>
-        )}
       </div>
     </div>
   );
@@ -161,7 +144,8 @@ export default function MessageList({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll to the very bottom but keep the last message comfortably above the input bar
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   };
 
   useEffect(() => {
@@ -197,6 +181,7 @@ export default function MessageList({
         <TypingIndicator />
       )}
       
+      {/* Spacer to ensure the last message isn't hidden behind the input bar */}
       <div ref={messagesEndRef} />
     </div>
   );
