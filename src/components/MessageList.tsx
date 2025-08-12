@@ -4,15 +4,17 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
-import { ChatMessage } from '@/types/chat';
+import { AgentSpecification, ChatMessage } from '@/types/chat';
 import InlineAgentSpec from './InlineAgentSpec';
 import React from 'react';
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  onCreateAgent?: (spec: AgentSpecification) => void;
+  creating?: boolean;
 }
 
-const MessageBubble = memo(({ message }: MessageBubbleProps) => {
+const MessageBubble = memo(({ message, onCreateAgent, creating }: MessageBubbleProps) => {
   const isUser = message.role === 'user';
   const [copied, setCopied] = useState(false);
 
@@ -43,7 +45,11 @@ const MessageBubble = memo(({ message }: MessageBubbleProps) => {
           
           {/* Show agent specification inline for assistant messages */}
           {!isUser && message.agent_specification && (
-            <InlineAgentSpec specification={message.agent_specification} />
+            <InlineAgentSpec
+              specification={message.agent_specification}
+              onCreate={onCreateAgent}
+              creating={creating}
+            />
           )}
           {/* Copy button for assistant messages */}
           {!isUser && (
@@ -132,6 +138,8 @@ interface MessageListProps {
   error?: string | null;
   onErrorDismiss?: () => void;
   className?: string;
+  onCreateAgent?: (spec: AgentSpecification) => void;
+  creatingAgent?: boolean;
 }
 
 export default function MessageList({ 
@@ -139,7 +147,9 @@ export default function MessageList({
   isLoading = false,
   error,
   onErrorDismiss,
-  className = ''
+  className = '',
+  onCreateAgent,
+  creatingAgent,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -157,7 +167,9 @@ export default function MessageList({
       {messages.map((message, index) => (
         <MessageBubble 
           key={`${message.id || message.role}-${message.created_at}-${index}`} 
-          message={message} 
+          message={message}
+          onCreateAgent={onCreateAgent}
+          creating={creatingAgent}
         />
       ))}
       
