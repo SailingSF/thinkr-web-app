@@ -10,14 +10,13 @@ import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 import SegmentedModeSelector from '@/components/SegmentedModeSelector';
 import { Connection } from '@/components/SegmentedModeSelector';
 import MessageList from '@/components/MessageList';
-import AgentPreviewDrawer from '@/components/AgentPreviewDrawer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ShopifyConnectButton from '@/components/ShopifyConnectButton';
 import AuditCard from '@/components/AuditCard';
 import ShopifyErrorModal from '@/components/ShopifyErrorModal';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { useChat, useChatUI } from '@/hooks/useChat';
-import { ChatIntent, AgentSpecification } from '@/types/chat';
+import { ChatIntent } from '@/types/chat';
 import { useLocalStorage, ConnectionStatus } from '@/hooks/useLocalStorage';
 import { AGENT_TYPES } from '@/components/icons/AgentIcons';
 import { useAuthFetch } from '@/utils/shopify';
@@ -87,9 +86,6 @@ function ChatShell() {
   const {
     mode,
     setMode,
-    agentDrawerOpen,
-    currentAgentSpec,
-    closeAgentDrawer,
   } = useChatUI();
 
   const {
@@ -107,6 +103,8 @@ function ChatShell() {
     intent: mode,
     onThreadChange: setCurrentThreadId
   });
+  // No drawer: inline creation handled in InlineAgentSpec via a handler we pass down
+
 
   const { storedData } = useLocalStorage();
 
@@ -309,14 +307,7 @@ function ChatShell() {
     }
   }, [threads, setMode]);
 
-  const handleAgentCreate = useCallback((specification: AgentSpecification) => {
-    createAgent(specification);
-    closeAgentDrawer();
-  }, [createAgent, closeAgentDrawer]);
-
-  const handleAgentDrawerClose = useCallback(() => {
-    closeAgentDrawer();
-  }, [closeAgentDrawer]);
+  // Inline agent creation handled via MessageList -> InlineAgentSpec
 
   const handleAgentTypeClick = useCallback((agentName: string) => {
     const agentMessage = `Create a ${agentName} agent`;
@@ -789,6 +780,14 @@ function ChatShell() {
                   isLoading={isLoading}
                   error={error}
                   onErrorDismiss={clearError}
+                  onCreateAgent={() =>
+                    sendMessage(
+                      'Yes, create the agent with these details',
+                      currentThreadIdRef.current,
+                      'agent_builder'
+                    )
+                  }
+                  creatingAgent={isLoading}
                   className="min-h-[60vh]"
                 />
               </div>
@@ -834,15 +833,7 @@ function ChatShell() {
           </div>
         )}
 
-        {/* Agent Preview Drawer */}
-        <AgentPreviewDrawer
-          isOpen={agentDrawerOpen}
-          onClose={handleAgentDrawerClose}
-          specification={currentAgentSpec}
-          description="This agent will help monitor your store's performance automatically."
-          onConfirm={handleAgentCreate}
-          loading={createAgentLoading}
-        />
+        {/* Drawer removed; agent creation flows inline with messages */}
 
         {/* Shopify Error Modal */}
         <ShopifyErrorModal
