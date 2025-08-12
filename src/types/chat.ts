@@ -22,7 +22,7 @@ export interface Thread {
   intent?: ChatIntent;
 }
 
-export type AgentType = 'growth' | 'alert';
+export type AgentType = 'growth' | 'alert' | 'custom_report';
 
 export interface AgentSpecification {
   agent_type: AgentType;
@@ -37,6 +37,12 @@ export interface AgentSpecification {
     alert_threshold_type?: 'gt' | 'lt';
     alert_threshold_value?: number;
     alert_frequency?: string;
+    // Custom Report fields
+    metrics?: string[];
+    name?: string;
+    timezone?: string;
+    day_of_week?: number; // 0 = Monday, ... 6 = Sunday
+    time_of_day?: string; // HH:mm (24h)
   };
 }
 
