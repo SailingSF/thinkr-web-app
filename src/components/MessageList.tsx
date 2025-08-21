@@ -4,6 +4,8 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
+import remarkGfm from 'remark-gfm';
+import type { Components } from 'react-markdown';
 import { AgentSpecification, ChatMessage } from '@/types/chat';
 import InlineAgentSpec from './InlineAgentSpec';
 import React from 'react';
@@ -41,7 +43,63 @@ const MessageBubble = memo(({ message, onCreateAgent, creating }: MessageBubbleP
               </span>
             </div>
           )}
-          <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
+          {(() => {
+            // Custom renderers to ensure tables are readable and responsive
+            const markdownComponents: Components = {
+              table: ({ children }) => (
+                <div className="mt-2 -mx-1 sm:mx-0 overflow-x-auto rounded-md border border-chat-border bg-[#131415]">
+                  <table className="min-w-max text-[11px] sm:text-xs md:text-sm border-collapse">
+                    {children}
+                  </table>
+                </div>
+              ),
+              thead: ({ children }) => (
+                <thead className="bg-[#1F2122]">
+                  {children}
+                </thead>
+              ),
+              tbody: ({ children }) => (
+                <tbody className="divide-y divide-[#2A2D2E]">
+                  {children}
+                </tbody>
+              ),
+              tr: ({ children }) => (
+                <tr className="odd:bg-transparent even:bg-[#161718]">
+                  {children}
+                </tr>
+              ),
+              th: ({ children }) => (
+                <th className="text-left font-semibold text-gray-200 whitespace-pre-wrap break-words px-3 py-2 border-b border-[#2A2D2E] align-top first:sticky first:left-0 first:z-10 first:bg-[#1F2122]">
+                  {children}
+                </th>
+              ),
+              td: ({ children }) => (
+                <td className="align-top whitespace-pre-wrap break-words px-3 py-2 border-t border-[#2A2D2E] text-gray-200 first:sticky first:left-0 first:bg-[#131415] first:shadow-[inset_-1px_0_0_0_rgba(42,45,46,1)]">
+                  {children}
+                </td>
+              ),
+              code: ({ inline, children }: any) => (
+                <code className={`${inline ? 'px-1 py-0.5 rounded bg-[#232425] text-gray-200' : ''} break-words`}>
+                  {children}
+                </code>
+              ),
+              pre: ({ children }) => (
+                <pre className="overflow-x-auto rounded-md border border-[#2A2D2E] bg-[#131415] p-3">
+                  {children}
+                </pre>
+              ),
+            };
+
+            return (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeSanitize]}
+                components={markdownComponents}
+              >
+                {message.content}
+              </ReactMarkdown>
+            );
+          })()}
           
           {/* Show agent specification inline for assistant messages */}
           {!isUser && message.agent_specification && (
