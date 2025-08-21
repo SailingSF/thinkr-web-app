@@ -424,52 +424,78 @@ function ChatShell() {
     return connectedServices;
   }, [fivetranConnections]);
 
-  // Utility function to parse thread's last message for display (using same logic as messages)
-  const parseThreadLastMessage = useCallback((lastMessage: string | null | undefined): string => {
+  // Utility: extract a human-friendly line from potentially JSON last-message
+  const parseThreadLastMessage = useCallback((lastMessage: string | null | undefined, intent?: string): string => {
     if (!lastMessage) return '';
-    
-    // Use the same parsing logic as messages
+
     try {
-      // Clean up the string - remove leading/trailing whitespace and newlines
-      let content = lastMessage.trim();
-      
-      // Handle double-escaped JSON (from database storage)
+      let content: string = lastMessage.trim();
+
+      // Handle double-escaped JSON strings like "{ ... }"
       if (content.startsWith('"{') && content.endsWith('}"')) {
         content = JSON.parse(content);
       }
-      
-      // Check if it starts with { and try to find the first complete JSON object
+
+      // If content looks like JSON, try to pull a readable field
       if (content.startsWith('{')) {
-        // If there are multiple JSON objects concatenated, try to extract the first one
+        // Extract the first complete JSON object if multiple are concatenated
         let braceCount = 0;
         let firstJsonEnd = -1;
-        
         for (let i = 0; i < content.length; i++) {
-          if (content[i] === '{') braceCount++;
-          else if (content[i] === '}') {
+          const ch = content[i];
+          if (ch === '{') braceCount++;
+          else if (ch === '}') {
             braceCount--;
-            if (braceCount === 0) {
-              firstJsonEnd = i;
-              break;
-            }
+            if (braceCount === 0) { firstJsonEnd = i; break; }
           }
         }
-        
+
         if (firstJsonEnd > -1) {
           const firstJsonStr = content.substring(0, firstJsonEnd + 1);
-          const parsedResponse = JSON.parse(firstJsonStr);
-          
-          if (parsedResponse.message && typeof parsedResponse.message === 'string') {
-            return parsedResponse.message;
+          const obj = JSON.parse(firstJsonStr);
+
+          // 1) Prefer explicit text fields
+          const preferredKeys = ['message', 'detail', 'description', 'note', 'text', 'status_text'];
+          for (const key of preferredKeys) {
+            if (typeof obj?.[key] === 'string' && obj[key].trim()) {
+              return String(obj[key]).trim();
+            }
           }
+
+          // 2) If we have success true for agent builder flows, show a clean summary
+          if (obj && typeof obj === 'object' && obj.success === true) {
+            if (intent === 'agent_builder') {
+              if (typeof obj.agent_name === 'string' && obj.agent_name.trim()) {
+                return `Agent "${obj.agent_name}" created`;
+              }
+              return 'Agent created successfully';
+            }
+            return 'Success';
+          }
+
+          // 3) If there is an error field, surface it
+          if (typeof obj.error === 'string' && obj.error.trim()) {
+            return obj.error.trim();
+          }
+
+          // 4) As a fallback, pick the first non-ID string value
+          const blacklist = /(^|_)(id|uuid|report|task|connector|status|code)(_|$)/i;
+          const firstString = Object.entries(obj)
+            .filter(([k, v]) => typeof v === 'string' && !blacklist.test(k))
+            .map(([, v]) => String(v).trim())
+            .find((v) => v.length > 0);
+          if (firstString) return firstString;
+
+          // 5) Final fallback: avoid dumping raw JSON
+          return intent === 'agent_builder' ? 'Agent update' : 'Update';
         }
       }
-    } catch (error) {
-      // If parsing fails, return the original message
+    } catch (_) {
+      // ignore and fall back
     }
-    
-    // If parsing fails or no JSON found, return original content
-    return lastMessage;
+
+    // Not JSON or parsing failed: return trimmed content
+    return lastMessage.trim();
   }, []);
 
   // Listen for a custom event to reset chat from anywhere (e.g., sidebar)
@@ -485,7 +511,7 @@ function ChatShell() {
 
   // Compute filtered threads for search
   const filteredThreads = threads.filter(thread => {
-    const cleanedMessage = parseThreadLastMessage(thread.last_message);
+    const cleanedMessage = parseThreadLastMessage(thread.last_message, thread.intent);
     const displayText = thread.display_name ||
       (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) ||
       'Untitled Chat';
@@ -536,7 +562,7 @@ function ChatShell() {
                     <div className="px-4 py-2 text-gray-500 text-sm">No conversations found</div>
                   )}
                   {filteredThreads.map((thread) => {
-                    const cleanedMessage = parseThreadLastMessage(thread.last_message);
+                    const cleanedMessage = parseThreadLastMessage(thread.last_message, thread.intent);
                     const displayText = thread.display_name ||
                       (cleanedMessage.length > 30 ? cleanedMessage.slice(0, 30) + '...' : cleanedMessage) ||
                       'Untitled Chat';
