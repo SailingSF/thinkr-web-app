@@ -65,12 +65,23 @@ export interface UsageStatus {
   };
 }
 
+export interface CustomReport {
+  id: string;
+  name: string;
+  description: string;
+  metrics: string[] | Record<string, any>;
+  is_active: boolean;
+  last_run: string | null;
+  next_run: string | null;
+}
+
 interface StoredData {
   user: User | null;
   connectionStatus: ConnectionStatus | null;
   schedules: Schedule[] | null;
   alerts: Alert[] | null;
   usageStatus: UsageStatus | null;
+  customReports: CustomReport[] | null;
   lastUpdated: number;
 }
 
