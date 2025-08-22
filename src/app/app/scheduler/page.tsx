@@ -7,10 +7,12 @@ import AlertModal from './AlertModal';
 import CeoBriefingCard from '@/components/CeoBriefingCard';
 import CeoBriefingModal from '@/components/CeoBriefingModal';
 import { useAuthFetch } from '@/utils/shopify';
-import { useLocalStorage, Schedule, Alert, UsageStatus } from '@/hooks/useLocalStorage';
+import { useLocalStorage, Schedule, Alert, UsageStatus, CustomReport } from '@/hooks/useLocalStorage';
+import CustomReportCard from '@/components/CustomReportCard';
 
 interface SchedulesResponse {
   schedules: Schedule[];
+  custom_reports?: CustomReport[];
 }
 
 interface AlertsResponse {
@@ -101,6 +103,7 @@ export default function Scheduler() {
   const initialLoadDoneRef = useRef(false);
   const [schedules, setSchedules] = useState<Schedule[]>(storedData?.schedules || []);
   const [alerts, setAlerts] = useState<Alert[]>(storedData?.alerts || []);
+  const [customReports, setCustomReports] = useState<CustomReport[]>(storedData?.customReports || []);
   const [usageStatus, setUsageStatus] = useState<UsageStatus | null>(storedData?.usageStatus || null);
   const [activeSection, setActiveSection] = useState<Section>('schedules');
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
@@ -176,6 +179,7 @@ export default function Scheduler() {
         setSchedules(storedData.schedules || []);
         setAlerts(storedData.alerts || []);
         setUsageStatus(storedData.usageStatus || null);
+        setCustomReports(storedData.customReports || []);
         setLoading(false);
         initialLoadDoneRef.current = true;
         return;
@@ -231,10 +235,12 @@ export default function Scheduler() {
           setSchedules(schedulesData.schedules || []);
           setAlerts(alertsData || []);
           setUsageStatus(usageData || null);
+          setCustomReports(schedulesData.custom_reports || []);
           updateStoredData({ 
             schedules: schedulesData.schedules || [],
             alerts: alertsData || [],
-            usageStatus: usageData || null
+            usageStatus: usageData || null,
+            customReports: schedulesData.custom_reports || []
           });
           setError('');
         }
@@ -595,7 +601,7 @@ export default function Scheduler() {
             </div>
             <h3 className="text-xl lg:text-2xl font-bold mb-3 text-white">No alerts yet</h3>
             <p className="text-base text-[#7B7B7B] mb-8 max-w-md mx-auto">
-              Create your first alert agent to monitor your store's performance and get notified when thresholds are met
+              Create your first alert agent to monitor your store&apos;s performance and get notified when thresholds are met
             </p>
             <button
               onClick={() => setIsAlertModalOpen(true)}
@@ -973,7 +979,7 @@ export default function Scheduler() {
                 </div>
                 <h3 className="text-xl lg:text-2xl font-bold mb-3 text-white">No reporting schedules yet</h3>
                 <p className="text-base text-[#7B7B7B] mb-8 max-w-md mx-auto">
-                  Create analysis schedules to get regular insights about your store's performance
+                  Create analysis schedules to get regular insights about your store&apos;s performance
                 </p>
                 <button
                   onClick={() => setIsScheduleModalOpen(true)}
@@ -988,6 +994,40 @@ export default function Scheduler() {
 
         {/* Render Alert Agents below Analysis Schedules */}
         <hr className="border-t border-[#2C2D32] my-12" />
+        {/* Custom Reports Section */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl sm:text-2xl font-light text-white flex items-center gap-2 mb-0">
+              Custom Reports
+              {customReports.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-[#8C74FF]/20 text-[#8C74FF] rounded-full">
+                  {customReports.length}
+                </span>
+              )}
+            </h2>
+          </div>
+
+          {customReports.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {customReports.map((report) => (
+                <CustomReportCard key={report.id} report={report} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 lg:py-16 px-4">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-[#8C74FF]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 ring-1 ring-[#8C74FF]/20">
+                <svg className="w-8 h-8 lg:w-10 lg:h-10 text-[#8C74FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7h18M3 12h18M3 17h18" />
+                </svg>
+              </div>
+              <h3 className="text-xl lg:text-2xl font-bold mb-3 text-white">No custom reports yet</h3>
+              <p className="text-base text-[#7B7B7B] mb-0 max-w-md mx-auto">
+                Set up tailored reports for your business to get the exact metrics you care about delivered on your schedule
+              </p>
+            </div>
+          )}
+        </div>
+        {/* End Custom Reports Section */}
         <div className="mt-20">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div className="flex items-center gap-2 mb-2 sm:mb-0">
