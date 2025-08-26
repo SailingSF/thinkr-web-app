@@ -48,6 +48,9 @@ function AdvancedIntegrationsContent() {
 
   // Use refs to track loading state without causing rerenders
   const isFetchingRef = useRef(false);
+  const pendingConnectRef = useRef<{ state: string; connection_id: string; is_new: boolean } | null>(null);
+  const navigatingToCardRef = useRef(false);
+  const PENDING_KEY = 'fivetran_pending_connect';
   
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -55,6 +58,29 @@ function AdvancedIntegrationsContent() {
   const debugLog = (message: string, data?: any) => {
     console.log(`[FivetranIntegrations:${new Date().toISOString()}] ${message}`, data || '');
   };
+
+  // Helper to cancel any pending connection
+  const cancelPendingConnect = useCallback(async (reason: string = 'unknown') => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(PENDING_KEY) : null;
+      if (!raw) return;
+      const pending = JSON.parse(raw);
+      await authFetch(`${API_BASE_URL}/fivetran/connect-card/cancel/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({ state: pending.state })
+      });
+      debugLog('Cancelled pending connection', { reason, ...pending });
+    } catch (e) {
+      console.warn('[FivetranIntegrations] Cancel request failed (will rely on periodic cleanup)', e);
+    } finally {
+      try {
+        localStorage.removeItem(PENDING_KEY);
+      } catch {}
+      pendingConnectRef.current = null;
+    }
+  }, [authFetch, API_BASE_URL]);
 
   // 1. Fetch Existing Connections - SIMPLIFIED dependencies
   const fetchConnections = useCallback(async () => {
@@ -101,6 +127,28 @@ function AdvancedIntegrationsContent() {
     }
   }, [authFetch, API_BASE_URL]); // REMOVE circular dependencies
 
+  // On mount: if a pending exists and no callback params, cancel immediately
+  useEffect(() => {
+    const status = searchParams.get('fivetran_status');
+    const hasPending = typeof window !== 'undefined' && !!localStorage.getItem(PENDING_KEY);
+    if (hasPending && !status) {
+      cancelPendingConnect('mount-no-callback');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Cancel on pagehide if user leaves without actually heading to the Connect Card
+  useEffect(() => {
+    const onPageHide = () => {
+      if (navigatingToCardRef.current) return;
+      if (typeof window !== 'undefined' && localStorage.getItem(PENDING_KEY)) {
+        cancelPendingConnect('pagehide');
+      }
+    };
+    window.addEventListener('pagehide', onPageHide);
+    return () => window.removeEventListener('pagehide', onPageHide);
+  }, [cancelPendingConnect]);
+
   // 2. Handle Callback from Fivetran Redirect - ONCE only
   useEffect(() => {
     // This effect runs once on mount to check for callback params
@@ -119,6 +167,8 @@ function AdvancedIntegrationsContent() {
       debugLog('Detected Fivetran callback status:', { status, reason, message, service, connectorId });
 
       if (status === 'success') {
+        // Clear any pending connect state on success
+        try { localStorage.removeItem(PENDING_KEY); } catch {}
         setCallbackStatus({ 
           type: 'success', 
           message: `Successfully connected ${service || 'service'}${connectorId ? ` (ID: ${connectorId})` : ''}. Refreshing list...` 
@@ -132,6 +182,8 @@ function AdvancedIntegrationsContent() {
         }, 0);
       } else {
         const errorMessage = `Connection failed${service ? ` for ${service}` : ''}. ${reason ? `Reason: ${reason}` : ''} ${message ? `(${message})` : ''}`.trim();
+        // Clear any pending connect state on error
+        try { localStorage.removeItem(PENDING_KEY); } catch {}
         setCallbackStatus({ type: 'error', message: errorMessage });
         setError(errorMessage); // Also set the main error state
         setIsLoadingConnections(false); // Stop loading indicator on error
@@ -181,6 +233,19 @@ function AdvancedIntegrationsContent() {
       }
 
       debugLog(`Received connect card URL: ${data.connect_card_url}`);
+      // Persist pending connect details
+      const pending = {
+        state: data.state,
+        connection_id: data.connection_id,
+        is_new: data.status === 'new_connection',
+        started_at: Date.now(),
+      };
+      try { localStorage.setItem(PENDING_KEY, JSON.stringify(pending)); } catch {}
+      pendingConnectRef.current = pending;
+
+      // Mark that we are intentionally navigating to Connect Card (don’t auto-cancel on unload)
+      navigatingToCardRef.current = true;
+
       // Redirect user to Fivetran Connect Card
       window.location.href = data.connect_card_url;
       // Note: State remains Processing until the redirect happens or fails.
