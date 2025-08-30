@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, Suspense, useRef } from 'react';
+import { useEffect, useState, useCallback, Suspense, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthFetch } from '@/utils/shopify';
 import { useLocalStorage, User } from '@/hooks/useLocalStorage';
@@ -45,6 +45,7 @@ function AdvancedIntegrationsContent() {
   const [error, setError] = useState<string | null>(null);
   const [callbackStatus, setCallbackStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [hasHandledCallback, setHasHandledCallback] = useState(false); // Flag to prevent double fetch
+  const [limitError, setLimitError] = useState<{ limit: number; current: number; feature?: string } | null>(null);
 
   // Use refs to track loading state without causing rerenders
   const isFetchingRef = useRef(false);
@@ -169,6 +170,7 @@ function AdvancedIntegrationsContent() {
       if (status === 'success') {
         // Clear any pending connect state on success
         try { localStorage.removeItem(PENDING_KEY); } catch {}
+        setLimitError(null);
         setCallbackStatus({ 
           type: 'success', 
           message: `Successfully connected ${service || 'service'}${connectorId ? ` (ID: ${connectorId})` : ''}. Refreshing list...` 
@@ -216,6 +218,7 @@ function AdvancedIntegrationsContent() {
     debugLog(`Initiating connection for service: ${serviceType}`);
     setIsProcessing(true);
     setError(null);
+    setLimitError(null);
     setCallbackStatus(null); // Clear previous callback messages
 
     try {
@@ -228,7 +231,32 @@ function AdvancedIntegrationsContent() {
       const data = await response.json();
 
       if (!response.ok || !data.connect_card_url) {
-         const errorDetail = data.detail || data.error || (data.details ? JSON.stringify(data.details) : `HTTP ${response.status}`);
+        // Robust tier-limit detection for different backend response shapes
+        const extractLimit = (payload: any) => {
+          if (!payload || typeof payload !== 'object') return null;
+          const source = (payload.error_response && typeof payload.error_response === 'object') ? payload.error_response : payload;
+          const limitVal = typeof source.limit === 'number' ? source.limit : Number(source.limit);
+          const currentVal = typeof source.current_usage === 'number' ? source.current_usage : Number(source.current_usage);
+          const feature = source.feature;
+          const message = typeof source.error === 'string' ? source.error : undefined;
+          if (!Number.isNaN(limitVal) && limitVal >= 0 && !Number.isNaN(currentVal)) {
+            return { limit: limitVal, current: currentVal, feature, message };
+          }
+          return null;
+        };
+
+        const parsed = extractLimit(data);
+        if (response.status === 429 || parsed) {
+          const limitVal = parsed?.limit ?? 0;
+          const currentVal = parsed?.current ?? 0;
+          setLimitError({ limit: limitVal, current: currentVal, feature: parsed?.feature });
+          // Prefer showing only the guided plan message
+          setError(null);
+          setIsProcessing(false);
+          return;
+        }
+
+        const errorDetail = data.detail || data.error || (data.details ? JSON.stringify(data.details) : `HTTP ${response.status}`);
         throw new Error(errorDetail || 'Failed to initiate Fivetran connection.');
       }
 
@@ -307,6 +335,21 @@ function AdvancedIntegrationsContent() {
   const connectedServiceIds = new Set(connections.map(c => c.service));
   const availableToConnect = AVAILABLE_SERVICES.filter(s => !connectedServiceIds.has(s.id));
 
+  // Shopify connection and admin URL helpers for CTAs
+  const shopifyDomain = useMemo(() => {
+    return storedData?.user?.store_shopify_domain || storedData?.connectionStatus?.shop_domain || null;
+  }, [storedData?.user?.store_shopify_domain, storedData?.connectionStatus?.shop_domain]);
+
+  // Always show Shopify admin link; some users may be connected without domain cached
+
+  const shopifyAdminUrl = useMemo(() => {
+    if (shopifyDomain && typeof shopifyDomain === 'string' ) {
+      const handle = shopifyDomain.split('.myshopify.com')[0];
+      return `https://admin.shopify.com/store/${handle}`;
+    }
+    return 'https://admin.shopify.com';
+  }, [shopifyDomain]);
+
   // --- UI Rendering ---
 
   // Show loading indicator ONLY if we are actively loading AND haven't processed a callback yet OR if processing an action
@@ -344,14 +387,58 @@ function AdvancedIntegrationsContent() {
 
         <div className="pb-16">
           {/* Callback Status Messages */}
-          {callbackStatus && (
+          {callbackStatus ? (
             <div className={`mb-6 p-4 rounded-md ${callbackStatus.type === 'success' ? 'bg-green-900 text-green-100' : 'bg-red-900 text-red-100'}`}>
               {callbackStatus.message}
+            </div>
+          ) : null}
+
+          {/* Tier limit / plan restriction message */}
+          {limitError && (
+            <div className="mb-6 p-4 rounded-md bg-yellow-900 text-yellow-100">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-medium">Plan limit reached</p>
+                  <p className="text-sm mt-1">
+                    You have reached the limit of {limitError.limit} integration(s) for your tier. Current usage: {limitError.current}.
+                  </p>
+                  <p className="text-sm mt-2">
+                    To add more integrations, upgrade your Shopify plan in{' '}
+                    <a
+                      href={shopifyAdminUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-white"
+                    >
+                      Shopify admin
+                    </a>
+                    .
+                  </p>
+                </div>
+                <button
+                  onClick={() => setLimitError(null)}
+                  className="text-yellow-200 hover:text-white"
+                >
+                  Dismiss
+                </button>
+              </div>
+
+              {/* CTAs */}
+              <div className="mt-4 flex gap-3 flex-wrap">
+                <a
+                  href={shopifyAdminUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-[#10AA56] hover:bg-[#338452] text-black font-medium rounded-sm transition-colors"
+                >
+                  Open Shopify admin
+                </a>
+              </div>
             </div>
           )}
 
           {/* General Error Messages */}
-          {error && !callbackStatus /* Don't show general error if a specific callback error/success is shown */ && (
+          {error && !callbackStatus /* Don't show general error if a specific callback error/success is shown */ && !limitError && (
             <div className="mb-6 p-4 rounded-md bg-red-900 text-red-100">
               Error: {error}
             </div>
