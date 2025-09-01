@@ -111,6 +111,7 @@ export default function Scheduler() {
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [isDeletingSchedule, setIsDeletingSchedule] = useState<number | null>(null);
   const [isDeletingAlert, setIsDeletingAlert] = useState<number | null>(null);
+  const [isDeletingCustomReport, setIsDeletingCustomReport] = useState<string | null>(null);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [isTogglingCeo, setIsTogglingCeo] = useState(false);
   const [loading, setLoading] = useState(!storedData?.schedules && !storedData?.alerts);
@@ -120,6 +121,7 @@ export default function Scheduler() {
   const [showAllHours, setShowAllHours] = useState(false);
   const [alertSearch, setAlertSearch] = useState('');
   const [isCeoModalOpen, setIsCeoModalOpen] = useState(false);
+  // Custom reports are designed for single-report scenarios; no filters/sort
 
   // Ensure alerts is always an array and filter out deactivated alerts
   const safeAlerts = (alerts || []).filter(alert => alert.is_active);
@@ -263,7 +265,16 @@ export default function Scheduler() {
     return () => {
       mountedRef.current = false;
     };
-  }, [authFetch, router, isExpired]);
+  }, [
+    authFetch,
+    router,
+    isExpired,
+    storedData?.schedules,
+    storedData?.alerts,
+    storedData?.usageStatus,
+    storedData?.customReports,
+    updateStoredData,
+  ]);
 
   useEffect(() => {
     if (viewMode === 'weekly') {
@@ -423,6 +434,50 @@ export default function Scheduler() {
     } finally {
       setIsDeletingAlert(null);
     }
+  };
+
+  const handleDeleteCustomReport = async (reportId: string) => {
+    if (!window.confirm('Delete this custom report schedule? This cannot be undone.')) return;
+    setIsDeletingCustomReport(reportId);
+    try {
+      const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-reports/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ report_id: reportId }),
+      });
+
+      if (!response.ok) {
+        let message = 'Failed to delete custom report';
+        try {
+          const err = await response.json();
+          message = err.error || err.detail || message;
+        } catch {}
+        throw new Error(message);
+      }
+
+      setCustomReports(prev => {
+        const updated = (prev || []).filter(r => r.id !== reportId);
+        updateStoredData({ customReports: updated });
+        return updated;
+      });
+      setError('');
+    } catch (err) {
+      console.error('Delete custom report error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete custom report');
+    } finally {
+      setIsDeletingCustomReport(null);
+    }
+  };
+
+  const handleEditCustomReport = (report: CustomReport) => {
+    // Prefill agent builder prompt and intent for /app page
+    try {
+      localStorage.setItem('prefill_agent_prompt', `I want to change the custom report ${report.name} by ...`);
+      localStorage.setItem('prefill_agent_intent', 'agent_builder');
+    } catch {}
+    router.push('/app');
   };
 
   const handleUnsubscribeAll = async () => {
@@ -1005,12 +1060,24 @@ export default function Scheduler() {
                 </span>
               )}
             </h2>
+            <button
+              onClick={() => router.push('/app')}
+              className="px-4 py-2 bg-[#8C74FF] hover:bg-[#7B63EE] text-white rounded-lg transition-all duration-200 text-sm font-medium"
+            >
+              Create Custom Report
+            </button>
           </div>
 
           {customReports.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {customReports.map((report) => (
-                <CustomReportCard key={report.id} report={report} />
+                <CustomReportCard
+                  key={report.id}
+                  report={report}
+                  onDelete={handleDeleteCustomReport}
+                  isDeleting={isDeletingCustomReport === report.id}
+                  onEdit={handleEditCustomReport}
+                />
               ))}
             </div>
           ) : (
@@ -1021,9 +1088,15 @@ export default function Scheduler() {
                 </svg>
               </div>
               <h3 className="text-xl lg:text-2xl font-bold mb-3 text-white">No custom reports yet</h3>
-              <p className="text-base text-[#7B7B7B] mb-0 max-w-md mx-auto">
-                Set up tailored reports for your business to get the exact metrics you care about delivered on your schedule
+              <p className="text-base text-[#7B7B7B] mb-6 max-w-md mx-auto">
+                Create a tailored report to get the exact metrics you care about delivered on your schedule
               </p>
+              <button
+                onClick={() => router.push('/app')}
+                className="px-8 py-3 bg-[#8C74FF] hover:bg-[#8C74FF]/90 rounded-lg transition-all duration-200 text-base font-medium text-white shadow-md shadow-[#8C74FF]/20 hover:shadow-lg hover:shadow-[#8C74FF]/30"
+              >
+                Create Custom Report
+              </button>
             </div>
           )}
         </div>

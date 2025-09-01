@@ -18,7 +18,7 @@ export default function AppSidebar() {
 
   const isSettings = pathname === '/app/profile';
   const isChat = pathname === '/app';
-  const isAgents = pathname === '/app/scheduler';
+  const isAgents = pathname === '/app/agents';
   const isIntegrations = pathname === '/app/integrations';
   const isTemplates = pathname === '/app/agent-templates';
 
@@ -77,7 +77,7 @@ export default function AppSidebar() {
                     <Plus className="h-6 w-6 text-[#A78BFA]" />
                   </Link>
                   <Link
-                    href="/app/scheduler"
+                    href="/app/agents"
                     onClick={handleNav}
                     className={`flex items-center justify-center w-12 h-12 mx-auto rounded-lg transition-colors ${
                       isAgents
@@ -167,7 +167,7 @@ export default function AppSidebar() {
                     <span className="font-bold">New chat</span>
                   </Link>
                   <Link
-                    href="/app/scheduler"
+                    href="/app/agents"
                     onClick={handleNav}
                     className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                       isAgents
@@ -316,7 +316,7 @@ export default function AppSidebar() {
                 <span className="font-bold">New chat</span>
               </Link>
               <Link
-                href="/app/scheduler"
+                href="/app/agents"
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 p-2 rounded-lg w-full transition-colors ${
                   isAgents

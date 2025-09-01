@@ -183,7 +183,7 @@ export default function AlertModal({ isOpen, onClose, onAlertAdd, usageStatus }:
         <div className="mb-6">
           <h2 className="text-2xl font-normal mb-2 text-white">Create Alert Agent</h2>
           <p className="text-sm text-[#7B7B7B] mb-4">
-            Set up automated alerts to monitor your store's performance and get notified when thresholds are met.
+            Set up automated alerts to monitor your store&apos;s performance and get notified when thresholds are met.
           </p>
           {usageStatus && usageStatus.alerts && (
             <div className="flex items-center gap-2 text-sm">
