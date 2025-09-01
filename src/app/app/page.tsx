@@ -586,7 +586,7 @@ function ChatShell() {
                           setDropdownOpen(false);
                         }}
                         tabIndex={0}
-                        aria-selected={isSelected}
+                        aria-current={isSelected ? 'true' : undefined}
                       >
                         {/* Top row: icon + type label */}
                         <span className="flex items-center gap-2 mb-1">
