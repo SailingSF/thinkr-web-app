@@ -265,7 +265,16 @@ export default function Scheduler() {
     return () => {
       mountedRef.current = false;
     };
-  }, [authFetch, router, isExpired]);
+  }, [
+    authFetch,
+    router,
+    isExpired,
+    storedData?.schedules,
+    storedData?.alerts,
+    storedData?.usageStatus,
+    storedData?.customReports,
+    updateStoredData,
+  ]);
 
   useEffect(() => {
     if (viewMode === 'weekly') {
