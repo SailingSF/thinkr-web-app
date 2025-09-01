@@ -4,24 +4,42 @@ import { CustomReport } from '@/hooks/useLocalStorage';
 
 interface CustomReportCardProps {
   report: CustomReport;
+  onDelete?: (id: string) => void;
+  isDeleting?: boolean;
 }
 
 const formatDateTime = (value: string | null) => {
   if (!value) return 'N/A';
   try {
-    return new Date(value).toLocaleString();
+    const d = new Date(value);
+    // Compact, card-friendly format like: Sep 1, 9:00 AM
+    const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return `${date}, ${time}`;
   } catch {
     return 'N/A';
   }
 };
 
-export default function CustomReportCard({ report }: CustomReportCardProps) {
+export default function CustomReportCard({ report, onDelete, isDeleting }: CustomReportCardProps) {
   const metricsArray: string[] = Array.isArray(report.metrics)
     ? report.metrics as string[]
     : Object.keys(report.metrics || {});
 
   return (
-    <div className="bg-[#141718] rounded-xl border border-[#2C2D32] p-6">
+    <div className="bg-[#141718] rounded-xl border border-[#2C2D32] p-6 relative group hover:border-[#8C74FF]/40 transition-colors">
+      {onDelete && (
+        <button
+          aria-label="Delete custom report"
+          onClick={() => onDelete(report.id)}
+          disabled={!!isDeleting}
+          className="absolute -top-2 -right-2 text-red-400 hover:text-red-300 disabled:text-red-400/50 disabled:cursor-not-allowed w-6 h-6 rounded-full bg-red-400/20 flex items-center justify-center transition-colors shadow-sm hover:shadow-md ring-1 ring-red-400/30"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="min-w-0">
           <h3 className="text-lg font-semibold text-white truncate">{report.name}</h3>
@@ -65,6 +83,8 @@ export default function CustomReportCard({ report }: CustomReportCardProps) {
           <span className="text-white/80">{formatDateTime(report.next_run)}</span>
         </div>
       </div>
+
+      {/* Deletion is handled only by the top-right X button */}
     </div>
   );
 }
