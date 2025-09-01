@@ -6,6 +6,7 @@ interface CustomReportCardProps {
   report: CustomReport;
   onDelete?: (id: string) => void;
   isDeleting?: boolean;
+  onEdit?: (report: CustomReport) => void;
 }
 
 const formatDateTime = (value: string | null) => {
@@ -21,7 +22,7 @@ const formatDateTime = (value: string | null) => {
   }
 };
 
-export default function CustomReportCard({ report, onDelete, isDeleting }: CustomReportCardProps) {
+export default function CustomReportCard({ report, onDelete, isDeleting, onEdit }: CustomReportCardProps) {
   const metricsArray: string[] = Array.isArray(report.metrics)
     ? report.metrics as string[]
     : Object.keys(report.metrics || {});
@@ -47,15 +48,25 @@ export default function CustomReportCard({ report, onDelete, isDeleting }: Custo
             <p className="text-sm text-[#7B7B7B] mt-1 line-clamp-3">{report.description}</p>
           )}
         </div>
-        <span
-          className={`px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
-            report.is_active
-              ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20'
-              : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
-          }`}
-        >
-          {report.is_active ? 'Active' : 'Inactive'}
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          {onEdit && (
+            <button
+              onClick={() => onEdit(report)}
+              className="px-2 py-1 text-xs text-white/90 bg-[#23272b] hover:bg-[#2C2D32] rounded-md transition-colors border border-[#2C2D32]"
+            >
+              Edit
+            </button>
+          )}
+          <span
+            className={`px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
+              report.is_active
+                ? 'bg-[#22C55E]/10 text-[#22C55E] ring-1 ring-[#22C55E]/20'
+                : 'bg-[#7B7B7B]/10 text-[#7B7B7B] ring-1 ring-[#7B7B7B]/20'
+            }`}
+          >
+            {report.is_active ? 'Active' : 'Inactive'}
+          </span>
+        </div>
       </div>
 
       {metricsArray.length > 0 && (

@@ -462,6 +462,15 @@ export default function Scheduler() {
     }
   };
 
+  const handleEditCustomReport = (report: CustomReport) => {
+    // Prefill agent builder prompt and intent for /app page
+    try {
+      localStorage.setItem('prefill_agent_prompt', `I want to change the custom report ${report.name} by ...`);
+      localStorage.setItem('prefill_agent_intent', 'agent_builder');
+    } catch {}
+    router.push('/app');
+  };
+
   const handleUnsubscribeAll = async () => {
     if (!window.confirm('Are you sure you want to delete all analysis schedules? This action cannot be undone.')) {
       return;
@@ -1058,6 +1067,7 @@ export default function Scheduler() {
                   report={report}
                   onDelete={handleDeleteCustomReport}
                   isDeleting={isDeletingCustomReport === report.id}
+                  onEdit={handleEditCustomReport}
                 />
               ))}
             </div>
