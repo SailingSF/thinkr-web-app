@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { useAuthFetch } from '@/utils/shopify';
 import { useLocalStorage, User } from '@/hooks/useLocalStorage';
 
@@ -469,7 +470,9 @@ function AdvancedIntegrationsContent() {
                   <div key={conn.fivetran_connector_id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px] transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-[#8B5CF6] border border-transparent group cursor-pointer">
                      <div>
                       <div className="flex items-center gap-3 mb-2">
-                        {serviceInfo?.icon && <img src={serviceInfo.icon} alt={serviceInfo.name} className="w-6 h-6 object-contain"/>}
+                        {serviceInfo?.icon && (
+                          <Image src={serviceInfo.icon} alt={serviceInfo.name} width={24} height={24} className="w-6 h-6 object-contain" />
+                        )}
                         <h3 className="text-lg text-white font-medium">{serviceInfo?.name || conn.service}</h3>
                       </div>
                        {/* Display Status more prominently */}
@@ -514,7 +517,9 @@ function AdvancedIntegrationsContent() {
                 <div key={service.id} className="bg-[#242424] rounded-lg p-4 flex flex-col justify-between min-h-[180px] transition-transform duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-[#8B5CF6] border border-transparent group cursor-pointer">
                   <div>
                      <div className="flex items-center gap-3 mb-2">
-                         {service.icon && <img src={service.icon} alt={service.name} className="w-6 h-6 object-contain"/>}
+                         {service.icon && (
+                           <Image src={service.icon} alt={service.name} width={24} height={24} className="w-6 h-6 object-contain" />
+                         )}
                          <h3 className="text-lg text-white font-medium">{service.name}</h3>
                       </div>
                     <p className="text-sm text-gray-400 mb-4">{service.description}</p>
