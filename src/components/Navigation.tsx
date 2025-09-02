@@ -72,6 +72,13 @@ export default function Navigation() {
           >
             Help
           </Link>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-[#2A2D2E] text-gray-200 hover:text-white border border-[#3A3D3E] hover:border-purple-400/50 rounded-lg transition-colors"
+            aria-label="Logout"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </nav>
